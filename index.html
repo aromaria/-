@@ -626,7 +626,10 @@
 
   // ---------- cloud (Google Apps Script; optional) ----------
   var CLOUD_URL="rezast_intake_cloud_url";
-  function cloudUrl(){ return (localStorage.getItem(CLOUD_URL)||"").trim(); }
+  // 配布用ファイルでは、次の "" の中に送信先URL（…/exec）を入れておくと、
+  // 開くだけで自動接続され、各自がURLを貼る必要がなくなります。（GitHubの本体は空のまま）
+  var DEFAULT_CLOUD_URL="";
+  function cloudUrl(){ return ((localStorage.getItem(CLOUD_URL)||"").trim()) || DEFAULT_CLOUD_URL; }
   function cloudMsg(t, kind){
     var e=$("#cloudStatus"); e.className="warnbar show"+(kind==="dup"?" dup":"");
     if(kind==="ok"){ e.style.background="#f0f7f2"; e.style.borderColor="#cfe8d6"; e.style.color="#1f5a34"; }
@@ -653,6 +656,7 @@
   }
   (function(){
     var el=$("#cloudUrl"); if(!el) return;
+    if(!(localStorage.getItem(CLOUD_URL)||"").trim() && DEFAULT_CLOUD_URL){ localStorage.setItem(CLOUD_URL, DEFAULT_CLOUD_URL); }
     el.value=cloudUrl();
     $("#btnCloudSave").addEventListener("click",function(){
       var u=el.value.trim(); localStorage.setItem(CLOUD_URL,u);
