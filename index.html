@@ -33,6 +33,11 @@
   .req{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:12px;padding:2px 9px}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media(max-width:560px){.row2{grid-template-columns:1fr}}
+  @media(max-width:560px){
+    nav button{padding:9px 4px;font-size:13px}
+    .title{font-size:14px}.title small{font-size:11px}
+    .head-inner{padding:8px 12px}
+  }
   label.sub{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
   input[type=text],input[type=email],input[type=tel],input[type=date],textarea,select{
     width:100%;padding:12px;border:1px solid transparent;background:var(--field);border-radius:10px;font-size:16px;color:var(--ink)}
@@ -46,8 +51,6 @@
   .radio{display:flex;align-items:center;gap:10px;background:var(--field);border-radius:10px;padding:11px 12px;cursor:pointer}
   .radio input{width:18px;height:18px}
   .radio .price{margin-left:auto;font-weight:700;color:var(--ink)}
-  .amount-box{background:#f0f7ff;border:1px solid #cfe3ff;border-radius:10px;padding:12px 14px;font-size:15px}
-  .amount-box .big{font-size:22px;font-weight:800;color:var(--accent)}
   .err{color:var(--danger);font-size:13px;margin-top:6px;display:none}
   .field-bad input,.field-bad textarea,.field-bad select,.field-bad .checks,.field-bad .radios{box-shadow:0 0 0 2px var(--danger) inset;border-radius:10px}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
@@ -77,6 +80,7 @@
   .tablewrap{overflow-x:auto}
   th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   th{color:var(--muted);font-weight:700;font-size:12px}
+  td select{padding:7px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;max-width:210px}
   tr.dup-row td{background:#fdf0f0}
   .empty-state{text-align:center;color:var(--muted);padding:30px 10px}
   .pill{font-size:11px;padding:2px 8px;border-radius:10px;background:#eef0f3;color:#444}
@@ -189,11 +193,6 @@
         <div class="err">参加方法を選んでください</div>
       </div>
 
-      <div class="group">
-        <div class="glabel">合計金額（自動計算）</div>
-        <div class="amount-box" id="amountBox">参加方法と参加回を選ぶと計算されます</div>
-        <p class="hint" style="margin:8px 0 0">※ 単価 × 参加回数（回ごと課金）で自動計算します。実際の請求前に必ずご確認ください。</p>
-      </div>
     </div>
 
     <div class="card">
@@ -261,7 +260,7 @@
       <div class="tablewrap">
         <table id="listTable">
           <thead><tr>
-            <th>受付</th><th>氏名</th><th>参加回</th><th>方法</th><th>金額</th>
+            <th>受付</th><th>氏名</th><th>参加回</th><th>方法</th>
             <th>支払</th><th>ステータス</th><th>対応者</th><th></th>
           </tr></thead>
           <tbody id="listBody"></tbody>
@@ -317,7 +316,7 @@
     var h=$("#handler");
     HANDLERS.forEach(function(n){var o=document.createElement("option");o.value=n;o.textContent=n;h.appendChild(o);});
     var saved=localStorage.getItem(HANDLER_KEY); if(saved) h.value=saved;
-    h.addEventListener("change",function(){localStorage.setItem(HANDLER_KEY,h.value);});
+    h.addEventListener("change",function(){localStorage.setItem(HANDLER_KEY,h.value);toast("対応者："+h.value);});
 
     var st=$("#status"), fst=$("#fStatus");
     STATUSES.forEach(function(s){
@@ -341,11 +340,9 @@
   var sAll=$("#sAll"), sOnes=$$(".sOne");
   sAll.addEventListener("change",function(){
     sOnes.forEach(function(c){c.checked=sAll.checked;});
-    recalc();
   });
   sOnes.forEach(function(c){c.addEventListener("change",function(){
     sAll.checked = sOnes.every(function(x){return x.checked;});
-    recalc();
   });});
 
   function getSessions(){ return sOnes.filter(function(c){return c.checked;}).map(function(c){return c.value;}); }
@@ -354,15 +351,8 @@
     return list.map(function(n){return "第"+n+"回";}).join("・");
   }
 
-  // ---------- amount ----------
+  // ---------- method ----------
   function getMethod(){ var m=$("input[name=method]:checked"); return m?m.value:null; }
-  function recalc(){
-    var box=$("#amountBox"), m=getMethod(), sess=getSessions();
-    if(!m || sess.length===0){ box.textContent="参加方法と参加回を選ぶと計算されます"; return; }
-    var unit=METHODS[m].price, n=sess.length, total=unit*n;
-    box.innerHTML='<div>'+esc(METHODS[m].label)+'</div><div>'+yen(unit)+' × '+n+'回 = <span class="big">'+yen(total)+'</span></div>';
-  }
-  $$("input[name=method]").forEach(function(r){r.addEventListener("change",recalc);});
 
   // ---------- collect / validate ----------
   function collect(){
@@ -434,10 +424,6 @@
   });
 
   // ---------- summary ----------
-  function amountOf(rec){
-    if(!rec.method || !rec.sessions.length) return 0;
-    return METHODS[rec.method].price * rec.sessions.length;
-  }
   function receiptOf(rec){ return rec.receiptName || (rec.sei+" "+rec.mei); }
 
   function buildSummary(rec){
@@ -451,7 +437,6 @@
       ["領収書の宛名", receiptOf(rec)],
       ["参加回", sessionsLabel(rec.sessions)],
       ["参加方法", rec.method?METHODS[rec.method].label:""],
-      ["合計金額", rec.method&&rec.sessions.length?yen(amountOf(rec)):""],
       ["支払い方法", rec.payment||""],
       ["振込予定日", rec.transferDate||""],
       ["電話申込者", rec.applicant||""],
@@ -505,7 +490,7 @@
     $$("input[name=method]").forEach(function(r){r.checked=false;});
     $$("input[name=payment]").forEach(function(r){r.checked=false;});
     $("#status").value=STATUSES[0];
-    clearErrors(); recalc(); $("#dupWarn").classList.remove("show");
+    clearErrors(); $("#dupWarn").classList.remove("show");
   }
 
   $("#btnBackForm").addEventListener("click",function(){showTab("form");});
@@ -525,7 +510,6 @@
     } else {
       rec.receivedAt = rec.receivedAt || new Date().toISOString();
     }
-    rec.amount = amountOf(rec);
     rec.receiptResolved = receiptOf(rec);
     Store.upsert(rec);
     toast(editingId?"更新しました":"保存しました");
@@ -565,17 +549,28 @@
         "<td>"+esc(r.sei+r.mei)+(dupIds[r.id]?' <span class="badge" style="background:#fdecec;color:#c0392b">重複?</span>':"")+"</td>"+
         "<td>"+esc(sessionsLabel(r.sessions||[]))+"</td>"+
         "<td>"+esc(r.method?METHODS[r.method].label.replace("＋アーカイブ",""):"")+"</td>"+
-        "<td>"+(r.amount?yen(r.amount):"")+"</td>"+
         "<td>"+esc(r.payment||"")+"</td>"+
-        "<td><span class='pill'>"+esc(r.status||"")+"</span></td>"+
-        "<td>"+esc(r.handler||"")+"</td>"+
+        "<td><select class='rowStatus' data-id='"+esc(r.id)+"'>"+optsHtml(STATUSES,r.status)+"</select></td>"+
+        "<td><select class='rowHandler' data-id='"+esc(r.id)+"'>"+optsHtml(HANDLERS,r.handler)+"</select></td>"+
         "<td><button class='btn ghost sm' data-edit='"+r.id+"'>編集</button> "+
             "<button class='btn ghost sm' data-copyrec='"+r.id+"'>複製</button></td>";
       tb.appendChild(tr);
     });
 
+    $$(".rowStatus").forEach(function(s){s.addEventListener("change",function(){updateField(s.getAttribute("data-id"),"status",s.value);});});
+    $$(".rowHandler").forEach(function(s){s.addEventListener("change",function(){updateField(s.getAttribute("data-id"),"handler",s.value);});});
     $$("[data-edit]").forEach(function(b){b.addEventListener("click",function(){loadForEdit(b.getAttribute("data-edit"));});});
     $$("[data-copyrec]").forEach(function(b){b.addEventListener("click",function(){duplicateRec(b.getAttribute("data-copyrec"));});});
+  }
+
+  function optsHtml(list, sel){
+    return list.map(function(v){ return '<option'+(v===sel?' selected':'')+'>'+esc(v)+'</option>'; }).join('');
+  }
+  function updateField(id, key, val){
+    var all=Store.all();
+    for(var i=0;i<all.length;i++){ if(all[i].id===id){ all[i][key]=val; Store.saveAll(all); break; } }
+    toast((key==="status"?"ステータス":"対応者")+"を更新しました");
+    renderList();
   }
   $("#fStatus").addEventListener("change",renderList);
   $("#fSearch").addEventListener("input",renderList);
@@ -597,7 +592,7 @@
     $("#status").value=r.status||STATUSES[0];
     if(r.handler) $("#handler").value=r.handler;
     $("#editingNote").style.display="inline";
-    recalc(); clearErrors();
+    clearErrors();
     showTab("form");
   }
 
@@ -622,7 +617,6 @@
 
   // init
   $("#status").value=STATUSES[0];
-  recalc();
 })();
 </script>
 </body>
