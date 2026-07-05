@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リザスト電話申込 入力サポート（第1段階・ローカル版）</title>
+<style>
+  :root{
+    --red:#f4364c; --red-d:#d61f36;
+    --ink:#222; --muted:#6b7280; --line:#e5e7eb;
+    --bg:#f5f6f8; --card:#fff; --field:#eef0f3;
+    --ok:#1a8a4a; --warn:#b8860b; --danger:#c0392b;
+    --accent:#2563eb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.6;font-size:16px}
+  header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  .head-inner{max-width:960px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+  .title{font-weight:700;font-size:16px}
+  .title small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+  .handler{display:flex;align-items:center;gap:6px;font-size:14px}
+  .handler select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+  nav{max-width:960px;margin:0 auto;padding:0 16px;display:flex;gap:6px}
+  nav button{flex:1;background:none;border:none;border-bottom:3px solid transparent;padding:12px 8px;font-size:15px;cursor:pointer;color:var(--muted);font-weight:600}
+  nav button.active{color:var(--red);border-bottom-color:var(--red)}
+  main{max-width:960px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  .card h2{margin:0 0 4px;font-size:16px}
+  .card .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .group{margin-bottom:18px}
+  .glabel{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .req{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:12px;padding:2px 9px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}}
+  label.sub{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+  input[type=text],input[type=email],input[type=tel],input[type=date],textarea,select{
+    width:100%;padding:12px;border:1px solid transparent;background:var(--field);border-radius:10px;font-size:16px;color:var(--ink)}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);background:#fff}
+  textarea{min-height:80px;resize:vertical}
+  .checks{display:flex;flex-wrap:wrap;gap:8px}
+  .chk{display:flex;align-items:center;gap:6px;background:var(--field);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:15px;user-select:none}
+  .chk input{width:18px;height:18px}
+  .chk.all{background:#fde8ea;font-weight:700}
+  .radios{display:flex;flex-direction:column;gap:8px}
+  .radio{display:flex;align-items:center;gap:10px;background:var(--field);border-radius:10px;padding:11px 12px;cursor:pointer}
+  .radio input{width:18px;height:18px}
+  .radio .price{margin-left:auto;font-weight:700;color:var(--ink)}
+  .amount-box{background:#f0f7ff;border:1px solid #cfe3ff;border-radius:10px;padding:12px 14px;font-size:15px}
+  .amount-box .big{font-size:22px;font-weight:800;color:var(--accent)}
+  .err{color:var(--danger);font-size:13px;margin-top:6px;display:none}
+  .field-bad input,.field-bad textarea,.field-bad select,.field-bad .checks,.field-bad .radios{box-shadow:0 0 0 2px var(--danger) inset;border-radius:10px}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+  .btn{border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn.primary{background:var(--red);color:#fff}
+  .btn.primary:hover{background:var(--red-d)}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.blue{background:var(--accent);color:#fff}
+  .btn.sm{padding:7px 12px;font-size:13px;border-radius:8px}
+  .warnbar{background:#fff7e6;border:1px solid #f0d38a;color:#7a5b00;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:14px;display:none}
+  .warnbar.show{display:block}
+  .warnbar.dup{background:#fdecec;border-color:#f0a8a8;color:#8a1f1f}
+  .badge{display:inline-block;font-size:12px;font-weight:700;border-radius:12px;padding:2px 10px;white-space:nowrap}
+  /* summary */
+  .sumrow{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+  .sumrow:last-child{border-bottom:none}
+  .sumrow .k{width:130px;flex:none;color:var(--muted);font-size:13px;padding-top:6px}
+  @media(max-width:560px){.sumrow .k{width:96px}}
+  .sumrow .v{flex:1;font-size:16px;word-break:break-all;padding-top:4px;font-weight:600;min-height:28px}
+  .sumrow .v.empty{color:#bbb;font-weight:400}
+  .copybtn{flex:none;background:#eef2ff;color:var(--accent);border:1px solid #cfe0ff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer}
+  .copybtn.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+  /* list */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+  .filters select,.filters input{width:auto;flex:none;min-width:120px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  .tablewrap{overflow-x:auto}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--muted);font-weight:700;font-size:12px}
+  tr.dup-row td{background:#fdf0f0}
+  .empty-state{text-align:center;color:var(--muted);padding:30px 10px}
+  .pill{font-size:11px;padding:2px 8px;border-radius:10px;background:#eef0f3;color:#444}
+  .footnote{color:var(--muted);font-size:12px;text-align:center;padding:10px 0 30px}
+  .safety{background:#f0f7f2;border:1px solid #cfe8d6;color:#1f5a34;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:.95}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <div class="title">リザスト電話申込 入力サポート
+      <small>連続講演会（全5回）／第1段階・ローカル版（自動送信なし）</small>
+    </div>
+    <div class="handler">
+      <span>対応者</span>
+      <select id="handler"></select>
+    </div>
+  </div>
+  <nav>
+    <button data-tab="form" class="active">新規入力</button>
+    <button data-tab="summary">リザスト転記</button>
+    <button data-tab="list">対応一覧 <span id="listCount" class="pill">0</span></button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ FORM ============ -->
+  <section id="tab-form">
+    <div class="safety">🔒 このソフトはリザストへ自動送信しません。入力内容を確認し、「リザスト転記」画面を見ながら手入力してください。データはこの端末内にのみ保存されます（現段階）。</div>
+
+    <div id="dupWarn" class="warnbar dup"></div>
+
+    <div class="card">
+      <h2>電話申込者情報</h2>
+      <p class="hint">申込の電話をかけてきた方（参加者本人と異なる場合に記入）</p>
+      <div class="group" data-field="applicant">
+        <input type="text" id="applicant" placeholder="例）山田花子（本人の場合は空欄可）">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>参加者情報</h2>
+      <p class="hint">リザスト申込画面の項目順に並んでいます</p>
+
+      <div class="group">
+        <div class="glabel">お名前 <span class="req">必須</span></div>
+        <div class="row2">
+          <div data-field="sei"><label class="sub">姓</label><input type="text" id="sei"><div class="err">姓を入力してください</div></div>
+          <div data-field="mei"><label class="sub">名</label><input type="text" id="mei"><div class="err">名を入力してください</div></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="glabel">おなまえ（ふりがな） <span class="req">必須</span></div>
+        <div class="row2">
+          <div data-field="furiSei"><label class="sub">せい</label><input type="text" id="furiSei"><div class="err">ふりがな（せい）を入力してください</div></div>
+          <div data-field="furiMei"><label class="sub">めい</label><input type="text" id="furiMei"><div class="err">ふりがな（めい）を入力してください</div></div>
+        </div>
+      </div>
+
+      <div class="group" data-field="email">
+        <div class="glabel">メールアドレス <span class="req">必須</span></div>
+        <input type="email" id="email" placeholder="example@mail.com" autocapitalize="off">
+        <div class="err">メールアドレスの形式が正しくありません</div>
+      </div>
+
+      <div class="group" data-field="emailConfirm">
+        <div class="glabel">メールアドレス（確認） <span class="req">必須</span></div>
+        <input type="email" id="emailConfirm" placeholder="もう一度入力" autocapitalize="off">
+        <div class="err">メールアドレスが一致しません</div>
+      </div>
+
+      <div class="group" data-field="phone">
+        <div class="glabel">携帯電話番号 <span class="req">必須</span></div>
+        <input type="tel" id="phone" placeholder="例）09012345678">
+        <div class="err">電話番号の形式が正しくありません（数字10〜11桁）</div>
+      </div>
+
+      <div class="group" data-field="receiptName">
+        <div class="glabel">領収書の宛名</div>
+        <input type="text" id="receiptName" placeholder="空欄の場合は参加者氏名を使用します">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>参加内容</h2>
+
+      <div class="group" data-field="sessions">
+        <div class="glabel">参加回 <span class="req">必須</span>（複数選択可）</div>
+        <div class="checks" id="sessions">
+          <label class="chk all"><input type="checkbox" id="sAll" value="all">全5回</label>
+          <label class="chk"><input type="checkbox" class="sOne" value="1">第1回</label>
+          <label class="chk"><input type="checkbox" class="sOne" value="2">第2回</label>
+          <label class="chk"><input type="checkbox" class="sOne" value="3">第3回</label>
+          <label class="chk"><input type="checkbox" class="sOne" value="4">第4回</label>
+          <label class="chk"><input type="checkbox" class="sOne" value="5">第5回</label>
+        </div>
+        <div class="err">参加回を1つ以上選んでください</div>
+      </div>
+
+      <div class="group" data-field="method">
+        <div class="glabel">参加方法 <span class="req">必須</span></div>
+        <div class="radios" id="method">
+          <label class="radio"><input type="radio" name="method" value="venue"><span>会場参加＋アーカイブ</span><span class="price">7,000円</span></label>
+          <label class="radio"><input type="radio" name="method" value="zoom"><span>Zoom参加＋アーカイブ</span><span class="price">4,000円</span></label>
+          <label class="radio"><input type="radio" name="method" value="archive"><span>アーカイブ視聴のみ</span><span class="price">2,000円</span></label>
+        </div>
+        <div class="err">参加方法を選んでください</div>
+      </div>
+
+      <div class="group">
+        <div class="glabel">合計金額（自動計算）</div>
+        <div class="amount-box" id="amountBox">参加方法と参加回を選ぶと計算されます</div>
+        <p class="hint" style="margin:8px 0 0">※ 単価 × 参加回数（回ごと課金）で自動計算します。実際の請求前に必ずご確認ください。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>支払い・対応管理</h2>
+
+      <div class="group" data-field="payment">
+        <div class="glabel">支払い方法 <span class="req">必須</span></div>
+        <div class="radios" id="payment">
+          <label class="radio"><input type="radio" name="payment" value="銀行振込"><span>銀行振込</span></label>
+          <label class="radio"><input type="radio" name="payment" value="PayPal"><span>PayPal</span></label>
+          <label class="radio"><input type="radio" name="payment" value="その他"><span>その他</span></label>
+        </div>
+        <div class="err">支払い方法を選んでください</div>
+      </div>
+
+      <div class="group" data-field="transferDate">
+        <div class="glabel">振込予定日</div>
+        <input type="date" id="transferDate">
+      </div>
+
+      <div class="group" data-field="note">
+        <div class="glabel">備考</div>
+        <textarea id="note" placeholder="聞き取りメモ・特記事項など"></textarea>
+      </div>
+
+      <div class="group" data-field="status">
+        <div class="glabel">対応ステータス</div>
+        <select id="status"></select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="btnCheck">入力チェック → 転記画面へ</button>
+      <button class="btn ghost" id="btnClear">クリア</button>
+      <span id="editingNote" style="align-self:center;color:var(--muted);font-size:13px;display:none">※ 既存データを編集中</span>
+    </div>
+  </section>
+
+  <!-- ============ SUMMARY ============ -->
+  <section id="tab-summary" style="display:none">
+    <div class="safety">📋 下記をリザストの申込画面へ<strong>手入力</strong>してください。各項目の「コピー」でクリップボードに取れます。</div>
+    <div id="sumCheck" class="warnbar"></div>
+    <div id="sumDup" class="warnbar dup"></div>
+    <div class="card">
+      <h2>リザスト転記用まとめ</h2>
+      <p class="hint">リザスト申込画面の項目順に並んでいます</p>
+      <div id="summaryBody"></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="btnSave">この内容で保存</button>
+      <button class="btn ghost" id="btnBackForm">入力に戻る</button>
+    </div>
+  </section>
+
+  <!-- ============ LIST ============ -->
+  <section id="tab-list" style="display:none">
+    <div class="card">
+      <h2>対応一覧</h2>
+      <p class="hint">保存済みの申込。氏名＋メール／電話が一致する行は<span style="color:var(--danger);font-weight:700">重複候補</span>として色付けされます。</p>
+      <div class="filters">
+        <select id="fStatus"><option value="">すべてのステータス</option></select>
+        <input type="text" id="fSearch" placeholder="氏名・メール・電話で検索">
+        <button class="btn ghost sm" id="btnExport">JSON書き出し</button>
+      </div>
+      <div class="tablewrap">
+        <table id="listTable">
+          <thead><tr>
+            <th>受付</th><th>氏名</th><th>参加回</th><th>方法</th><th>金額</th>
+            <th>支払</th><th>ステータス</th><th>対応者</th><th></th>
+          </tr></thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
+      <div id="listEmpty" class="empty-state">まだ保存された申込はありません。</div>
+    </div>
+  </section>
+
+  <p class="footnote">第1段階（手入力サポート型）・ローカル版 ／ リザストへの自動送信は行いません</p>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- config ----------
+  var HANDLERS = ["スタッフ1","スタッフ2","スタッフ3","スタッフ4"];
+  var STATUSES = ["未対応","聞き取り中","確認待ち","リザスト入力待ち","リザスト入力済み","振込案内済み","未入金","入金確認済み","キャンセル","要確認"];
+  var METHODS = {
+    venue:{label:"会場参加＋アーカイブ", price:7000},
+    zoom:{label:"Zoom参加＋アーカイブ", price:4000},
+    archive:{label:"アーカイブ視聴のみ", price:2000}
+  };
+  var STORAGE_KEY = "rezast_intake_records_v1";
+  var HANDLER_KEY = "rezast_intake_handler";
+
+  // ---------- storage adapter (localStorage now; Sheets later) ----------
+  var Store = {
+    all:function(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");}catch(e){return [];} },
+    saveAll:function(a){ localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); },
+    upsert:function(rec){
+      var a=this.all(), i=-1;
+      for(var k=0;k<a.length;k++){ if(a[k].id===rec.id){i=k;break;} }
+      if(i>=0){ a[i]=rec; } else { a.push(rec); }
+      this.saveAll(a); return rec;
+    }
+  };
+
+  // ---------- helpers ----------
+  var $=function(s,r){return (r||document).querySelector(s);};
+  var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+  function yen(n){return n.toLocaleString("ja-JP")+"円";}
+  function toast(msg){var t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1600);}
+
+  var editingId=null;
+
+  // ---------- init selects ----------
+  (function(){
+    var h=$("#handler");
+    HANDLERS.forEach(function(n){var o=document.createElement("option");o.value=n;o.textContent=n;h.appendChild(o);});
+    var saved=localStorage.getItem(HANDLER_KEY); if(saved) h.value=saved;
+    h.addEventListener("change",function(){localStorage.setItem(HANDLER_KEY,h.value);});
+
+    var st=$("#status"), fst=$("#fStatus");
+    STATUSES.forEach(function(s){
+      var o=document.createElement("option");o.value=s;o.textContent=s;st.appendChild(o);
+      var o2=document.createElement("option");o2.value=s;o2.textContent=s;fst.appendChild(o2);
+    });
+  })();
+
+  // ---------- tabs ----------
+  function showTab(name){
+    $$("nav button").forEach(function(b){b.classList.toggle("active", b.dataset.tab===name);});
+    $("#tab-form").style.display = name==="form"?"":"none";
+    $("#tab-summary").style.display = name==="summary"?"":"none";
+    $("#tab-list").style.display = name==="list"?"":"none";
+    if(name==="list") renderList();
+    window.scrollTo(0,0);
+  }
+  $$("nav button").forEach(function(b){b.addEventListener("click",function(){showTab(b.dataset.tab);});});
+
+  // ---------- sessions checkbox logic ----------
+  var sAll=$("#sAll"), sOnes=$$(".sOne");
+  sAll.addEventListener("change",function(){
+    sOnes.forEach(function(c){c.checked=sAll.checked;});
+    recalc();
+  });
+  sOnes.forEach(function(c){c.addEventListener("change",function(){
+    sAll.checked = sOnes.every(function(x){return x.checked;});
+    recalc();
+  });});
+
+  function getSessions(){ return sOnes.filter(function(c){return c.checked;}).map(function(c){return c.value;}); }
+  function sessionsLabel(list){
+    if(list.length===5) return "全5回";
+    return list.map(function(n){return "第"+n+"回";}).join("・");
+  }
+
+  // ---------- amount ----------
+  function getMethod(){ var m=$("input[name=method]:checked"); return m?m.value:null; }
+  function recalc(){
+    var box=$("#amountBox"), m=getMethod(), sess=getSessions();
+    if(!m || sess.length===0){ box.textContent="参加方法と参加回を選ぶと計算されます"; return; }
+    var unit=METHODS[m].price, n=sess.length, total=unit*n;
+    box.innerHTML='<div>'+esc(METHODS[m].label)+'</div><div>'+yen(unit)+' × '+n+'回 = <span class="big">'+yen(total)+'</span></div>';
+  }
+  $$("input[name=method]").forEach(function(r){r.addEventListener("change",recalc);});
+
+  // ---------- collect / validate ----------
+  function collect(){
+    return {
+      id: editingId || ("R"+Date.now()),
+      receivedAt: editingId ? undefined : new Date().toISOString(),
+      applicant: $("#applicant").value.trim(),
+      sei: $("#sei").value.trim(),
+      mei: $("#mei").value.trim(),
+      furiSei: $("#furiSei").value.trim(),
+      furiMei: $("#furiMei").value.trim(),
+      email: $("#email").value.trim(),
+      emailConfirm: $("#emailConfirm").value.trim(),
+      phone: $("#phone").value.trim(),
+      receiptName: $("#receiptName").value.trim(),
+      sessions: getSessions(),
+      method: getMethod(),
+      payment: (function(){var p=$("input[name=payment]:checked");return p?p.value:null;})(),
+      transferDate: $("#transferDate").value,
+      note: $("#note").value.trim(),
+      status: $("#status").value,
+      handler: $("#handler").value
+    };
+  }
+
+  function clearErrors(){ $$("[data-field]").forEach(function(g){g.classList.remove("field-bad");}); }
+  function markBad(field){ var g=$('[data-field="'+field+'"]'); if(g) g.classList.add("field-bad"); }
+
+  function validate(rec){
+    clearErrors();
+    var errs=[];
+    var required=[["sei","姓"],["mei","名"],["furiSei","ふりがな(せい)"],["furiMei","ふりがな(めい)"],["email","メールアドレス"],["phone","携帯電話番号"]];
+    required.forEach(function(f){ if(!rec[f[0]]){ errs.push(f[1]+"が未入力です"); markBad(f[0]); } });
+
+    if(rec.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rec.email)){ errs.push("メールアドレスの形式が不正です"); markBad("email"); }
+    if(rec.email && rec.email!==rec.emailConfirm){ errs.push("確認用メールアドレスが一致しません"); markBad("emailConfirm"); }
+    if(rec.phone && !/^0\d{9,10}$/.test(rec.phone.replace(/[-\s]/g,""))){ errs.push("電話番号の形式が不正です"); markBad("phone"); }
+    if(rec.sessions.length===0){ errs.push("参加回が未選択です"); markBad("sessions"); }
+    if(!rec.method){ errs.push("参加方法が未選択です"); markBad("method"); }
+    if(!rec.payment){ errs.push("支払い方法が未選択です"); markBad("payment"); }
+    return errs;
+  }
+
+  // ---------- duplicate check ----------
+  function findDuplicates(rec){
+    var normPhone=(rec.phone||"").replace(/[-\s]/g,"");
+    var normEmail=(rec.email||"").toLowerCase();
+    var fullName=(rec.sei+rec.mei);
+    return Store.all().filter(function(r){
+      if(r.id===rec.id) return false;
+      var samePhone = normPhone && (r.phone||"").replace(/[-\s]/g,"")===normPhone;
+      var sameEmail = normEmail && (r.email||"").toLowerCase()===normEmail;
+      var sameName = fullName && (r.sei+r.mei)===fullName;
+      return (sameEmail || samePhone) || (sameName && (sameEmail||samePhone));
+    });
+  }
+  function dupMsg(dups){
+    return "⚠ 二重登録の可能性："+dups.map(function(d){
+      return esc(d.sei+d.mei)+"（"+esc(d.email||d.phone)+"／"+esc(d.status)+"）";
+    }).join(" ／ ");
+  }
+
+  // live duplicate hint on form
+  ["email","phone","sei","mei"].forEach(function(id){
+    $("#"+id).addEventListener("blur",function(){
+      var rec=collect(); var dups=findDuplicates(rec); var w=$("#dupWarn");
+      if(dups.length){ w.innerHTML=dupMsg(dups); w.classList.add("show"); } else { w.classList.remove("show"); }
+    });
+  });
+
+  // ---------- summary ----------
+  function amountOf(rec){
+    if(!rec.method || !rec.sessions.length) return 0;
+    return METHODS[rec.method].price * rec.sessions.length;
+  }
+  function receiptOf(rec){ return rec.receiptName || (rec.sei+" "+rec.mei); }
+
+  function buildSummary(rec){
+    var rows=[
+      ["姓", rec.sei],
+      ["名", rec.mei],
+      ["せい（ふりがな）", rec.furiSei],
+      ["めい（ふりがな）", rec.furiMei],
+      ["メールアドレス", rec.email],
+      ["携帯電話番号", rec.phone],
+      ["領収書の宛名", receiptOf(rec)],
+      ["参加回", sessionsLabel(rec.sessions)],
+      ["参加方法", rec.method?METHODS[rec.method].label:""],
+      ["合計金額", rec.method&&rec.sessions.length?yen(amountOf(rec)):""],
+      ["支払い方法", rec.payment||""],
+      ["振込予定日", rec.transferDate||""],
+      ["電話申込者", rec.applicant||""],
+      ["備考", rec.note||""]
+    ];
+    var html="";
+    rows.forEach(function(r){
+      var val=r[1]==null?"":String(r[1]);
+      var empty = val==="";
+      html+='<div class="sumrow"><div class="k">'+esc(r[0])+'</div>'+
+        '<div class="v'+(empty?" empty":"")+'">'+(empty?"（なし）":esc(val))+'</div>'+
+        (empty?'':'<button class="copybtn" data-copy="'+esc(val)+'">コピー</button>')+'</div>';
+    });
+    $("#summaryBody").innerHTML=html;
+
+    $$("#summaryBody .copybtn").forEach(function(b){
+      b.addEventListener("click",function(){
+        var txt=b.getAttribute("data-copy");
+        function done(){ b.textContent="コピー済"; b.classList.add("done"); setTimeout(function(){b.textContent="コピー";b.classList.remove("done");},1200); }
+        if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done,function(){fallback(txt);done();}); }
+        else { fallback(txt); done(); }
+      });
+    });
+
+    // checks & dup shown on summary
+    var errs=validate(rec), c=$("#sumCheck");
+    if(errs.length){ c.innerHTML="⚠ 入力もれ／エラー："+errs.map(esc).join(" ／ "); c.classList.add("show"); }
+    else { c.innerHTML="✓ 必須項目は揃っています"; c.classList.remove("dup"); c.style.background="#f0f7f2"; c.style.borderColor="#cfe8d6"; c.style.color="#1f5a34"; c.classList.add("show"); }
+    var dups=findDuplicates(rec), d=$("#sumDup");
+    if(dups.length){ d.innerHTML=dupMsg(dups); d.classList.add("show"); } else { d.classList.remove("show"); }
+  }
+  function fallback(txt){ var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(ta); }
+
+  // ---------- form actions ----------
+  $("#btnCheck").addEventListener("click",function(){
+    var rec=collect();
+    buildSummary(rec);
+    showTab("summary");
+  });
+
+  $("#btnClear").addEventListener("click",function(){
+    if(!confirm("入力内容をクリアします。よろしいですか？")) return;
+    resetForm();
+  });
+
+  function resetForm(){
+    editingId=null;
+    $("#editingNote").style.display="none";
+    ["applicant","sei","mei","furiSei","furiMei","email","emailConfirm","phone","receiptName","transferDate","note"].forEach(function(id){$("#"+id).value="";});
+    sAll.checked=false; sOnes.forEach(function(c){c.checked=false;});
+    $$("input[name=method]").forEach(function(r){r.checked=false;});
+    $$("input[name=payment]").forEach(function(r){r.checked=false;});
+    $("#status").value=STATUSES[0];
+    clearErrors(); recalc(); $("#dupWarn").classList.remove("show");
+  }
+
+  $("#btnBackForm").addEventListener("click",function(){showTab("form");});
+
+  $("#btnSave").addEventListener("click",function(){
+    var rec=collect();
+    var errs=validate(rec);
+    if(errs.length){
+      if(!confirm("入力もれ／エラーがあります：\n・"+errs.join("\n・")+"\n\nこのまま保存しますか？（後で修正できます）")){
+        showTab("form"); return;
+      }
+    }
+    // preserve receivedAt when editing
+    if(editingId){
+      var existing=Store.all().filter(function(r){return r.id===editingId;})[0];
+      rec.receivedAt = existing ? existing.receivedAt : new Date().toISOString();
+    } else {
+      rec.receivedAt = rec.receivedAt || new Date().toISOString();
+    }
+    rec.amount = amountOf(rec);
+    rec.receiptResolved = receiptOf(rec);
+    Store.upsert(rec);
+    toast(editingId?"更新しました":"保存しました");
+    resetForm();
+    showTab("list");
+  });
+
+  // ---------- list ----------
+  function renderList(){
+    var all=Store.all().slice().sort(function(a,b){return (b.receivedAt||"").localeCompare(a.receivedAt||"");});
+    $("#listCount").textContent=all.length;
+    var fS=$("#fStatus").value, q=$("#fSearch").value.trim().toLowerCase();
+
+    // duplicate id set
+    var dupIds={};
+    all.forEach(function(r){ if(findDuplicates(r).length) dupIds[r.id]=true; });
+
+    var rows=all.filter(function(r){
+      if(fS && r.status!==fS) return false;
+      if(q){
+        var hay=(r.sei+r.mei+r.furiSei+r.furiMei+" "+(r.email||"")+" "+(r.phone||"")).toLowerCase();
+        if(hay.indexOf(q)<0) return false;
+      }
+      return true;
+    });
+
+    var tb=$("#listBody"); tb.innerHTML="";
+    $("#listEmpty").style.display = rows.length?"none":"block";
+
+    rows.forEach(function(r){
+      var tr=document.createElement("tr");
+      if(dupIds[r.id]) tr.className="dup-row";
+      var d=r.receivedAt?new Date(r.receivedAt):null;
+      var dstr=d?((d.getMonth()+1)+"/"+d.getDate()):"";
+      tr.innerHTML=
+        "<td>"+esc(dstr)+"</td>"+
+        "<td>"+esc(r.sei+r.mei)+(dupIds[r.id]?' <span class="badge" style="background:#fdecec;color:#c0392b">重複?</span>':"")+"</td>"+
+        "<td>"+esc(sessionsLabel(r.sessions||[]))+"</td>"+
+        "<td>"+esc(r.method?METHODS[r.method].label.replace("＋アーカイブ",""):"")+"</td>"+
+        "<td>"+(r.amount?yen(r.amount):"")+"</td>"+
+        "<td>"+esc(r.payment||"")+"</td>"+
+        "<td><span class='pill'>"+esc(r.status||"")+"</span></td>"+
+        "<td>"+esc(r.handler||"")+"</td>"+
+        "<td><button class='btn ghost sm' data-edit='"+r.id+"'>編集</button> "+
+            "<button class='btn ghost sm' data-copyrec='"+r.id+"'>複製</button></td>";
+      tb.appendChild(tr);
+    });
+
+    $$("[data-edit]").forEach(function(b){b.addEventListener("click",function(){loadForEdit(b.getAttribute("data-edit"));});});
+    $$("[data-copyrec]").forEach(function(b){b.addEventListener("click",function(){duplicateRec(b.getAttribute("data-copyrec"));});});
+  }
+  $("#fStatus").addEventListener("change",renderList);
+  $("#fSearch").addEventListener("input",renderList);
+
+  function loadForEdit(id){
+    var r=Store.all().filter(function(x){return x.id===id;})[0]; if(!r) return;
+    editingId=id;
+    $("#applicant").value=r.applicant||"";
+    $("#sei").value=r.sei||""; $("#mei").value=r.mei||"";
+    $("#furiSei").value=r.furiSei||""; $("#furiMei").value=r.furiMei||"";
+    $("#email").value=r.email||""; $("#emailConfirm").value=r.email||"";
+    $("#phone").value=r.phone||""; $("#receiptName").value=r.receiptName||"";
+    sOnes.forEach(function(c){c.checked=(r.sessions||[]).indexOf(c.value)>=0;});
+    sAll.checked=sOnes.every(function(x){return x.checked;});
+    $$("input[name=method]").forEach(function(x){x.checked=(x.value===r.method);});
+    $$("input[name=payment]").forEach(function(x){x.checked=(x.value===r.payment);});
+    $("#transferDate").value=r.transferDate||"";
+    $("#note").value=r.note||"";
+    $("#status").value=r.status||STATUSES[0];
+    if(r.handler) $("#handler").value=r.handler;
+    $("#editingNote").style.display="inline";
+    recalc(); clearErrors();
+    showTab("form");
+  }
+
+  function duplicateRec(id){
+    var r=Store.all().filter(function(x){return x.id===id;})[0]; if(!r) return;
+    editingId=null;
+    loadForEdit(id);            // fills fields
+    editingId=null;             // but treat as new
+    $("#editingNote").style.display="none";
+    toast("複製しました（新規として保存されます）");
+  }
+
+  $("#btnExport").addEventListener("click",function(){
+    var data=JSON.stringify(Store.all(),null,2);
+    var blob=new Blob([data],{type:"application/json"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="rezast_intake_"+new Date().toISOString().slice(0,10)+".json";
+    a.click();
+    toast("JSONを書き出しました");
+  });
+
+  // init
+  $("#status").value=STATUSES[0];
+  recalc();
+})();
+</script>
+</body>
+</html>

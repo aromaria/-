@@ -1,0 +1,17 @@
+# APIトークン・秘密情報は絶対にコミットしない
+.env
+.env.*
+*.token
+*.secret
+secrets.*
+config.local.*
+credentials*.json
+service-account*.json
+*.pem
+*.key
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
