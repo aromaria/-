@@ -47,6 +47,9 @@
   .chk{display:flex;align-items:center;gap:6px;background:var(--field);border-radius:10px;padding:9px 12px;cursor:pointer;font-size:15px;user-select:none}
   .chk input{width:18px;height:18px}
   .chk.all{background:#fde8ea;font-weight:700}
+  .checks.vlist{flex-direction:column;align-items:stretch}
+  .checks.vlist .chk{width:100%}
+  .chk.on{background:#e7f4ec}
   .radios{display:flex;flex-direction:column;gap:8px}
   .radio{display:flex;align-items:center;gap:10px;background:var(--field);border-radius:10px;padding:11px 12px;cursor:pointer}
   .radio input{width:18px;height:18px}
@@ -224,6 +227,20 @@
       </div>
     </div>
 
+    <div class="card">
+      <h2>確認チェック（言い忘れ防止）</h2>
+      <p class="hint">電話中に確認・案内できた項目にチェック。未チェックがあると、転記画面と保存時にお知らせします。</p>
+      <div class="checks vlist" id="checklist">
+        <label class="chk"><input type="checkbox" class="ck" value="お名前・ふりがなを復唱確認した">お名前・ふりがなを復唱確認した</label>
+        <label class="chk"><input type="checkbox" class="ck" value="メールアドレスを読み上げ確認した">メールアドレスを読み上げ確認した</label>
+        <label class="chk"><input type="checkbox" class="ck" value="携帯電話番号を確認した">携帯電話番号を確認した</label>
+        <label class="chk"><input type="checkbox" class="ck" value="参加回・参加方法を確認した">参加回・参加方法を確認した</label>
+        <label class="chk"><input type="checkbox" class="ck" value="支払い方法・金額を案内した">支払い方法・金額を案内した</label>
+        <label class="chk"><input type="checkbox" class="ck" value="振込先を伝えた（振込の場合）">振込先を伝えた（振込の場合）</label>
+        <label class="chk"><input type="checkbox" class="ck" value="入金予定日を聞いた">入金予定日を聞いた</label>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn primary" id="btnCheck">入力チェック → 転記画面へ</button>
       <button class="btn ghost" id="btnClear">クリア</button>
@@ -235,6 +252,7 @@
   <section id="tab-summary" style="display:none">
     <div class="safety">📋 下記をリザストの申込画面へ<strong>手入力</strong>してください。各項目の「コピー」でクリップボードに取れます。</div>
     <div id="sumCheck" class="warnbar"></div>
+    <div id="sumChecklist" class="warnbar"></div>
     <div id="sumDup" class="warnbar dup"></div>
     <div class="card">
       <h2>リザスト転記用まとめ</h2>
@@ -369,6 +387,12 @@
   // ---------- method ----------
   function getMethod(){ var m=$("input[name=method]:checked"); return m?m.value:null; }
 
+  // ---------- confirmation checklist ----------
+  function getChecks(){ var o={}; $$("#checklist .ck").forEach(function(c){ o[c.value]=c.checked; c.parentNode.classList.toggle("on",c.checked); }); return o; }
+  function getUnchecked(){ return $$("#checklist .ck").filter(function(c){return !c.checked;}).map(function(c){return c.value;}); }
+  function setChecks(obj){ obj=obj||{}; $$("#checklist .ck").forEach(function(c){ c.checked=!!obj[c.value]; c.parentNode.classList.toggle("on",c.checked); }); }
+  $$("#checklist .ck").forEach(function(c){ c.addEventListener("change",function(){ c.parentNode.classList.toggle("on",c.checked); }); });
+
   // ---------- collect / validate ----------
   function collect(){
     return {
@@ -388,6 +412,7 @@
       payment: (function(){var p=$("input[name=payment]:checked");return p?p.value:null;})(),
       transferDate: $("#transferDate").value,
       note: $("#note").value.trim(),
+      checks: getChecks(),
       status: $("#status").value,
       handler: $("#handler").value
     };
@@ -482,6 +507,10 @@
     else { c.innerHTML="✓ 必須項目は揃っています"; c.classList.remove("dup"); c.style.background="#f0f7f2"; c.style.borderColor="#cfe8d6"; c.style.color="#1f5a34"; c.classList.add("show"); }
     var dups=findDuplicates(rec), d=$("#sumDup");
     if(dups.length){ d.innerHTML=dupMsg(dups); d.classList.add("show"); } else { d.classList.remove("show"); }
+
+    var unchecked=getUnchecked(), cl=$("#sumChecklist");
+    if(unchecked.length){ cl.innerHTML="⚠ 未確認の項目："+unchecked.map(esc).join(" ／ "); cl.className="warnbar dup show"; }
+    else { cl.textContent="✓ 確認チェックはすべて完了しています"; cl.className="warnbar show"; cl.style.background="#f0f7f2"; cl.style.borderColor="#cfe8d6"; cl.style.color="#1f5a34"; }
   }
   function fallback(txt){ var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(ta); }
 
@@ -504,6 +533,7 @@
     sAll.checked=false; sOnes.forEach(function(c){c.checked=false;});
     $$("input[name=method]").forEach(function(r){r.checked=false;});
     $$("input[name=payment]").forEach(function(r){r.checked=false;});
+    setChecks({});
     $("#status").value=STATUSES[0];
     clearErrors(); $("#dupWarn").classList.remove("show");
   }
@@ -513,10 +543,13 @@
   $("#btnSave").addEventListener("click",function(){
     var rec=collect();
     var errs=validate(rec);
-    if(errs.length){
-      if(!confirm("入力もれ／エラーがあります：\n・"+errs.join("\n・")+"\n\nこのまま保存しますか？（後で修正できます）")){
-        showTab("form"); return;
-      }
+    var unchecked=getUnchecked();
+    if(errs.length || unchecked.length){
+      var msg="";
+      if(errs.length) msg+="【入力もれ／エラー】\n・"+errs.join("\n・")+"\n\n";
+      if(unchecked.length) msg+="【未確認の項目】\n・"+unchecked.join("\n・")+"\n\n";
+      msg+="このまま保存しますか？（後で修正できます）";
+      if(!confirm(msg)){ showTab("form"); return; }
     }
     // preserve receivedAt when editing
     if(editingId){
@@ -661,6 +694,7 @@
     $$("input[name=payment]").forEach(function(x){x.checked=(x.value===r.payment);});
     $("#transferDate").value=r.transferDate||"";
     $("#note").value=r.note||"";
+    setChecks(r.checks);
     $("#status").value=r.status||STATUSES[0];
     if(r.handler) $("#handler").value=r.handler;
     $("#editingNote").style.display="inline";
