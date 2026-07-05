@@ -250,6 +250,21 @@
   <!-- ============ LIST ============ -->
   <section id="tab-list" style="display:none">
     <div class="card">
+      <h2>クラウド保存（Google Drive 共有）</h2>
+      <p class="hint">「送信先URL」を設定すると、保存内容が全員共有のスプレッドシート（Driveフォルダ内）に保存されます。未設定の場合はこの端末内だけに保存されます。設定方法は apps_script/SETUP.md をご覧ください。</p>
+      <div class="group">
+        <label class="sub">送信先URL（Apps Script Web App の /exec URL）</label>
+        <input type="text" id="cloudUrl" placeholder="https://script.google.com/macros/s/……/exec" autocapitalize="off">
+      </div>
+      <div class="actions">
+        <button class="btn blue sm" id="btnCloudSave">URLを保存</button>
+        <button class="btn ghost sm" id="btnCloudPush">クラウドへ全件送信</button>
+        <button class="btn ghost sm" id="btnCloudPull">クラウドから読込</button>
+      </div>
+      <div id="cloudStatus" class="warnbar" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
       <h2>対応一覧</h2>
       <p class="hint">保存済みの申込。氏名＋メール／電話が一致する行は<span style="color:var(--danger);font-weight:700">重複候補</span>として色付けされます。</p>
       <div class="filters">
@@ -512,6 +527,7 @@
     }
     rec.receiptResolved = receiptOf(rec);
     Store.upsert(rec);
+    cloudPush(rec);
     toast(editingId?"更新しました":"保存しました");
     resetForm();
     showTab("list");
@@ -567,11 +583,67 @@
     return list.map(function(v){ return '<option'+(v===sel?' selected':'')+'>'+esc(v)+'</option>'; }).join('');
   }
   function updateField(id, key, val){
-    var all=Store.all();
-    for(var i=0;i<all.length;i++){ if(all[i].id===id){ all[i][key]=val; Store.saveAll(all); break; } }
+    var all=Store.all(), changed=null;
+    for(var i=0;i<all.length;i++){ if(all[i].id===id){ all[i][key]=val; changed=all[i]; break; } }
+    Store.saveAll(all);
+    if(changed) cloudPush(changed);
     toast((key==="status"?"ステータス":"対応者")+"を更新しました");
     renderList();
   }
+
+  // ---------- cloud (Google Apps Script; optional) ----------
+  var CLOUD_URL="rezast_intake_cloud_url";
+  function cloudUrl(){ return (localStorage.getItem(CLOUD_URL)||"").trim(); }
+  function cloudMsg(t, kind){
+    var e=$("#cloudStatus"); e.className="warnbar show"+(kind==="dup"?" dup":"");
+    if(kind==="ok"){ e.style.background="#f0f7f2"; e.style.borderColor="#cfe8d6"; e.style.color="#1f5a34"; }
+    else { e.style.background=""; e.style.borderColor=""; e.style.color=""; }
+    e.textContent=t;
+  }
+  function cloudPush(rec){
+    var u=cloudUrl(); if(!u) return;
+    try{
+      fetch(u,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify({action:"upsert",record:rec})});
+    }catch(e){}
+  }
+  function cloudPull(cb){
+    var u=cloudUrl(); if(!u){ cb(null); return; }
+    var name="__cloudCb"+Date.now();
+    var s=document.createElement("script");
+    var to=setTimeout(function(){ cleanup(); cb(null); },15000);
+    function cleanup(){ try{delete window[name];}catch(e){window[name]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
+    window[name]=function(data){ cleanup(); cb(data); };
+    s.onerror=function(){ cleanup(); cb(null); };
+    s.src=u+(u.indexOf("?")<0?"?":"&")+"action=list&callback="+name+"&_="+Date.now();
+    document.body.appendChild(s);
+  }
+  (function(){
+    var el=$("#cloudUrl"); if(!el) return;
+    el.value=cloudUrl();
+    $("#btnCloudSave").addEventListener("click",function(){
+      var u=el.value.trim(); localStorage.setItem(CLOUD_URL,u);
+      cloudMsg(u?"送信先URLを保存しました。以後、保存内容がクラウドにも送信されます。":"送信先URLを空にしました（クラウド保存オフ）", u?"ok":"dup");
+    });
+    $("#btnCloudPush").addEventListener("click",function(){
+      if(!cloudUrl()){ cloudMsg("先に送信先URLを保存してください。","dup"); return; }
+      var all=Store.all(); all.forEach(function(r){ cloudPush(r); });
+      cloudMsg(all.length+"件をクラウドへ送信しました（反映まで数秒かかることがあります）。","ok");
+    });
+    $("#btnCloudPull").addEventListener("click",function(){
+      if(!cloudUrl()){ cloudMsg("先に送信先URLを保存してください。","dup"); return; }
+      cloudMsg("クラウドから読込中…");
+      cloudPull(function(data){
+        if(!data||!data.ok){ cloudMsg("読込に失敗しました。URLと公開設定（アクセス権：全員）をご確認ください。","dup"); return; }
+        var map={}; Store.all().forEach(function(r){ map[r.id]=r; });
+        (data.records||[]).forEach(function(r){ if(r&&r.id) map[r.id]=r; });
+        var merged=Object.keys(map).map(function(k){ return map[k]; });
+        Store.saveAll(merged);
+        cloudMsg("クラウドから "+((data.records||[]).length)+" 件を読み込み、一覧に反映しました。","ok");
+        renderList();
+      });
+    });
+  })();
   $("#fStatus").addEventListener("change",renderList);
   $("#fSearch").addEventListener("input",renderList);
 
