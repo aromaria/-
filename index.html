@@ -665,6 +665,18 @@
   }
   (function(){
     var el=$("#cloudUrl"); if(!el) return;
+    // 初回セットアップリンク（… /#setup=<送信先URL> ）を開くと、URLを自動保存して接続完了にする
+    try{
+      var m=(location.hash||location.search||"").match(/setup=([^&]+)/);
+      if(m){
+        var su=decodeURIComponent(m[1]);
+        if(/^https:\/\/script\.google\.com\//.test(su)){
+          localStorage.setItem(CLOUD_URL, su);
+          setTimeout(function(){ toast("クラウドに接続しました"); },300);
+        }
+        history.replaceState(null, "", location.pathname);
+      }
+    }catch(e){}
     if(!(localStorage.getItem(CLOUD_URL)||"").trim() && DEFAULT_CLOUD_URL){ localStorage.setItem(CLOUD_URL, DEFAULT_CLOUD_URL); }
     el.value=cloudUrl();
     $("#btnCloudSave").addEventListener("click",function(){
