@@ -638,9 +638,18 @@
   }
   function cloudPush(rec){
     var u=cloudUrl(); if(!u) return;
+    // (1) POST（https で開いた場合に有効）
     try{
       fetch(u,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
         body:JSON.stringify({action:"upsert",record:rec})});
+    }catch(e){}
+    // (2) GET(scriptタグ)でも送る（ローカルファイル file:// では POST が弾かれるため、読込と同じ通る方式で確実に保存）
+    try{
+      var s=document.createElement("script");
+      s.src=u+(u.indexOf("?")<0?"?":"&")+"action=save&record="+encodeURIComponent(JSON.stringify(rec))+"&_="+Date.now();
+      s.onload=function(){ if(s.parentNode) s.parentNode.removeChild(s); };
+      s.onerror=function(){ if(s.parentNode) s.parentNode.removeChild(s); };
+      document.body.appendChild(s);
     }catch(e){}
   }
   function cloudPull(cb){

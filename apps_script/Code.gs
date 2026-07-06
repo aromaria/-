@@ -84,7 +84,26 @@ function rowToRec_(row) {
            sessions: [], method: null };
 }
 
-// ソフトからの保存（POST）
+// 1件を追加または更新（id単位）
+function upsertRecord_(rec) {
+  var sh = getSheet_();
+  var row = recToRow_(rec);
+  var last = sh.getLastRow();
+  var found = -1;
+  if (last >= 2) {
+    var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+    for (var i = 0; i < ids.length; i++) {
+      if (String(ids[i][0]) === String(rec.id)) { found = i + 2; break; }
+    }
+  }
+  if (found > 0) {
+    sh.getRange(found, 1, 1, row.length).setValues([row]);
+  } else {
+    sh.appendRow(row);
+  }
+}
+
+// ソフトからの保存（POST。httpsで開いた場合に使用）
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
@@ -92,21 +111,7 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     var rec = body.record;
     if (!rec || !rec.id) return json_({ ok: false, error: 'no record' });
-    var sh = getSheet_();
-    var row = recToRow_(rec);
-    var last = sh.getLastRow();
-    var found = -1;
-    if (last >= 2) {
-      var ids = sh.getRange(2, 1, last - 1, 1).getValues();
-      for (var i = 0; i < ids.length; i++) {
-        if (String(ids[i][0]) === String(rec.id)) { found = i + 2; break; }
-      }
-    }
-    if (found > 0) {
-      sh.getRange(found, 1, 1, row.length).setValues([row]);
-    } else {
-      sh.appendRow(row);
-    }
+    upsertRecord_(rec);
     return json_({ ok: true });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
@@ -115,8 +120,24 @@ function doPost(e) {
   }
 }
 
-// ソフトへの一覧返却（GET、JSONP対応）
+// GET：action=save の場合は保存、それ以外は一覧返却（JSONP対応）
+// ローカルファイル(file://)からはPOSTが弾かれるため、保存もGETで受け取れるようにする
 function doGet(e) {
+  var action = e && e.parameter && e.parameter.action;
+  if (action === 'save') {
+    var lock = LockService.getScriptLock();
+    lock.waitLock(30000);
+    try {
+      var rec = JSON.parse(e.parameter.record);
+      if (!rec || !rec.id) return reply_(e, { ok: false, error: 'no record' });
+      upsertRecord_(rec);
+      return reply_(e, { ok: true, saved: rec.id });
+    } catch (err) {
+      return reply_(e, { ok: false, error: String(err) });
+    } finally {
+      lock.releaseLock();
+    }
+  }
   var records = [];
   try {
     var sh = getSheet_();
