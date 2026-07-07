@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>事務局アシスタント 連携ガイド</title>
+<style>
+  :root{
+    --navy:#102a54; --ink:#1c232e; --muted:#5b6675; --line:#e2e7ef;
+    --paper:#eef1f6; --card:#ffffff; --acc:#2563eb; --accd:#1b4fd0; --accl:#e7f0fe;
+    --nb:#0e7c86; --nbl:#e2f2f3; --cl:#2563eb; --cll:#e7f0fe;
+    --ob:#6d3bd1; --obl:#efe9fb; --dr:#128a4c; --drl:#e2f3ea; --warm:#b45309; --warml:#fdf1e3;
+    --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
+    --fs-h:clamp(22px,4.4vw,34px); --fs-sec:clamp(17px,2.6vw,22px); --fs-body:clamp(14px,2vw,16px);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --navy:#0c1c38; --ink:#e6ebf3; --muted:#9aa6b6; --line:#28313f;
+      --paper:#0e131b; --card:#161d28; --accl:#16305c; --nbl:#12312f; --cll:#16305c;
+      --obl:#241a3d; --drl:#123222; --warml:#33240f; }
+  }
+  :root[data-theme="dark"]{ --navy:#0c1c38; --ink:#e6ebf3; --muted:#9aa6b6; --line:#28313f;
+    --paper:#0e131b; --card:#161d28; --accl:#16305c; --nbl:#12312f; --cll:#16305c;
+    --obl:#241a3d; --drl:#123222; --warml:#33240f; }
+  :root[data-theme="light"]{ --navy:#102a54; --ink:#1c232e; --muted:#5b6675; --line:#e2e7ef;
+    --paper:#eef1f6; --card:#ffffff; --accl:#e7f0fe; --nbl:#e2f2f3; --cll:#e7f0fe;
+    --obl:#efe9fb; --drl:#e2f3ea; --warml:#fdf1e3; }
+
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);
+    line-height:1.7;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+  .wrap{max-width:900px;margin:0 auto;padding:0 16px 72px}
+
+  header{background:var(--navy);color:#fff;border-radius:0 0 22px 22px;
+    padding:clamp(26px,5vw,44px) clamp(18px,4vw,40px);margin-bottom:26px}
+  header .eye{color:#9cc0ff;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+  header h1{margin:0 0 8px;font-size:var(--fs-h);line-height:1.2;text-wrap:balance}
+  header p{margin:0;color:#cfdef5;font-size:var(--fs-body)}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{background:rgba(255,255,255,.12);color:#eaf1fd;border:1px solid rgba(255,255,255,.18);
+    border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700}
+
+  section{margin:30px 0}
+  .sec-h{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
+  .sec-h h2{font-size:var(--fs-sec);margin:0;text-wrap:balance}
+  .sec-h .n{font-size:12px;font-weight:800;color:var(--acc);letter-spacing:.08em}
+  .sec-sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+
+  .grid{display:grid;gap:14px}
+  .roles{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+  .role .tag{display:inline-block;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .role h3{margin:0 0 4px;font-size:15.5px}
+  .role p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+  .t-nb{background:var(--nbl);color:var(--nb)} .t-cl{background:var(--cll);color:var(--accd)}
+  .t-ob{background:var(--obl);color:var(--ob)} .t-dr{background:var(--drl);color:var(--dr)}
+
+  .do{border-left:4px solid var(--acc)}
+  .do .cat{font-size:12.5px;font-weight:800;color:var(--muted);letter-spacing:.04em;margin-bottom:10px}
+  .prompt{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
+  .prompt:first-of-type{border-top:none}
+  .prompt code{flex:1;font-family:var(--font);font-size:13.5px;color:var(--ink);line-height:1.55}
+  .copy{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--acc);
+    border-radius:8px;font-size:12px;font-weight:800;padding:5px 10px;cursor:pointer;white-space:nowrap}
+  .copy:hover{background:var(--accl)} .copy:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .copy.done{color:var(--dr);border-color:var(--dr)}
+
+  ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:10px}
+  ol.steps li{counter-increment:s;position:relative;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:13px 16px 13px 52px;font-size:13.8px}
+  ol.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:26px;height:26px;
+    background:var(--accl);color:var(--accd);border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px}
+  ol.steps b{color:var(--ink)}
+
+  .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:440px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  th{background:var(--paper);font-size:12.5px;color:var(--muted);font-weight:800}
+  tr:last-child td{border-bottom:none}
+
+  .tips{display:grid;gap:10px}
+  .tip{background:var(--warml);border:1px solid var(--line);border-radius:12px;padding:12px 15px;font-size:13.5px}
+  .tip b{color:var(--ink)}
+  .tip code{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:36px}
+  .toggle{position:fixed;top:14px;right:14px;background:var(--card);border:1px solid var(--line);
+    color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;z-index:10}
+</style>
+</head>
+<body>
+<button class="toggle" id="tg" aria-label="表示切替">◐ 表示</button>
+<header>
+  <div class="wrap" style="padding:0">
+    <div class="eye">超古代PJ事務局 ／ 2026-07 連携</div>
+    <h1>事務局アシスタント 連携ガイド</h1>
+    <p>NotebookLM・Claude・Obsidian・Google Drive をつないだ環境の「できること」と「手順の記録」。</p>
+    <div class="pills">
+      <span class="pill">📚 NotebookLM（21冊）</span>
+      <span class="pill">🛠 Claude</span>
+      <span class="pill">📗 Obsidian（自動同期）</span>
+      <span class="pill">🗄 Google Drive</span>
+      <span class="pill">✉️ Gmail ／ 📅 カレンダー</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="sec-h"><span class="n">01</span><h2>役割分担（迷ったらこれ）</h2></div>
+    <p class="sec-sub">「自分の資料→NotebookLM／作る・直す→Claude／Google関係→Drive・Gmail／ためる→Obsidian」</p>
+    <div class="grid roles">
+      <div class="card role"><span class="tag t-nb">📚 資料の司書</span><h3>NotebookLM</h3><p>自分の資料だけに忠実に回答・要約・出典つき。ウソをつかない。</p></div>
+      <div class="card role"><span class="tag t-cl">🛠 職人・司令塔</span><h3>Claude</h3><p>作る・直す・整理する。Drive/Gmail/NotebookLMも呼べる。</p></div>
+      <div class="card role"><span class="tag t-ob">📗 本棚</span><h3>Obsidian</h3><p>ためる・見返す。GitHubと自動同期（何もしなくても最新）。</p></div>
+      <div class="card role"><span class="tag t-dr">🗄 書庫</span><h3>Google Drive</h3><p>ファイルの保存・呼び出し。Chat側で保存も読み込みも可能。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">02</span><h2>できることリスト</h2></div>
+    <p class="sec-sub">Claude Desktop の <b>Chat側</b> に貼るだけ。各行の「コピー」を押して使ってください。</p>
+    <div class="grid" id="doList"></div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">03</span><h2>セットアップの記録（振り返り）</h2></div>
+    <p class="sec-sub">再設定やトラブル時の参照用。普段は読まなくてOK。</p>
+    <ol class="steps">
+      <li><b>NotebookLM をClaudeにつなぐ</b>：ターミナルで <code>uv tool install notebooklm-mcp-cli</code> →（OpenSSL等が要る場合 <code>brew install openssl@3 pkg-config rust</code>）→ <code>nlm login</code>（Googleログイン）。</li>
+      <li><b>Claude Desktop に登録</b>：<code>~/Library/Application Support/Claude/claude_desktop_config.json</code> に notebooklm を追記 → Claude Desktop を再起動 → コネクタに「notebooklm」が✓。</li>
+      <li><b>Google Drive など</b>：Claude Desktop の「コネクタ」で接続済み（Chat側で使う）。</li>
+      <li><b>Obsidian 自動同期</b>：<code>git clone https://github.com/aromaria/-.git ~/超古代PJ-Vault</code> → そのフォルダをVaultで開く → コミュニティプラグイン「Git（Vinzent）」→ Auto pull=10／Pull on startup=ON／Push on commit-and-sync=OFF。</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">04</span><h2>使い分け早見表</h2></div>
+    <div class="tbl"><table>
+      <thead><tr><th>やりたいこと</th><th>使うもの</th></tr></thead>
+      <tbody>
+        <tr><td>資料の中身を正確に知る・要約</td><td>NotebookLM（Chat側）</td></tr>
+        <tr><td>文章を作る・直す／ソフト改修</td><td>Claude</td></tr>
+        <tr><td>ファイルの保存・呼び出し</td><td>Google Drive（Chat側）</td></tr>
+        <tr><td>メール整理・下書き／予定登録</td><td>Gmail・カレンダー（Chat側）</td></tr>
+        <tr><td>メモをためる・見返す</td><td>Obsidian（超古代PJ-Vault）</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">05</span><h2>困ったとき</h2></div>
+    <div class="tips">
+      <div class="tip"><b>Drive/NotebookLMが使えない</b> → 左上を <b>💬 Chat</b> に切り替える（<code>&lt;/&gt; Code</code>側では使えません）。</div>
+      <div class="tip"><b>Obsidianで違う保管庫が開いた</b> → 左下の <b>⇅</b> から <b>超古代PJ-Vault</b> に切り替える。</div>
+      <div class="tip"><b>最新メモが来ない</b> → Obsidianを開き直す（起動時に自動プル）。または画面右下の同期マークから更新。</div>
+      <div class="tip"><b>NotebookLMの接続が切れた</b> → ターミナルで <code>nlm login</code> を実行し直す。</div>
+    </div>
+  </section>
+
+  <footer>超古代PJ事務局 連携ガイド ／ 更新は Claude が随時反映（Obsidianに自動同期）</footer>
+</div>
+
+<script>
+  var DO=[
+    ["📚 資料に聞く（NotebookLM）",[
+      "notebooklm を使って、電話対応ソフトの「入金確認の手順」を教えて",
+      "notebooklm の資料をもとに、新人スタッフ向けに要点を5つにまとめて",
+      "超古代PJの資料から、料金プランの違いを表にして"]],
+    ["🗄 Googleドライブ（保存・呼び出し）",[
+      "Google ドライブの「超古代PJ事務局」フォルダのファイル一覧を見せて",
+      "Google ドライブの「超古代・資料」に、今日の申込メモをテキストで保存して",
+      "ドライブの〇〇という資料を読んで、3行に要約して"]],
+    ["✉️ Gmail・📅 カレンダー",[
+      "Gmailで、リザストの申込に関する未読メールを探して一覧にして",
+      "申込者への「振込先ご案内」メールの下書きを作って（丁寧な敬語で）",
+      "来週の講座日程をカレンダーに登録して"]],
+    ["🔗 組み合わせワザ",[
+      "Gmailの申込メールを読んで、電話対応ソフトの入力項目の形に整理して",
+      "ドライブの申込リストを読んで、notebooklmの手順と照らして抜け漏れを指摘して",
+      "今日の申込3件を、リザスト転記用のまとめ表にして"]],
+    ["🛠 ソフト・資料の改良（Code側で）",[
+      "電話対応ソフトに「〇〇」の項目を足したい",
+      "スタッフガイドに「よくある質問」を追記して"]]
+  ];
+  var host=document.getElementById('doList');
+  DO.forEach(function(g){
+    var card=document.createElement('div');card.className='card do';
+    var h=document.createElement('div');h.className='cat';h.textContent=g[0];card.appendChild(h);
+    g[1].forEach(function(t){
+      var row=document.createElement('div');row.className='prompt';
+      var c=document.createElement('code');c.textContent=t;
+      var b=document.createElement('button');b.className='copy';b.type='button';b.textContent='コピー';
+      b.addEventListener('click',function(){
+        var done=function(){b.textContent='✓ コピー済';b.classList.add('done');setTimeout(function(){b.textContent='コピー';b.classList.remove('done');},1800);};
+        if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fb(t,done);});}else{fb(t,done);}
+      });
+      row.appendChild(c);row.appendChild(b);card.appendChild(row);
+    });
+    host.appendChild(card);
+  });
+  function fb(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb();}catch(e){}ta.remove();}
+
+  var tg=document.getElementById('tg');
+  tg.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var next=cur==='dark'?'light':(cur==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));
+    document.documentElement.setAttribute('data-theme',next);
+  });
+</script>
+</body>
+</html>
