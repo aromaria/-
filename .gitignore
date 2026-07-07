@@ -17,3 +17,6 @@ Thumbs.db
 node_modules/
 
 out/
+
+# Obsidianのローカル設定（同期不要）
+.obsidian/
