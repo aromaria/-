@@ -28,6 +28,7 @@ file:// はPOSTが弾かれるため **GETでも保存**する二重経路。JSO
 
 ## 未解決メモ
 - シートの人間可読列で携帯番号の先頭0が落ちる（JSON列は正しい）。実害小・保留
+- 保留/待機案件は `obsidian-vault/80_保留・待機案件.md` を参照（Gemini CLI連携・NotebookLM公式API待ち 等）
 
 ## 連携（トークン節約運用）
 - 知識の保管 = `obsidian-vault/`（小さいmdに分割。人もClaudeもここを見る）
