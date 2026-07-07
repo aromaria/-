@@ -33,3 +33,10 @@ file:// はPOSTが弾かれるため **GETでも保存**する二重経路。JSO
 - 知識の保管 = `obsidian-vault/`（小さいmdに分割。人もClaudeもここを見る）
 - NotebookLMへの投入資料 = `notebooklm/` の1ファイルを手動アップロード（NotebookLMは公式CLI/APIなし）
 - 運用手順は `連携ガイド.md`
+
+## 他業務への横展開（連携キット生成）
+- 新しい業務にも同じ「Claude＋Obsidian＋NotebookLM」の仕組みを作れる
+- ツール = `tools/連携キット生成.py`（使い方は `tools/連携キットの使い方.md`）
+- 依頼例:「新しい業務『◯◯』の連携キットを作って。内容は△△、関係者は…、要点は…」
+- Claudeが実行: `python3 tools/連携キット生成.py --name "業務名" --desc "..." --members "..." --facts "..." --url "..."`
+  → ZIP(Obsidian用) と PDF(NotebookLM用) を生成して渡す（reportlab未導入ならpip install reportlab）

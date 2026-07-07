@@ -15,3 +15,5 @@ service-account*.json
 Thumbs.db
 *.log
 node_modules/
+
+out/
