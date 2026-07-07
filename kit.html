@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>連携キット生成ページ（Claude＋Obsidian＋NotebookLM）</title>
+<style>
+  :root{
+    --ink:#1d2430; --muted:#5a6474; --line:#e2e7ef; --acc:#2563eb; --accd:#1b4fd0;
+    --accl:#e8f0fe; --ok:#128a4c; --okl:#e4f4ea; --paper:#f5f7fa; --card:#fff; --navy:#102a54;
+    --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.65;-webkit-text-size-adjust:100%}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 64px}
+  header{background:var(--navy);color:#fff;border-radius:16px;padding:24px 22px;margin-bottom:22px}
+  header h1{margin:0 0 6px;font-size:clamp(20px,4.6vw,28px);line-height:1.25}
+  header p{margin:0;color:#cfdef5;font-size:clamp(13px,2.6vw,15px)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}
+  label{display:block;font-weight:700;margin:14px 0 6px;font-size:15px}
+  label:first-child{margin-top:0}
+  .hint{font-weight:400;color:var(--muted);font-size:13px}
+  input,textarea{width:100%;font-family:inherit;font-size:16px;color:var(--ink);
+    border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff}
+  input:focus,textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--accl)}
+  textarea{min-height:96px;resize:vertical}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+  button{font-family:inherit;font-size:15px;font-weight:700;border:none;border-radius:10px;
+    padding:13px 18px;cursor:pointer;flex:1 1 220px}
+  .primary{background:var(--acc);color:#fff}
+  .primary:hover{background:var(--accd)}
+  .ghost{background:var(--accl);color:var(--accd)}
+  .ghost:hover{background:#dbe7fd}
+  .step{display:flex;gap:12px;margin:12px 0}
+  .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accl);color:var(--accd);
+    font-weight:800;font-size:14px;display:grid;place-items:center}
+  .step div{font-size:14px}
+  h2{font-size:17px;margin:0 0 10px}
+  .note{background:var(--okl);border:1px solid #bfe6cd;border-radius:10px;padding:12px 14px;font-size:13.5px;color:#0c5c34}
+  .warn{background:#fdf1e3;border:1px solid #f0d7ac;border-radius:10px;padding:12px 14px;font-size:13.5px;color:#8a5300;margin-top:12px}
+  #copyArea{position:absolute;left:-9999px;top:0}
+  .ok-flash{color:var(--ok);font-weight:700;font-size:14px;margin-top:8px;min-height:20px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>連携キット生成ページ</h1>
+    <p>業務名などを入れて押すだけ。Claude＋Obsidian＋NotebookLM の一式を作ります。</p>
+  </header>
+
+  <div class="card">
+    <label>① 業務名 <span class="hint">（例：イベント受付）</span></label>
+    <input id="name" placeholder="イベント受付">
+
+    <label>② 一言説明 <span class="hint">（何をする業務か）</span></label>
+    <input id="desc" placeholder="イベント当日の受付を数名で分担して行う">
+
+    <label>③ 関係者 <span class="hint">（読点や,で区切る）</span></label>
+    <input id="members" placeholder="玉川、岩本、藤本、田尻">
+
+    <label>④ 要点 <span class="hint">（1行に1つ、または／で区切る）</span></label>
+    <textarea id="facts" placeholder="事前申込リストと照合&#10;氏名・参加回を確認&#10;当日払いを記録"></textarea>
+
+    <label>⑤ 関連URL <span class="hint">（任意）</span></label>
+    <input id="url" placeholder="https://aromaria.github.io/-/">
+
+    <div class="btns">
+      <button class="primary" onclick="dlZip()">📁 Obsidian用ZIPをダウンロード</button>
+      <button class="ghost" onclick="copyNb()">📄 NotebookLM用テキストをコピー</button>
+    </div>
+    <div class="ok-flash" id="flash"></div>
+  </div>
+
+  <div class="card">
+    <h2>使い方</h2>
+    <div class="step"><div class="num">1</div><div><b>ZIPをダウンロード</b> → 解凍 → Obsidianで「Open folder as vault（フォルダーを保管庫として開く）」で <code>obsidian-vault</code> を選ぶ</div></div>
+    <div class="step"><div class="num">2</div><div><b>NotebookLM用テキストをコピー</b> → NotebookLMで「＋新規作成」→ ソース追加 →「コピーしたテキスト／テキストを貼り付け」に貼る</div></div>
+    <div class="note">これで、その業務専用の「保管庫」と「無料の質問先（NotebookLM）」が完成します。原本を残したい時は、Claudeに「この内容をリポジトリに保存して」と頼めばOK。</div>
+    <div class="warn">⚠️ NotebookLMへの登録だけは、Google側にAPIが無いため“貼り付け”の手作業になります（どのツールでも同じ）。</div>
+  </div>
+
+  <footer>Claude＋Obsidian＋NotebookLM 連携キット / トークン節約運用</footer>
+</div>
+
+<textarea id="copyArea"></textarea>
+<script>
+function val(id){return document.getElementById(id).value.trim();}
+function splitList(s){return s.split(/[、,／\/\n]/).map(x=>x.trim()).filter(Boolean);}
+function flash(msg){var f=document.getElementById('flash');f.textContent=msg;setTimeout(function(){f.textContent='';},4000);}
+function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+function gather(){
+  var name=val('name')||'新規業務';
+  var desc=val('desc')||'（一言説明を記入）';
+  var members=splitList(val('members'));
+  var membersLine=members.length?members.join('・'):'（担当者を記入）';
+  var facts=splitList(val('facts'));
+  var factsMd=facts.length?facts.map(f=>'- '+f).join('\n'):'- （ここに要点を書く）';
+  var factsTxt=facts.length?facts.join('。'):'';
+  var url=val('url')||'（未設定）';
+  return {name,desc,members,membersLine,facts,factsMd,factsTxt,url,t:today()};
+}
+
+function files(c){
+  var f={};
+  f['CLAUDE.md']=
+`# プロジェクト地図（Claude はまずこれだけ読む）
+
+> 目的: トークン節約。大きなファイルを毎回読み直さず、この要約から始める。
+
+## これは何
+${c.desc}
+
+- 関係者: ${c.membersLine}
+- 関連URL: ${c.url}
+- 作成日: ${c.t}
+
+## 要点
+${c.factsMd}
+
+## ファイル構成
+- \`obsidian-vault/\` … 知識の保管庫（00〜50の小さいメモ）
+- NotebookLM … このページの「テキスト」を貼り付けて質問・要約に使う
+
+## 連携（トークン節約）
+- 保管 = obsidian-vault、作成 = Claude、質問 = NotebookLM
+- Claudeへは「CLAUDE.md と 該当メモだけ見て」と範囲を絞る
+`;
+  f['obsidian-vault/00_はじめに（最初に読む）.md']=
+`# はじめに — ${c.name} の保管庫
+
+Obsidianで「Open folder as vault」→ この obsidian-vault を選べば開けます。
+中身は普通のテキスト(.md)なので Claude も直接読み書きできます。
+
+## 3つの役割
+- Obsidian = ためる・見返す
+- Claude = 作る・整理する・直す
+- NotebookLM = 資料に質問・要約（無料）
+`;
+  f['obsidian-vault/10_概要.md']=
+`# ${c.name} 概要
+
+## 何をする？
+${c.desc}
+
+## 関係者
+${c.membersLine}
+
+## 要点
+${c.factsMd}
+
+## 関連URL
+${c.url}
+`;
+  f['obsidian-vault/20_進め方・手順.md']=
+`# 進め方・手順
+
+（実際の作業の流れを書く）
+1.
+2.
+3.
+
+## よくあるミス・注意
+-
+`;
+  f['obsidian-vault/30_メモ・資料.md']=`# メモ・資料\n\n（参考リンク・調べたこと・未決事項を自由に）\n\n-\n`;
+  f['obsidian-vault/40_決定事項ログ.md']=
+`# 決定事項ログ（なぜそうしたか）
+
+- ${c.t} キット作成。Claude＋Obsidian＋NotebookLM の連携を開始。
+
+## 追記ルール
+大きな判断をしたら1行で足す（日付＋何を＋なぜ）。
+`;
+  f['obsidian-vault/50_連携ガイド.md']=
+`# 連携ガイド — ${c.name}
+
+## 毎日の回し方
+1. 調べる・質問・要約 → まず NotebookLM（無料）
+2. ためる・見返す → Obsidian
+3. 直す・作る・整理する → Claude（範囲を絞る）
+
+## 注意
+- NotebookLMは公式APIが無いため、登録は手動（貼り付け）。
+- 秘密のURL・トークンは貼らない。
+`;
+  return f;
+}
+
+function nbText(c){
+  return `# ${c.name} 総合資料（NotebookLM 投入用）
+
+## 概要
+${c.desc}
+
+## 関係者
+${c.membersLine}
+
+## 要点
+${c.factsTxt}
+
+## 関連URL
+${c.url}
+
+## 連携運用（トークン節約）
+Obsidian＝保管庫、Claude＝作成・整理、NotebookLM＝質問・要約。
+CLAUDE.md と小さいメモから始めることで、大きなファイルを読み直さずに済む。
+`;
+}
+
+/* ---- 依存なしの ZIP（store方式） ---- */
+var crcTable=(function(){var t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(bytes){var c=0xFFFFFFFF;for(var i=0;i<bytes.length;i++)c=crcTable[(c^bytes[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function u16(n){return [n&0xFF,(n>>8)&0xFF];}
+function u32(n){return [n&0xFF,(n>>8)&0xFF,(n>>16)&0xFF,(n>>24)&0xFF];}
+function makeZip(fileMap){
+  var enc=new TextEncoder();var chunks=[];var central=[];var offset=0;
+  Object.keys(fileMap).forEach(function(nameStr){
+    var nameB=enc.encode(nameStr);var dataB=enc.encode(fileMap[nameStr]);
+    var crc=crc32(dataB);var flag=0x0800; // UTF-8
+    var local=[].concat(u32(0x04034b50),u16(20),u16(flag),u16(0),u16(0),u16(0),
+      u32(crc),u32(dataB.length),u32(dataB.length),u16(nameB.length),u16(0));
+    chunks.push(new Uint8Array(local));chunks.push(nameB);chunks.push(dataB);
+    var cent=[].concat(u32(0x02014b50),u16(20),u16(20),u16(flag),u16(0),u16(0),u16(0),
+      u32(crc),u32(dataB.length),u32(dataB.length),u16(nameB.length),u16(0),u16(0),u16(0),u16(0),
+      u32(0),u32(offset));
+    central.push(new Uint8Array(cent));central.push(nameB);
+    offset+=local.length+nameB.length+dataB.length;
+  });
+  var centralStart=offset;var centralSize=0;
+  central.forEach(function(a){centralSize+=a.length;});
+  var end=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),
+    u16(Object.keys(fileMap).length),u16(Object.keys(fileMap).length),
+    u32(centralSize),u32(centralStart),u16(0)));
+  var all=chunks.concat(central,[end]);
+  return new Blob(all,{type:'application/zip'});
+}
+
+function slug(s){return (s||'新規業務').replace(/\s+/g,'_').replace(/[\\\/:*?"<>|]/g,'');}
+
+function dlZip(){
+  var c=gather();var blob=makeZip(files(c));
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=slug(c.name)+'_obsidian-vault.zip';document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
+  flash('✅ ZIPをダウンロードしました。解凍してObsidianで開いてください。');
+}
+
+function copyNb(){
+  var c=gather();var txt=nbText(c);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){flash('✅ NotebookLM用テキストをコピーしました。NotebookLMに貼り付けてください。');},
+      function(){fallbackCopy(txt);});
+  }else{fallbackCopy(txt);}
+}
+function fallbackCopy(txt){
+  var ta=document.getElementById('copyArea');ta.value=txt;ta.select();
+  try{document.execCommand('copy');flash('✅ コピーしました。NotebookLMに貼り付けてください。');}
+  catch(e){flash('コピーできませんでした。テキストを手動で選択してください。');}
+}
+</script>
+</body>
+</html>
