@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>電話対応ソフト かんたん手順書</title>
+<style>
+  :root{
+    --navy:#102a54; --ink:#1b2430; --muted:#586373; --line:#e3e8f0;
+    --paper:#eef2f7; --card:#ffffff; --acc:#2563eb; --accd:#1b4fd0; --accl:#e7f0fe;
+    --ok:#0f7a43; --okl:#e4f4ea; --warm:#b45309; --warml:#fdf1e3; --pink:#c81e50;
+    --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
+    --fs-h:clamp(24px,6vw,38px); --fs-sec:clamp(19px,3.6vw,26px);
+    --fs-body:clamp(16px,3.4vw,19px); --fs-small:clamp(14px,2.8vw,16px);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --navy:#0c1c38; --ink:#e7ecf4; --muted:#9aa7b8; --line:#28323f;
+      --paper:#0e131b; --card:#161e29; --accl:#173257; --okl:#123324; --warml:#33240f; }
+  }
+  :root[data-theme="dark"]{ --navy:#0c1c38; --ink:#e7ecf4; --muted:#9aa7b8; --line:#28323f;
+    --paper:#0e131b; --card:#161e29; --accl:#173257; --okl:#123324; --warml:#33240f; }
+  :root[data-theme="light"]{ --navy:#102a54; --ink:#1b2430; --muted:#586373; --line:#e3e8f0;
+    --paper:#eef2f7; --card:#ffffff; --accl:#e7f0fe; --okl:#e4f4ea; --warml:#fdf1e3; }
+
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);
+    line-height:1.85;font-size:var(--fs-body);-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto;padding:0 16px 72px}
+
+  header{background:var(--navy);color:#fff;border-radius:0 0 24px 24px;
+    padding:clamp(28px,6vw,48px) clamp(20px,5vw,40px);margin-bottom:24px;text-align:center}
+  header .eye{color:#9cc0ff;font-weight:800;font-size:13px;letter-spacing:.14em;margin-bottom:10px}
+  header h1{margin:0 0 10px;font-size:var(--fs-h);line-height:1.25;text-wrap:balance}
+  header p{margin:0;color:#cfdef5;font-size:var(--fs-small)}
+
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:clamp(18px,4vw,26px);margin-bottom:18px}
+  .sec-head{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+  .num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--accl);color:var(--accd);
+    display:grid;place-items:center;font-weight:800;font-size:17px}
+  h2{margin:0;font-size:var(--fs-sec);line-height:1.3;text-wrap:balance}
+  .lead{color:var(--muted);font-size:var(--fs-small);margin:0 0 14px}
+
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:st;display:grid;gap:12px}
+  ol.steps>li{counter-increment:st;position:relative;padding:12px 14px 12px 46px;
+    background:var(--paper);border-radius:12px}
+  ol.steps>li::before{content:counter(st);position:absolute;left:12px;top:11px;width:24px;height:24px;
+    background:var(--acc);color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px}
+  b{font-weight:800}
+  .url{background:var(--accl);color:var(--accd);border-radius:8px;padding:2px 9px;font-weight:800;
+    word-break:break-all;font-size:.95em}
+  .note{background:var(--warml);border-radius:12px;padding:12px 15px;font-size:var(--fs-small);margin-top:12px}
+  .ok{background:var(--okl);border-radius:12px;padding:12px 15px;font-size:var(--fs-small);margin-top:12px}
+
+  .status li{margin:6px 0}
+  .status .big{font-weight:800;color:var(--accd)}
+
+  /* Q&A */
+  .qa-intro{color:var(--muted);font-size:var(--fs-small);margin:0 0 14px}
+  details{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+  details[open]{border-color:var(--acc)}
+  summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:800;
+    display:flex;gap:10px;align-items:flex-start}
+  summary::-webkit-details-marker{display:none}
+  summary .q{flex:none;color:var(--pink);font-weight:900}
+  summary .mark{margin-left:auto;flex:none;color:var(--muted);transition:transform .2s}
+  details[open] summary .mark{transform:rotate(45deg)}
+  .ans{padding:0 16px 16px 42px;color:var(--ink);font-size:var(--fs-small)}
+  .ans .a{color:var(--ok);font-weight:900;margin-right:6px}
+
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px;line-height:1.7}
+  a{color:var(--accd)}
+  .toggle{position:fixed;top:12px;right:12px;background:var(--card);border:1px solid var(--line);
+    color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;z-index:9}
+</style>
+</head>
+<body>
+<button class="toggle" id="tg">◐ 表示</button>
+<header>
+  <div class="eye">超古代PJ事務局 ／ スタッフ用</div>
+  <h1>電話対応ソフト<br>かんたん手順書</h1>
+  <p>玉川・岩本・藤本・田尻 さん用 ／ 中学生にもわかる説明です</p>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="sec-head"><span class="num">1</span><h2>このソフトは何？</h2></div>
+    <p>リザストへの<b>電話での申込</b>を、4人で手分けして記録・管理するためのソフトです。電話を受けたら入力して保存 → みんなで共有できます。</p>
+    <div class="ok">✅ <b>特別なインストールは不要。</b>ブラウザで開くだけで使えます（パソコンもスマホもOK）。</div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">2</span><h2>開く（最初の1回）</h2></div>
+    <ol class="steps">
+      <li>ブラウザ（Safari・Chromeなど）で <span class="url">https://aromaria.github.io/-/</span> を開く</li>
+      <li><b>ブックマーク</b>する（スマホは「ホーム画面に追加」すると、アプリのように開けて便利）</li>
+    </ol>
+    <div class="note">💡 ソフトの入れ替えは不要です。<b>いつ開いても自動で最新版</b>になります。</div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">3</span><h2>4人で共有する（最初の1回だけ）</h2></div>
+    <ol class="steps">
+      <li>事務局から配られた <b>「設定リンク」</b>（<span class="url">…#setup=…</span> が付いたURL）を<b>一度開く</b></li>
+      <li>これだけで、4人の入力が<b>自動で共有</b>されるようになります</li>
+    </ol>
+    <div class="note">⚠️ この設定リンクは<b>内部用</b>です。SNSやメールで外部に貼らないでください。</div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">4</span><h2>使い方（電話を受けたら）</h2></div>
+    <ol class="steps">
+      <li>各項目を入力（氏名・ふりがな・メール・携帯番号・領収書宛名・参加回・参加方法・支払方法・振込予定日 など）</li>
+      <li><b>自分の名前（対応者）</b>と<b>ステータス</b>を選ぶ</li>
+      <li><b>保存</b>を押す（自分の画面と共有シートの両方に記録されます）</li>
+      <li>一覧画面で、ステータス・対応者は<b>その場で変更</b>できます</li>
+      <li>まとめ画面を見ながら、<b>リザストの申込フォームへ転記</b></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">5</span><h2>入金の連絡フロー（田尻さんへ）</h2></div>
+    <ul class="status" style="padding-left:20px">
+      <li><span class="big">①</span> 電話で振込先を伝え、入金予定日を確認済み</li>
+      <li><span class="big">②</span> その入金予定日を<b>田尻さんへ連絡済み</b></li>
+      <li><span class="big">③</span> このソフトに記入・保存済み</li>
+    </ul>
+    <p class="lead" style="margin-top:10px">この①②③を、ステータスで選んで進捗を共有します。</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">?</span><h2>困ったとき Q&amp;A（問題解決）</h2></div>
+    <p class="qa-intro">よくある困りごとと解決法です。質問をタップすると答えが開きます。それでも解決しない時は、事務局（管理者）へ連絡してください。</p>
+
+    <details><summary><span class="q">Q.</span><span>保存したのに、他の人の画面に出てこない<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span>画面上の<b>「読み込み（更新）」を押す</b>と最新が出ます。それでも出ない時は、<b>設定リンクで4人共有につないだか</b>を確認（手順3）。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>4人共有につながらない<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span>配られた<b>設定リンク（#setup=…）をもう一度開いて</b>ください。1回開けば接続されます。URLが「drive.google.com…」ではなく「script.google.com…/exec」を含む正しいものか確認。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>携帯番号の「先頭の0」が消える気がする<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span><b>入力はそのままでOK。</b>記録データ（元データ）には正しく残っています。見た目の列で0が省略されることがありますが、実害はありません。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>同じ人を二重に登録してしまいそう<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span>入力時に<b>重複チェックの案内</b>が出ます。それに従ってください。心配な時は一覧で氏名・メールを検索して確認。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>対応者やステータスを変えられない<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span><b>一覧画面</b>で、その申込の対応者・ステータス欄を<b>その場で選び直せます</b>。変更したら自動で保存されます。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>スマホで開けない／表示が崩れる<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span>ブラウザ（Safari/Chrome）で<b>公開URLを開き直す</b>。ページを更新（引っ張って更新）すると直ることが多いです。ホーム画面に追加しておくと開きやすいです。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>間違えて保存した／打ち間違えた<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span>一覧からその申込を開いて<b>修正 → もう一度保存</b>。同じ人の記録は上書きで更新されます。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>リザストへの転記のやり方が分からない<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span><b>まとめ画面</b>を開き、上から順にリザストの申込フォームへ入力します。参加回・参加方法・支払方法を間違えないよう、まとめを見ながら進めてください。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>入力途中で電話が切れた／情報が足りない<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span>分かる範囲で保存し、<b>ステータスを「聞き取り中」や「要確認」</b>にしておきます。後で追記できます。</div></details>
+
+    <details><summary><span class="q">Q.</span><span>データが消えていないか不安<span class="mark">＋</span></span></summary>
+      <div class="ans"><span class="a">A.</span>保存すると<b>共有スプレッドシートにも記録</b>されるので消えません。心配な時は事務局（管理者）に確認を。</div></details>
+  </section>
+
+  <footer>
+    超古代PJ事務局 ／ 電話対応ソフト かんたん手順書<br>
+    公開URL: https://aromaria.github.io/-/　｜　困ったら事務局へ
+  </footer>
+</div>
+
+<script>
+  var tg=document.getElementById('tg');
+  tg.addEventListener('click',function(){
+    var c=document.documentElement.getAttribute('data-theme');
+    var n=c==='dark'?'light':(c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));
+    document.documentElement.setAttribute('data-theme',n);
+  });
+</script>
+</body>
+</html>
