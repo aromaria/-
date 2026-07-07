@@ -1,0 +1,35 @@
+# プロジェクト地図（Claude はまずこれだけ読む）
+
+> 目的: トークン節約。大きなファイルを毎回読み直さず、この要約から始める。
+> 詳しい経緯・決定は `obsidian-vault/` を参照（必要な時だけ開く）。
+
+## これは何
+リザストの「電話申込」を事務局スタッフ4名が手入力で管理する単一HTMLアプリ。
+
+- 公開URL: https://aromaria.github.io/-/ （push で自動更新。差し替え不要）
+- リポジトリ: aromaria/-  ／ 作業ブランチ: `claude/rezast-phone-intake-plan-gjl4on`
+- スタッフ: 玉川・岩本・藤本・田尻
+
+## ファイル構成（読むのは必要な時だけ）
+- `index.html` … アプリ本体（39KB）。localStorage保存＋Apps Scriptへ送信。**設定は先頭付近の HANDLERS / STATUSES / DEFAULT_CLOUD_URL**
+- `apps_script/Code.gs` … 4人共有の受け皿。doPost/doGet(JSONP)。FOLDER_ID固定、シートに追記/更新（id単位 upsert）
+- `apps_script/SETUP.md` … Apps Scriptの設置手順
+- `STAFF_GUIDE.md` … スタッフ向け使い方
+- `README.md` … 概要
+
+## 動く仕組み（4人共有）
+アプリ → Apps Script Web App(/exec) → Driveフォルダ内スプレッドシートに保存/読込。
+file:// はPOSTが弾かれるため **GETでも保存**する二重経路。JSONPで一覧取得。
+
+## 触ってはいけない・注意
+- APIトークンは画面・GitHubに絶対出さない。/exec URLは公開ページのソースに入れない（設定リンクで私的配布のみ）
+- 本番API送信・削除・公開は明確な承認後のみ。mainへ直接反映しない（作業ブランチで）
+- Apps Scriptのアクセスは「全員（ログイン不要）」。「Googleアカウントを持つ全員」だとSafariがcookie遮断で失敗
+
+## 未解決メモ
+- シートの人間可読列で携帯番号の先頭0が落ちる（JSON列は正しい）。実害小・保留
+
+## 連携（トークン節約運用）
+- 知識の保管 = `obsidian-vault/`（小さいmdに分割。人もClaudeもここを見る）
+- NotebookLMへの投入資料 = `notebooklm/` の1ファイルを手動アップロード（NotebookLMは公式CLI/APIなし）
+- 運用手順は `連携ガイド.md`
