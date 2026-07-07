@@ -35,9 +35,11 @@
 
   section{background:var(--card);border:1px solid var(--line);border-radius:16px;
     padding:clamp(18px,4vw,26px);margin-bottom:18px}
+  section.guide{border:2px solid var(--acc)}
   .sec-head{display:flex;align-items:center;gap:12px;margin:0 0 14px}
   .num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--accl);color:var(--accd);
     display:grid;place-items:center;font-weight:800;font-size:17px}
+  .num.hi{background:var(--acc);color:#fff}
   h2{margin:0;font-size:var(--fs-sec);line-height:1.3;text-wrap:balance}
   .lead{color:var(--muted);font-size:var(--fs-small);margin:0 0 14px}
 
@@ -55,18 +57,31 @@
   .status li{margin:6px 0}
   .status .big{font-weight:800;color:var(--accd)}
 
-  /* Q&A */
+  /* 問題解決ガイド（検索） */
   .qa-intro{color:var(--muted);font-size:var(--fs-small);margin:0 0 14px}
-  details{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
-  details[open]{border-color:var(--acc)}
-  summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:800;
-    display:flex;gap:10px;align-items:flex-start}
-  summary::-webkit-details-marker{display:none}
-  summary .q{flex:none;color:var(--pink);font-weight:900}
-  summary .mark{margin-left:auto;flex:none;color:var(--muted);transition:transform .2s}
-  details[open] summary .mark{transform:rotate(45deg)}
-  .ans{padding:0 16px 16px 42px;color:var(--ink);font-size:var(--fs-small)}
-  .ans .a{color:var(--ok);font-weight:900;margin-right:6px}
+  .searchbar{position:relative;margin-bottom:12px}
+  .searchbar input{width:100%;font-family:inherit;font-size:var(--fs-body);color:var(--ink);
+    background:var(--paper);border:2px solid var(--line);border-radius:14px;
+    padding:14px 44px 14px 16px;outline:none}
+  .searchbar input:focus{border-color:var(--acc);background:var(--card)}
+  .searchbar input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+  .searchbar .ic{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:20px;pointer-events:none}
+  .searchbar .clr{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;
+    border:none;background:var(--line);color:var(--ink);border-radius:50%;width:26px;height:26px;font-size:15px;display:none}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .chips button{font-family:inherit;font-size:var(--fs-small);font-weight:700;cursor:pointer;
+    border:1px solid var(--line);background:var(--card);color:var(--accd);border-radius:999px;padding:7px 13px}
+  .chips button:hover{background:var(--accl)}
+  .hitcount{font-size:var(--fs-small);color:var(--muted);margin:0 0 10px}
+  .qcard{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+  .qcard.top{border-color:var(--acc);box-shadow:0 0 0 3px var(--accl)}
+  .qcard .q{font-weight:800;display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+  .qcard .q .mk{color:var(--pink);font-weight:900;flex:none}
+  .qcard .a{color:var(--ink);font-size:var(--fs-small);display:flex;gap:8px;align-items:flex-start}
+  .qcard .a .mk{color:var(--ok);font-weight:900;flex:none}
+  .empty{background:var(--warml);border-radius:12px;padding:14px 16px;font-size:var(--fs-small)}
+  mark{background:#ffe58a;color:inherit;border-radius:3px;padding:0 2px}
+  @media (prefers-color-scheme:dark){ mark{background:#7a5b00;color:#ffe9a8} }
 
   footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px;line-height:1.7}
   a{color:var(--accd)}
@@ -129,39 +144,17 @@
     <p class="lead" style="margin-top:10px">この①②③を、ステータスで選んで進捗を共有します。</p>
   </section>
 
-  <section>
-    <div class="sec-head"><span class="num">?</span><h2>困ったとき Q&amp;A（問題解決）</h2></div>
-    <p class="qa-intro">よくある困りごとと解決法です。質問をタップすると答えが開きます。それでも解決しない時は、事務局（管理者）へ連絡してください。</p>
-
-    <details><summary><span class="q">Q.</span><span>保存したのに、他の人の画面に出てこない<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span>画面上の<b>「読み込み（更新）」を押す</b>と最新が出ます。それでも出ない時は、<b>設定リンクで4人共有につないだか</b>を確認（手順3）。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>4人共有につながらない<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span>配られた<b>設定リンク（#setup=…）をもう一度開いて</b>ください。1回開けば接続されます。URLが「drive.google.com…」ではなく「script.google.com…/exec」を含む正しいものか確認。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>携帯番号の「先頭の0」が消える気がする<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span><b>入力はそのままでOK。</b>記録データ（元データ）には正しく残っています。見た目の列で0が省略されることがありますが、実害はありません。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>同じ人を二重に登録してしまいそう<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span>入力時に<b>重複チェックの案内</b>が出ます。それに従ってください。心配な時は一覧で氏名・メールを検索して確認。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>対応者やステータスを変えられない<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span><b>一覧画面</b>で、その申込の対応者・ステータス欄を<b>その場で選び直せます</b>。変更したら自動で保存されます。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>スマホで開けない／表示が崩れる<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span>ブラウザ（Safari/Chrome）で<b>公開URLを開き直す</b>。ページを更新（引っ張って更新）すると直ることが多いです。ホーム画面に追加しておくと開きやすいです。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>間違えて保存した／打ち間違えた<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span>一覧からその申込を開いて<b>修正 → もう一度保存</b>。同じ人の記録は上書きで更新されます。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>リザストへの転記のやり方が分からない<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span><b>まとめ画面</b>を開き、上から順にリザストの申込フォームへ入力します。参加回・参加方法・支払方法を間違えないよう、まとめを見ながら進めてください。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>入力途中で電話が切れた／情報が足りない<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span>分かる範囲で保存し、<b>ステータスを「聞き取り中」や「要確認」</b>にしておきます。後で追記できます。</div></details>
-
-    <details><summary><span class="q">Q.</span><span>データが消えていないか不安<span class="mark">＋</span></span></summary>
-      <div class="ans"><span class="a">A.</span>保存すると<b>共有スプレッドシートにも記録</b>されるので消えません。心配な時は事務局（管理者）に確認を。</div></details>
+  <section class="guide">
+    <div class="sec-head"><span class="num hi">🔍</span><h2>問題解決ガイド（質問して即回答）</h2></div>
+    <p class="qa-intro">困っていることを<b>ことばで入力</b>すると、答えがすぐ出ます。ボタンを押しても探せます。<br>※ この機能はインターネット送信なし・パスワード不要で、この画面の中だけで動きます。</p>
+    <div class="searchbar">
+      <input id="q" type="search" inputmode="search" placeholder="例：保存したのに出てこない" autocomplete="off" aria-label="困りごとを入力">
+      <span class="ic" id="ic">🔍</span>
+      <button class="clr" id="clr" aria-label="消す">✕</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <p class="hitcount" id="hitcount"></p>
+    <div id="results"></div>
   </section>
 
   <footer>
@@ -171,12 +164,124 @@
 </div>
 
 <script>
-  var tg=document.getElementById('tg');
-  tg.addEventListener('click',function(){
-    var c=document.documentElement.getAttribute('data-theme');
-    var n=c==='dark'?'light':(c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));
-    document.documentElement.setAttribute('data-theme',n);
+// ===== 問題解決ガイドの知識ベース（この決まったソフトの困りごと）=====
+var KB=[
+ {q:"保存したのに、他の人の画面に出てこない",
+  a:"画面上の「読み込み（更新）」を押すと最新が出ます。それでも出ない時は、設定リンクで4人共有につないだかを確認（手順3）。",
+  k:["保存","出ない","出てこない","反映","更新","読み込み","共有","見えない","表示されない","同期"]},
+ {q:"4人共有につながらない",
+  a:"配られた設定リンク（#setup=…）をもう一度開いてください。1回開けば接続されます。URLが「drive.google.com…」ではなく「script.google.com…/exec」を含む正しいものか確認。",
+  k:["共有","つながらない","接続","設定リンク","setup","繋がらない","同期できない","4人","四人"]},
+ {q:"携帯番号の先頭の0が消える気がする",
+  a:"入力はそのままでOK。記録データ（元データ）には正しく残っています。見た目の列で0が省略されることがありますが実害はありません。",
+  k:["番号","電話番号","携帯","0","ゼロ","先頭","消える","欠ける","落ちる"]},
+ {q:"同じ人を二重に登録してしまいそう",
+  a:"入力時に重複チェックの案内が出ます。それに従ってください。心配な時は一覧で氏名・メールを検索して確認。",
+  k:["二重","重複","ダブり","だぶる","同じ人","2回","二回"]},
+ {q:"対応者やステータスを変えられない",
+  a:"一覧画面で、その申込の対応者・ステータス欄をその場で選び直せます。変更したら自動で保存されます。",
+  k:["対応者","ステータス","変更","変えられない","変えたい","選べない","直せない","状態"]},
+ {q:"スマホで開けない／表示が崩れる",
+  a:"ブラウザ（Safari/Chrome）で公開URLを開き直す。ページを更新（引っ張って更新）すると直ることが多いです。ホーム画面に追加しておくと開きやすいです。",
+  k:["スマホ","携帯","iphone","android","アイフォン","開けない","崩れる","表示","見づらい","画面"]},
+ {q:"間違えて保存した／打ち間違えた",
+  a:"一覧からその申込を開いて修正 → もう一度保存。同じ人の記録は上書きで更新されます。",
+  k:["間違え","間違い","ミス","修正","直す","訂正","打ち間違い","誤入力","やり直し"]},
+ {q:"リザストへの転記のやり方が分からない",
+  a:"まとめ画面を開き、上から順にリザストの申込フォームへ入力します。参加回・参加方法・支払方法を間違えないよう、まとめを見ながら進めてください。",
+  k:["リザスト","転記","写す","入力","フォーム","うつす","まとめ"]},
+ {q:"入力途中で電話が切れた／情報が足りない",
+  a:"分かる範囲で保存し、ステータスを「聞き取り中」や「要確認」にしておきます。後で追記できます。",
+  k:["途中","切れた","足りない","不足","保留","あとで","後で","聞き取り中","要確認"]},
+ {q:"データが消えていないか不安",
+  a:"保存すると共有スプレッドシートにも記録されるので消えません。心配な時は事務局（管理者）に確認を。",
+  k:["消えた","消える","データ","なくなる","バックアップ","不安","飛んだ","保存されてる"]},
+ {q:"ソフトの開き方・URLが分からない",
+  a:"ブラウザで https://aromaria.github.io/-/ を開きます。ブックマーク（スマホはホーム画面に追加）しておくと次から楽です。",
+  k:["url","開く","開き方","アドレス","どこ","リンク","アクセス","場所","入り方"]},
+ {q:"パスワードやログインは必要？",
+  a:"不要です。URLを開くだけで使えます。ただし配られた「設定リンク」は内部用なので、外部に貼らないでください。",
+  k:["パスワード","ログイン","id","認証","サインイン","アカウント","必要"]},
+ {q:"領収書の宛名が分からない／聞き忘れた",
+  a:"未入力の場合は氏名が使われます。あとで正式な宛名が分かったら、一覧から開いて修正・保存できます。",
+  k:["領収書","宛名","あて名","名前","会社名","宛先"]},
+ {q:"電話が同時に重なった／混雑して回らない",
+  a:"それぞれ入力して保存すればOK。入力は4人で共有されるので、二人で手分けして対応できます。",
+  k:["混雑","同時","重なる","忙しい","回らない","分担","手分け","たくさん"]},
+ {q:"参加方法・支払方法・参加回はどう選ぶ？",
+  a:"申込者に確認した内容を、それぞれの選択肢から選びます。分からない時はステータスを「聞き取り中」にして、後で確定させてください。",
+  k:["参加方法","支払方法","参加回","選ぶ","会場","zoom","アーカイブ","振込","当日"]},
+ {q:"どれを見れば全部わかる？（この手順書の場所）",
+  a:"この手順書ページ（https://aromaria.github.io/-/staff_handbook.html）に、開き方・使い方・Q&Aが全部あります。ブックマークしておいてください。困ったら事務局へ。",
+  k:["手順書","マニュアル","説明","全部","一覧","どこ","ヘルプ","使い方"]}
+];
+var CHIPS=["保存できない","共有できない","スマホ","携帯番号の0","変更","リザスト転記","消えた","混雑"];
+
+var qEl=document.getElementById('q'), resEl=document.getElementById('results'),
+    chipsEl=document.getElementById('chips'), hit=document.getElementById('hitcount'),
+    clr=document.getElementById('clr');
+
+function norm(s){return (s||"").toLowerCase().replace(/[\s　・，,。.、]/g,"");}
+function esc(s){return s.replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+
+function score(item,nq){
+  if(!nq) return 0;
+  var s=0, hay=norm(item.q+item.k.join(""));
+  item.k.forEach(function(k){var nk=norm(k); if(!nk)return;
+    if(nq.indexOf(nk)>=0) s+=3;           // 入力に単語が含まれる
+    else if(nk.indexOf(nq)>=0 && nq.length>=2) s+=2; // 単語が入力を含む
   });
+  if(hay.indexOf(nq)>=0) s+=1;
+  return s;
+}
+function hl(text,nq){
+  if(!nq) return esc(text);
+  var e=esc(text);
+  // ハイライトは入力語そのものが答え文に含まれる場合のみ
+  try{ if(nq.length>=2){ var re=new RegExp(nq.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'); e=e.replace(re,'<mark>$&</mark>'); } }catch(_){}
+  return e;
+}
+function card(item,nq,top){
+  return '<div class="qcard'+(top?' top':'')+'">'+
+    '<div class="q"><span class="mk">Q.</span><span>'+hl(item.q,nq)+'</span></div>'+
+    '<div class="a"><span class="mk">A.</span><span>'+hl(item.a,nq)+'</span></div></div>';
+}
+function render(){
+  var raw=qEl.value.trim(), nq=norm(raw);
+  clr.style.display=raw?'block':'none';
+  document.getElementById('ic').style.display=raw?'none':'block';
+  if(!nq){
+    hit.textContent='よくある質問（'+KB.length+'件）— 上の欄に入力すると絞り込めます';
+    resEl.innerHTML=KB.map(function(it){return card(it,"",false);}).join('');
+    return;
+  }
+  var scored=KB.map(function(it){return {it:it,s:score(it,nq)};})
+               .filter(function(o){return o.s>0;})
+               .sort(function(a,b){return b.s-a.s;});
+  if(scored.length===0){
+    hit.textContent='';
+    resEl.innerHTML='<div class="empty">🙏 ぴったりの答えが見つかりませんでした。言い方を変えて試すか、<b>事務局（管理者）へ連絡</b>してください。<br>下によくある質問をすべて出しています。</div>'+
+      KB.map(function(it){return card(it,"",false);}).join('');
+    return;
+  }
+  hit.textContent='「'+esc(raw)+'」に近い答え：'+scored.length+'件';
+  resEl.innerHTML=scored.map(function(o,i){return card(o.it,nq,i===0);}).join('');
+}
+function setQ(v){qEl.value=v; render(); qEl.focus();}
+
+CHIPS.forEach(function(c){var b=document.createElement('button');b.type='button';b.textContent=c;
+  b.addEventListener('click',function(){setQ(c);}); chipsEl.appendChild(b);});
+qEl.addEventListener('input',render);
+clr.addEventListener('click',function(){qEl.value='';render();qEl.focus();});
+render();
+
+// テーマ切替
+var tg=document.getElementById('tg');
+tg.addEventListener('click',function(){
+  var c=document.documentElement.getAttribute('data-theme');
+  var n=c==='dark'?'light':(c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));
+  document.documentElement.setAttribute('data-theme',n);
+});
 </script>
 </body>
 </html>
