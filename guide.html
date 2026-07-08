@@ -3,213 +3,381 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>事務局アシスタント 連携ガイド</title>
+<title>事務局 AI作業ハブ — Claude × NotebookLM × Obsidian</title>
 <style>
   :root{
-    --navy:#102a54; --ink:#1c232e; --muted:#5b6675; --line:#e2e7ef;
-    --paper:#eef1f6; --card:#ffffff; --acc:#2563eb; --accd:#1b4fd0; --accl:#e7f0fe;
-    --nb:#0e7c86; --nbl:#e2f2f3; --cl:#2563eb; --cll:#e7f0fe;
-    --ob:#6d3bd1; --obl:#efe9fb; --dr:#128a4c; --drl:#e2f3ea; --warm:#b45309; --warml:#fdf1e3;
+    --navy:#0f1e3d; --navy2:#16294d; --ink:#141b26; --sub:#5a6577; --line:#dde3ee;
+    --paper:#eef1f7; --card:#ffffff; --soft:#f6f8fc;
+    --acc:#2f6bff; --accd:#1c4fd6; --accl:#e6eeff;
+    --nb:#0e7c86; --cl:#2563eb; --ob:#6d3bd1; --dr:#0f7a43; --gm:#b45309;
+    --ok:#0f7a43; --okl:#e4f4ea; --warn:#b45309; --warnl:#fbf0dd;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
     --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
-    --fs-h:clamp(22px,4.4vw,34px); --fs-sec:clamp(17px,2.6vw,22px); --fs-body:clamp(14px,2vw,16px);
-    --radius:14px;
+    --r:14px; --sh:0 1px 2px rgba(16,32,64,.06),0 6px 22px rgba(16,32,64,.05);
   }
   @media (prefers-color-scheme:dark){
-    :root{ --navy:#0c1c38; --ink:#e6ebf3; --muted:#9aa6b6; --line:#28313f;
-      --paper:#0e131b; --card:#161d28; --accl:#16305c; --nbl:#12312f; --cll:#16305c;
-      --obl:#241a3d; --drl:#123222; --warml:#33240f; }
+    :root{ --navy:#0a1428; --navy2:#0f1d38; --ink:#e8edf6; --sub:#9aa6bb; --line:#26314a;
+      --paper:#0b1120; --card:#131c2e; --soft:#101827; --accl:#16264f;
+      --okl:#0f2a1c; --warnl:#33240f; }
   }
-  :root[data-theme="dark"]{ --navy:#0c1c38; --ink:#e6ebf3; --muted:#9aa6b6; --line:#28313f;
-    --paper:#0e131b; --card:#161d28; --accl:#16305c; --nbl:#12312f; --cll:#16305c;
-    --obl:#241a3d; --drl:#123222; --warml:#33240f; }
-  :root[data-theme="light"]{ --navy:#102a54; --ink:#1c232e; --muted:#5b6675; --line:#e2e7ef;
-    --paper:#eef1f6; --card:#ffffff; --accl:#e7f0fe; --nbl:#e2f2f3; --cll:#e7f0fe;
-    --obl:#efe9fb; --drl:#e2f3ea; --warml:#fdf1e3; }
+  :root[data-theme="dark"]{ --navy:#0a1428; --navy2:#0f1d38; --ink:#e8edf6; --sub:#9aa6bb; --line:#26314a;
+    --paper:#0b1120; --card:#131c2e; --soft:#101827; --accl:#16264f; --okl:#0f2a1c; --warnl:#33240f; }
+  :root[data-theme="light"]{ --navy:#0f1e3d; --navy2:#16294d; --ink:#141b26; --sub:#5a6577; --line:#dde3ee;
+    --paper:#eef1f7; --card:#ffffff; --soft:#f6f8fc; --accl:#e6eeff; --okl:#e4f4ea; --warnl:#fbf0dd; }
 
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *{transition:none!important;animation:none!important} }
   body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);
-    line-height:1.7;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
-  .wrap{max-width:900px;margin:0 auto;padding:0 16px 72px}
+    -webkit-font-smoothing:antialiased;line-height:1.7;font-size:16px;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px}
 
-  header{background:var(--navy);color:#fff;border-radius:0 0 22px 22px;
-    padding:clamp(26px,5vw,44px) clamp(18px,4vw,40px);margin-bottom:26px}
-  header .eye{color:#9cc0ff;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
-  header h1{margin:0 0 8px;font-size:var(--fs-h);line-height:1.2;text-wrap:balance}
-  header p{margin:0;color:#cfdef5;font-size:var(--fs-body)}
-  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
-  .pill{background:rgba(255,255,255,.12);color:#eaf1fd;border:1px solid rgba(255,255,255,.18);
-    border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700}
+  /* top bar */
+  .topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 86%,transparent);
+    backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .in{max-width:920px;margin:0 auto;padding:9px 18px;display:flex;align-items:center;gap:12px}
+  .brand{font-weight:800;font-size:14.5px;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px var(--accl)}
+  .navlinks{margin-left:auto;display:flex;gap:2px}
+  .navlinks a{font-size:12.5px;font-weight:700;color:var(--sub);text-decoration:none;padding:6px 9px;border-radius:8px}
+  .navlinks a:hover{color:var(--accd);background:var(--accl)}
+  .tbtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;
+    font-size:12px;font-weight:700;padding:6px 10px;cursor:pointer}
+  @media(max-width:680px){ .navlinks{display:none} }
 
-  section{margin:30px 0}
-  .sec-h{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
-  .sec-h h2{font-size:var(--fs-sec);margin:0;text-wrap:balance}
-  .sec-h .n{font-size:12px;font-weight:800;color:var(--acc);letter-spacing:.08em}
-  .sec-sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  /* hero */
+  .hero{background:
+      radial-gradient(120% 140% at 100% 0%, rgba(47,107,255,.22), transparent 55%),
+      linear-gradient(180deg,var(--navy),var(--navy2));
+    color:#fff;border-radius:0 0 26px 26px;padding:34px 0 30px;margin-bottom:22px}
+  .hero .in{max-width:920px;margin:0 auto;padding:0 18px}
+  .hero .eye{color:#a9c3ff;font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px}
+  .hero h1{margin:0 0 8px;font-size:clamp(26px,5.4vw,42px);line-height:1.14;letter-spacing:-.01em;text-wrap:balance}
+  .hero p{margin:0 0 18px;color:#c6d6f5;font-size:clamp(14px,2.4vw,17px);max-width:60ch}
+  .statrow{display:flex;flex-wrap:wrap;gap:8px}
+  .stat{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+    padding:6px 13px;font-size:12.5px;font-weight:700;color:#eaf1ff;display:flex;align-items:center;gap:7px}
+  .stat .ok{width:7px;height:7px;border-radius:50%;background:#5ad19a}
 
-  .grid{display:grid;gap:14px}
-  .roles{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
-  .role .tag{display:inline-block;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;margin-bottom:8px}
-  .role h3{margin:0 0 4px;font-size:15.5px}
-  .role p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
-  .t-nb{background:var(--nbl);color:var(--nb)} .t-cl{background:var(--cll);color:var(--accd)}
-  .t-ob{background:var(--obl);color:var(--ob)} .t-dr{background:var(--drl);color:var(--dr)}
+  /* search console */
+  .console{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);
+    padding:clamp(16px,3vw,22px);margin:-38px auto 26px;position:relative;z-index:5}
+  .console .lab{font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--acc);text-transform:uppercase;margin-bottom:9px}
+  .searchwrap{position:relative}
+  .searchwrap input{width:100%;font-family:var(--font);font-size:17px;color:var(--ink);background:var(--soft);
+    border:2px solid var(--line);border-radius:13px;padding:14px 44px 14px 15px;outline:none}
+  .searchwrap input:focus{border-color:var(--acc);background:var(--card)}
+  .searchwrap input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+  .searchwrap .ic{position:absolute;right:15px;top:50%;transform:translateY(-50%);font-size:19px;color:var(--sub);pointer-events:none}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .chips button{font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--line);
+    background:var(--soft);color:var(--accd);border-radius:999px;padding:6px 12px}
+  .chips button:hover{background:var(--accl)}
+  .catfilter{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .catfilter button{font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;border:1px solid var(--line);
+    background:var(--card);color:var(--sub);border-radius:9px;padding:6px 11px;display:flex;align-items:center;gap:6px}
+  .catfilter button .swatch{width:9px;height:9px;border-radius:3px}
+  .catfilter button[aria-pressed="true"]{color:var(--ink);border-color:var(--acc);background:var(--accl)}
 
-  .do{border-left:4px solid var(--acc)}
-  .do .cat{font-size:12.5px;font-weight:800;color:var(--muted);letter-spacing:.04em;margin-bottom:10px}
-  .prompt{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
-  .prompt:first-of-type{border-top:none}
-  .prompt code{flex:1;font-family:var(--font);font-size:13.5px;color:var(--ink);line-height:1.55}
-  .copy{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--acc);
-    border-radius:8px;font-size:12px;font-weight:800;padding:5px 10px;cursor:pointer;white-space:nowrap}
-  .copy:hover{background:var(--accl)} .copy:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-  .copy.done{color:var(--dr);border-color:var(--dr)}
+  section.blk{margin:30px 0}
+  .h-row{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
+  .h-row h2{margin:0;font-size:clamp(18px,3vw,23px);letter-spacing:-.01em}
+  .h-row .cnt{font-size:12.5px;font-weight:800;color:var(--sub);font-variant-numeric:tabular-nums}
+  .sub{color:var(--sub);font-size:14px;margin:0 0 16px}
 
-  ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:10px}
-  ol.steps li{counter-increment:s;position:relative;background:var(--card);border:1px solid var(--line);
-    border-radius:12px;padding:13px 16px 13px 52px;font-size:13.8px}
-  ol.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:26px;height:26px;
-    background:var(--accl);color:var(--accd);border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px}
-  ol.steps b{color:var(--ink)}
+  #hitline{font-size:13px;color:var(--sub);margin:2px 0 12px;font-variant-numeric:tabular-nums}
+  .plist{display:grid;gap:11px}
+  .prompt{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;
+    display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;border-left-width:4px}
+  .prompt .badge{font-size:10.5px;font-weight:800;color:#fff;border-radius:6px;padding:3px 7px;white-space:nowrap}
+  .prompt code{grid-column:2;font-family:var(--font);font-size:14.5px;color:var(--ink);line-height:1.5}
+  .prompt .fav,.prompt .copy{border:1px solid var(--line);background:var(--soft);border-radius:9px;cursor:pointer;
+    font-size:12.5px;font-weight:800;padding:7px 10px;white-space:nowrap}
+  .prompt .fav{color:var(--sub);padding:7px 9px}
+  .prompt .fav.on{color:#e8a400;border-color:#e8c15a;background:var(--warnl)}
+  .prompt .copy{color:var(--accd)} .prompt .copy:hover{background:var(--accl)}
+  .prompt .copy.done{color:var(--ok);border-color:var(--ok)}
+  .empty{background:var(--warnl);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px}
+  mark{background:#ffe58a;color:inherit;border-radius:3px;padding:0 2px}
+  @media (prefers-color-scheme:dark){ mark{background:#7a5b00;color:#ffe9a8} }
+  @media(max-width:600px){ .prompt{grid-template-columns:1fr auto;row-gap:8px}
+    .prompt .badge{grid-column:1;justify-self:start} .prompt code{grid-column:1/-1}
+    .prompt .fav{grid-row:1;grid-column:2} .prompt .copy{grid-column:1/-1} }
+
+  /* checklist */
+  .meter{height:9px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 16px}
+  .meter>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),#5ad19a);width:0;transition:width .35s}
+  .steps{display:grid;gap:9px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;
+    display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+  .step .ck{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid var(--line);background:var(--soft);
+    display:grid;place-items:center;font-size:14px;color:transparent;margin-top:2px}
+  .step.done .ck{background:var(--ok);border-color:var(--ok);color:#fff}
+  .step .t{font-weight:800;font-size:15px}
+  .step.done .t{color:var(--sub);text-decoration:line-through}
+  .step .d{color:var(--sub);font-size:13px}
+  .step code{font-family:var(--mono);font-size:12.5px;background:var(--soft);border:1px solid var(--line);
+    border-radius:6px;padding:1px 6px;white-space:nowrap}
+
+  .grid{display:grid;gap:13px}
+  .roles{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .role{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;border-top-width:4px}
+  .role .tag{font-size:11px;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+  .role h3{margin:5px 0 4px;font-size:16px}
+  .role p{margin:0;color:var(--sub);font-size:13px;line-height:1.6}
 
   .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
   table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:440px}
   th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
-  th{background:var(--paper);font-size:12.5px;color:var(--muted);font-weight:800}
+  th{background:var(--soft);font-size:12px;color:var(--sub);font-weight:800}
   tr:last-child td{border-bottom:none}
 
   .tips{display:grid;gap:10px}
-  .tip{background:var(--warml);border:1px solid var(--line);border-radius:12px;padding:12px 15px;font-size:13.5px}
+  .tip{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:12px;padding:12px 15px;font-size:13.5px}
   .tip b{color:var(--ink)}
-  .tip code{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px}
+  .tip code{font-family:var(--mono);font-size:12.5px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
 
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:36px}
-  .toggle{position:fixed;top:14px;right:14px;background:var(--card);border:1px solid var(--line);
-    color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;z-index:10}
+  footer{color:var(--sub);font-size:12.5px;text-align:center;margin:34px 0 60px;line-height:1.8}
+
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--navy);color:#fff;font-size:13.5px;font-weight:700;padding:11px 18px;border-radius:999px;
+    box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:50;pointer-events:none;transition:opacity .2s,transform .2s}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  @media print{ .topbar,.chips,.catfilter,.searchwrap,.tbtn,#toast{display:none!important} .hero{border-radius:0} .console{box-shadow:none;margin-top:12px} }
 </style>
 </head>
 <body>
-<button class="toggle" id="tg" aria-label="表示切替">◐ 表示</button>
-<header>
-  <div class="wrap" style="padding:0">
-    <div class="eye">超古代PJ事務局 ／ 2026-07 連携</div>
-    <h1>事務局アシスタント 連携ガイド</h1>
-    <p>NotebookLM・Claude・Obsidian・Google Drive をつないだ環境の「できること」と「手順の記録」。</p>
-    <div class="pills">
-      <span class="pill">📚 NotebookLM（21冊）</span>
-      <span class="pill">🛠 Claude</span>
-      <span class="pill">📗 Obsidian（自動同期）</span>
-      <span class="pill">🗄 Google Drive</span>
-      <span class="pill">✉️ Gmail ／ 📅 カレンダー</span>
-    </div>
+<div class="topbar"><div class="in">
+  <span class="brand"><span class="dot"></span>AI作業ハブ</span>
+  <nav class="navlinks">
+    <a href="#do">できること</a><a href="#setup">セットアップ</a><a href="#roles">役割</a><a href="#trouble">困ったとき</a>
+  </nav>
+  <button class="tbtn" id="tg">◐ 表示</button>
+</div></div>
+
+<div class="hero"><div class="in">
+  <div class="eye">超古代PJ事務局 ／ ワークスペース</div>
+  <h1>やりたいことを打つと、<br>貼れる指示がすぐ出る。</h1>
+  <p>Claude・NotebookLM・Obsidian・Google Drive をひとつの流れに。調べる・作る・ためるを、最短の手数で回すための作業ハブです。</p>
+  <div class="statrow">
+    <span class="stat"><span class="ok"></span>Claude</span>
+    <span class="stat"><span class="ok"></span>NotebookLM（21冊）</span>
+    <span class="stat"><span class="ok"></span>Google Drive</span>
+    <span class="stat"><span class="ok"></span>Gmail・カレンダー</span>
+    <span class="stat"><span class="ok"></span>Obsidian（自動同期）</span>
   </div>
-</header>
+</div></div>
 
 <div class="wrap">
-
-  <section>
-    <div class="sec-h"><span class="n">01</span><h2>役割分担（迷ったらこれ）</h2></div>
-    <p class="sec-sub">「自分の資料→NotebookLM／作る・直す→Claude／Google関係→Drive・Gmail／ためる→Obsidian」</p>
-    <div class="grid roles">
-      <div class="card role"><span class="tag t-nb">📚 資料の司書</span><h3>NotebookLM</h3><p>自分の資料だけに忠実に回答・要約・出典つき。ウソをつかない。</p></div>
-      <div class="card role"><span class="tag t-cl">🛠 職人・司令塔</span><h3>Claude</h3><p>作る・直す・整理する。Drive/Gmail/NotebookLMも呼べる。</p></div>
-      <div class="card role"><span class="tag t-ob">📗 本棚</span><h3>Obsidian</h3><p>ためる・見返す。GitHubと自動同期（何もしなくても最新）。</p></div>
-      <div class="card role"><span class="tag t-dr">🗄 書庫</span><h3>Google Drive</h3><p>ファイルの保存・呼び出し。Chat側で保存も読み込みも可能。</p></div>
+  <div class="console" id="do">
+    <div class="lab">コマンド検索</div>
+    <div class="searchwrap">
+      <input id="q" type="search" inputmode="search" autocomplete="off" placeholder="やりたいことを入力（例：資料を要約 / ドライブに保存 / メール下書き）" aria-label="やりたいことを入力">
+      <span class="ic">⌘</span>
     </div>
+    <div class="chips" id="chips"></div>
+    <div class="catfilter" id="catfilter"></div>
+  </div>
+
+  <p id="hitline"></p>
+  <div class="plist" id="results"></div>
+
+  <section class="blk" id="setup">
+    <div class="h-row"><h2>セットアップ手順</h2><span class="cnt" id="setupcnt"></span></div>
+    <p class="sub">押すと「済み」になり、進み具合が保存されます（この端末のこのブラウザに記録）。再設定やトラブル時の参照にも。</p>
+    <div class="meter"><i id="bar"></i></div>
+    <div class="steps" id="steps"></div>
   </section>
 
-  <section>
-    <div class="sec-h"><span class="n">02</span><h2>できることリスト</h2></div>
-    <p class="sec-sub">Claude Desktop の <b>Chat側</b> に貼るだけ。各行の「コピー」を押して使ってください。</p>
-    <div class="grid" id="doList"></div>
-  </section>
-
-  <section>
-    <div class="sec-h"><span class="n">03</span><h2>セットアップの記録（振り返り）</h2></div>
-    <p class="sec-sub">再設定やトラブル時の参照用。普段は読まなくてOK。</p>
-    <ol class="steps">
-      <li><b>NotebookLM をClaudeにつなぐ</b>：ターミナルで <code>uv tool install notebooklm-mcp-cli</code> →（OpenSSL等が要る場合 <code>brew install openssl@3 pkg-config rust</code>）→ <code>nlm login</code>（Googleログイン）。</li>
-      <li><b>Claude Desktop に登録</b>：<code>~/Library/Application Support/Claude/claude_desktop_config.json</code> に notebooklm を追記 → Claude Desktop を再起動 → コネクタに「notebooklm」が✓。</li>
-      <li><b>Google Drive など</b>：Claude Desktop の「コネクタ」で接続済み（Chat側で使う）。</li>
-      <li><b>Obsidian 自動同期</b>：<code>git clone https://github.com/aromaria/-.git ~/超古代PJ-Vault</code> → そのフォルダをVaultで開く → コミュニティプラグイン「Git（Vinzent）」→ Auto pull=10／Pull on startup=ON／Push on commit-and-sync=OFF。</li>
-    </ol>
-  </section>
-
-  <section>
-    <div class="sec-h"><span class="n">04</span><h2>使い分け早見表</h2></div>
-    <div class="tbl"><table>
+  <section class="blk" id="roles">
+    <div class="h-row"><h2>役割分担</h2></div>
+    <p class="sub">迷ったら「自分の資料→NotebookLM／作る・直す→Claude／Google関係→Drive・Gmail／調べ物→Gemini／ためる→Obsidian」。</p>
+    <div class="grid roles" id="rolegrid"></div>
+    <div class="tbl" style="margin-top:14px"><table>
       <thead><tr><th>やりたいこと</th><th>使うもの</th></tr></thead>
       <tbody>
         <tr><td>資料の中身を正確に知る・要約</td><td>NotebookLM（Chat側）</td></tr>
         <tr><td>文章を作る・直す／ソフト改修</td><td>Claude</td></tr>
         <tr><td>ファイルの保存・呼び出し</td><td>Google Drive（Chat側）</td></tr>
         <tr><td>メール整理・下書き／予定登録</td><td>Gmail・カレンダー（Chat側）</td></tr>
+        <tr><td>最新ニュース・一般情報を調べる</td><td>Gemini（gemini.google.com）</td></tr>
         <tr><td>メモをためる・見返す</td><td>Obsidian（超古代PJ-Vault）</td></tr>
-        <tr><td>最新ニュース・一般情報を調べる</td><td>Gemini（gemini.google.com・Web版）</td></tr>
       </tbody>
     </table></div>
   </section>
 
-  <section>
-    <div class="sec-h"><span class="n">05</span><h2>困ったとき</h2></div>
+  <section class="blk" id="trouble">
+    <div class="h-row"><h2>困ったとき</h2></div>
     <div class="tips">
-      <div class="tip"><b>Drive/NotebookLMが使えない</b> → 左上を <b>💬 Chat</b> に切り替える（<code>&lt;/&gt; Code</code>側では使えません）。</div>
+      <div class="tip"><b>Drive・NotebookLMが使えない</b> → アプリ左上を <b>💬 Chat</b> に切り替える（<code>&lt;/&gt; Code</code>側では使えない）。</div>
       <div class="tip"><b>Obsidianで違う保管庫が開いた</b> → 左下の <b>⇅</b> から <b>超古代PJ-Vault</b> に切り替える。</div>
-      <div class="tip"><b>最新メモが来ない</b> → Obsidianを開き直す（起動時に自動プル）。または画面右下の同期マークから更新。</div>
+      <div class="tip"><b>最新メモが来ない</b> → Obsidianを開き直す（起動時に自動プル）。または右下の同期マークから更新。</div>
       <div class="tip"><b>NotebookLMの接続が切れた</b> → ターミナルで <code>nlm login</code> を実行し直す。</div>
-      <div class="tip"><b>Gemini を使いたい</b> → <b>gemini.google.com</b>（Web版）を開くだけ。Google Drive/Gmailに元から対応。※個人向けの Gemini CLI ログインは Google が終了（Antigravityへ移行）したため、CLIは使いません。</div>
+      <div class="tip"><b>Geminiを使いたい</b> → <b>gemini.google.com</b>（Web版）を開くだけ。※個人向けCLIはGoogleが終了（Antigravity移行）。保留案件は <code>obsidian-vault/80_保留・待機案件.md</code>。</div>
     </div>
   </section>
 
-  <footer>超古代PJ事務局 連携ガイド ／ 更新は Claude が随時反映（Obsidianに自動同期）</footer>
+  <footer>
+    超古代PJ事務局 ／ AI作業ハブ v2 — 更新は Claude が随時反映（Obsidianに自動同期）<br>
+    公開URL: aromaria.github.io/-/guide.html　｜　困ったら事務局へ
+  </footer>
 </div>
 
-<script>
-  var DO=[
-    ["📚 資料に聞く（NotebookLM）",[
-      "notebooklm を使って、電話対応ソフトの「入金確認の手順」を教えて",
-      "notebooklm の資料をもとに、新人スタッフ向けに要点を5つにまとめて",
-      "超古代PJの資料から、料金プランの違いを表にして"]],
-    ["🗄 Googleドライブ（保存・呼び出し）",[
-      "Google ドライブの「超古代PJ事務局」フォルダのファイル一覧を見せて",
-      "Google ドライブの「超古代・資料」に、今日の申込メモをテキストで保存して",
-      "ドライブの〇〇という資料を読んで、3行に要約して"]],
-    ["✉️ Gmail・📅 カレンダー",[
-      "Gmailで、リザストの申込に関する未読メールを探して一覧にして",
-      "申込者への「振込先ご案内」メールの下書きを作って（丁寧な敬語で）",
-      "来週の講座日程をカレンダーに登録して"]],
-    ["🔗 組み合わせワザ",[
-      "Gmailの申込メールを読んで、電話対応ソフトの入力項目の形に整理して",
-      "ドライブの申込リストを読んで、notebooklmの手順と照らして抜け漏れを指摘して",
-      "今日の申込3件を、リザスト転記用のまとめ表にして"]],
-    ["🛠 ソフト・資料の改良（Code側で）",[
-      "電話対応ソフトに「〇〇」の項目を足したい",
-      "スタッフガイドに「よくある質問」を追記して"]]
-  ];
-  var host=document.getElementById('doList');
-  DO.forEach(function(g){
-    var card=document.createElement('div');card.className='card do';
-    var h=document.createElement('div');h.className='cat';h.textContent=g[0];card.appendChild(h);
-    g[1].forEach(function(t){
-      var row=document.createElement('div');row.className='prompt';
-      var c=document.createElement('code');c.textContent=t;
-      var b=document.createElement('button');b.className='copy';b.type='button';b.textContent='コピー';
-      b.addEventListener('click',function(){
-        var done=function(){b.textContent='✓ コピー済';b.classList.add('done');setTimeout(function(){b.textContent='コピー';b.classList.remove('done');},1800);};
-        if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fb(t,done);});}else{fb(t,done);}
-      });
-      row.appendChild(c);row.appendChild(b);card.appendChild(row);
-    });
-    host.appendChild(card);
-  });
-  function fb(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb();}catch(e){}ta.remove();}
+<div id="toast"></div>
 
-  var tg=document.getElementById('tg');
-  tg.addEventListener('click',function(){
-    var cur=document.documentElement.getAttribute('data-theme');
-    var next=cur==='dark'?'light':(cur==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));
-    document.documentElement.setAttribute('data-theme',next);
+<script>
+var CATS={
+ nb:{name:"NotebookLM（資料に聞く）",c:"#0e7c86"},
+ dr:{name:"Google Drive",c:"#0f7a43"},
+ mail:{name:"Gmail・カレンダー",c:"#2563eb"},
+ mix:{name:"組み合わせ",c:"#6d3bd1"},
+ cl:{name:"作る・直す（Claude）",c:"#1c4fd6"},
+ ob:{name:"Obsidian整理",c:"#8a4bff"}
+};
+var DATA=[
+ ["nb","notebooklm を使って、電話対応ソフトの「入金確認の手順」を教えて",["資料","手順","入金","要約","notebooklm"]],
+ ["nb","notebooklm の資料をもとに、新人スタッフ向けに要点を5つにまとめて",["要約","まとめ","新人","要点","資料"]],
+ ["nb","超古代PJの資料から、料金プランの違いを表にして",["料金","表","比較","資料","プラン"]],
+ ["dr","Google ドライブの「超古代PJ事務局」フォルダのファイル一覧を見せて",["ドライブ","drive","一覧","ファイル","フォルダ"]],
+ ["dr","Google ドライブの「超古代・資料」に、今日の申込メモをテキストで保存して",["ドライブ","保存","メモ","申込","drive"]],
+ ["dr","ドライブの〇〇という資料を読んで、3行に要約して",["ドライブ","要約","読む","資料","drive"]],
+ ["mail","Gmailで、リザストの申込に関する未読メールを探して一覧にして",["gmail","メール","未読","申込","探す"]],
+ ["mail","申込者への「振込先ご案内」メールの下書きを作って（丁寧な敬語で）",["メール","下書き","振込","案内","gmail","文面"]],
+ ["mail","来週の講座日程をカレンダーに登録して",["カレンダー","予定","日程","登録","講座"]],
+ ["mix","Gmailの申込メールを読んで、電話対応ソフトの入力項目の形に整理して",["gmail","整理","入力","申込","変換"]],
+ ["mix","ドライブの申込リストを読んで、notebooklmの手順と照らして抜け漏れを指摘して",["ドライブ","チェック","抜け漏れ","確認","notebooklm"]],
+ ["mix","今日の申込3件を、リザスト転記用のまとめ表にして",["リザスト","転記","まとめ","表","申込"]],
+ ["cl","電話対応ソフトに「〇〇」の項目を足したい",["ソフト","改修","項目","追加","開発"]],
+ ["cl","スタッフガイドに「よくある質問」を追記して",["ガイド","追記","q&a","質問","資料"]],
+ ["cl","手順書のQ&Aに『△△（質問）→答え』を足して、同じファイルに保存して",["手順書","q&a","追加","保存","質問"]],
+ ["ob","決定ログに『◯◯にした』と追記して",["obsidian","決定ログ","追記","記録","メモ"]],
+ ["ob","obsidian-vault に △△ のメモを新しく作って",["obsidian","メモ","作成","保管庫","記録"]],
+ ["ob","保留案件を見て、Geminiの最新状況を調べて再開できるか教えて",["保留","案件","gemini","再開","調べる"]]
+];
+var STEPS=[
+ ["Claude Desktop（Macアプリ）を入れる","claude.ai/download からインストールしてログイン"],
+ ["NotebookLM を接続","ターミナルで uv tool install notebooklm-mcp-cli → nlm login（Googleログイン）"],
+ ["Claude Desktop に登録・再起動","claude_desktop_config.json に notebooklm を追記 → ⌘Qで再起動 → コネクタに表示"],
+ ["Drive・Gmail・カレンダーを確認","Claude Desktop の「コネクタ」で接続済み（使う時は 💬 Chat 側）"],
+ ["Obsidian で 超古代PJ-Vault を開く","git clone 済みのフォルダを『Open folder as vault』で開く"],
+ ["Obsidian Git で自動同期","プラグイン Git：Auto pull=10分／Pull on startup=ON／Push on commit-and-sync=OFF"],
+ ["Gemini は Web版で","gemini.google.com を開くだけ（調べ物用・設定不要）"]
+];
+
+var LS_FAV="aihub_fav_v1", LS_STEP="aihub_steps_v1";
+function load(k){try{return JSON.parse(localStorage.getItem(k))||{}}catch(e){return {}}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var fav=load(LS_FAV), doneSteps=load(LS_STEP);
+
+var qEl=document.getElementById('q'), resEl=document.getElementById('results'),
+    chipsEl=document.getElementById('chips'), catEl=document.getElementById('catfilter'),
+    hitline=document.getElementById('hitline'), toast=document.getElementById('toast');
+var activeCat="all";
+
+function norm(s){return (s||"").toLowerCase().replace(/[\s　・，,。.、「」（）()]/g,"");}
+function esc(s){return s.replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+function hl(t,nq){var e=esc(t); if(nq&&nq.length>=2){try{var re=new RegExp(nq.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');e=e.replace(re,'<mark>$&</mark>');}catch(_){}}return e;}
+function score(item,nq){ if(!nq)return 0; var s=0, hay=norm(item[1]+item[2].join(""));
+  item[2].forEach(function(k){var nk=norm(k); if(!nk)return; if(nq.indexOf(nk)>=0)s+=3; else if(nk.indexOf(nq)>=0&&nq.length>=2)s+=2;});
+  if(hay.indexOf(nq)>=0)s+=1; return s; }
+
+function toastMsg(m){toast.textContent=m; toast.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(function(){toast.classList.remove('show');},1600);}
+function copyText(t,btn){
+  var done=function(){btn.textContent='✓ コピー';btn.classList.add('done');toastMsg('コピーしました');setTimeout(function(){btn.textContent='コピー';btn.classList.remove('done');},1600);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fb(t,done);});}else{fb(t,done);}
+}
+function fb(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb();}catch(e){}ta.remove();}
+
+function promptRow(idx,item,nq){
+  var cat=CATS[item[0]], id=String(idx);
+  var el=document.createElement('div'); el.className='prompt'; el.style.borderLeftColor=cat.c;
+  var badge=document.createElement('span'); badge.className='badge'; badge.style.background=cat.c; badge.textContent=cat.name.replace(/（.*/,''); el.appendChild(badge);
+  var code=document.createElement('code'); code.innerHTML=hl(item[1],nq); el.appendChild(code);
+  var f=document.createElement('button'); f.className='fav'+(fav[id]?' on':''); f.type='button'; f.title='お気に入り'; f.textContent=fav[id]?'★':'☆';
+  f.addEventListener('click',function(){ if(fav[id])delete fav[id]; else fav[id]=1; save(LS_FAV,fav); render(); });
+  el.appendChild(f);
+  var c=document.createElement('button'); c.className='copy'; c.type='button'; c.textContent='コピー';
+  c.addEventListener('click',function(){copyText(item[1],c);}); el.appendChild(c);
+  return el;
+}
+
+function render(){
+  var raw=qEl.value.trim(), nq=norm(raw);
+  // build index list with original indices
+  var list=DATA.map(function(it,i){return {it:it,i:i};});
+  if(activeCat!=="all") list=list.filter(function(o){return o.it[0]===activeCat;});
+  var favFirst=[];
+  if(!nq){
+    // favorites on top
+    var favs=list.filter(function(o){return fav[o.i];});
+    var rest=list.filter(function(o){return !fav[o.i];});
+    list=favs.concat(rest);
+    hitline.textContent=(activeCat==="all"?"全 "+DATA.length+" 件":CATS[activeCat].name+" "+list.length+" 件")+(Object.keys(fav).length?" ／ ★お気に入り "+Object.keys(fav).length+" 件を先頭に":"");
+    resEl.innerHTML=""; list.forEach(function(o){resEl.appendChild(promptRow(o.i,o.it,""));});
+    return;
+  }
+  var scored=list.map(function(o){return {o:o,s:score(o.it,nq)};}).filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;});
+  if(scored.length===0){
+    hitline.textContent="";
+    resEl.innerHTML=""; var e=document.createElement('div'); e.className='empty';
+    e.innerHTML='🔎 一致するコマンドがありません。言い方を変えるか、下のカテゴリで探してください。作りたいものが無ければ、Claudeにそのまま頼めばOK（例：「'+esc(raw)+'」を手伝って）。';
+    resEl.appendChild(e); return;
+  }
+  hitline.textContent='「'+esc(raw)+'」に近いコマンド：'+scored.length+' 件';
+  resEl.innerHTML=""; scored.forEach(function(x){resEl.appendChild(promptRow(x.o.i,x.o.it,nq));});
+}
+
+// chips (quick intents)
+["資料を要約","ドライブに保存","メール下書き","カレンダー登録","決定ログに追記","保留案件"].forEach(function(t){
+  var b=document.createElement('button');b.type='button';b.textContent=t;b.addEventListener('click',function(){qEl.value=t;activeCat="all";syncCat();render();qEl.focus();});chipsEl.appendChild(b);
+});
+// category filter
+function syncCat(){[].forEach.call(catEl.children,function(btn){btn.setAttribute('aria-pressed', btn.dataset.cat===activeCat?"true":"false");});}
+(function(){
+  var all=document.createElement('button');all.dataset.cat="all";all.innerHTML='<span class="swatch" style="background:var(--acc)"></span>すべて';
+  all.addEventListener('click',function(){activeCat="all";syncCat();render();});catEl.appendChild(all);
+  Object.keys(CATS).forEach(function(k){var b=document.createElement('button');b.dataset.cat=k;
+    b.innerHTML='<span class="swatch" style="background:'+CATS[k].c+'"></span>'+CATS[k].name.replace(/（.*/,'');
+    b.addEventListener('click',function(){activeCat=k;qEl.value="";syncCat();render();});catEl.appendChild(b);});
+  syncCat();
+})();
+qEl.addEventListener('input',function(){activeCat=activeCat; render();});
+render();
+
+// role grid
+var ROLES=[["📚 資料の司書","NotebookLM","自分の資料だけに忠実に回答・要約・出典つき。","#0e7c86"],
+ ["🛠 職人・司令塔","Claude","作る・直す・整理。Drive/Gmail/NotebookLMも呼べる。","#1c4fd6"],
+ ["📗 本棚","Obsidian","ためる・見返す。GitHubと自動同期で常に最新。","#8a4bff"],
+ ["🗄 書庫","Google Drive","ファイルの保存・呼び出し（Chat側で両方）。","#0f7a43"],
+ ["🔎 調べ物","Gemini","最新情報・Google検索。gemini.google.com。","#b45309"]];
+var rg=document.getElementById('rolegrid');
+ROLES.forEach(function(r){var d=document.createElement('div');d.className='role';d.style.borderTopColor=r[3];
+  d.innerHTML='<div class="tag" style="color:'+r[3]+'">'+r[0]+'</div><h3>'+r[1]+'</h3><p>'+r[2]+'</p>';rg.appendChild(d);});
+
+// steps checklist
+var stepsEl=document.getElementById('steps'), bar=document.getElementById('bar'), setupcnt=document.getElementById('setupcnt');
+function renderSteps(){
+  stepsEl.innerHTML="";
+  STEPS.forEach(function(st,i){
+    var id="s"+i, on=!!doneSteps[id];
+    var el=document.createElement('div');el.className='step'+(on?' done':'');
+    el.innerHTML='<span class="ck">✓</span><div><div class="t">'+esc(st[0])+'</div><div class="d">'+st[1].replace(/`([^`]+)`/g,'<code>$1</code>')+'</div></div>';
+    el.addEventListener('click',function(){ if(doneSteps[id])delete doneSteps[id]; else doneSteps[id]=1; save(LS_STEP,doneSteps); renderSteps(); });
+    stepsEl.appendChild(el);
   });
+  var n=STEPS.filter(function(_,i){return doneSteps["s"+i];}).length;
+  bar.style.width=(n/STEPS.length*100)+"%";
+  setupcnt.textContent=n+" / "+STEPS.length+" 完了";
+}
+renderSteps();
+
+// theme
+document.getElementById('tg').addEventListener('click',function(){
+  var c=document.documentElement.getAttribute('data-theme');
+  var n=c==='dark'?'light':(c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));
+  document.documentElement.setAttribute('data-theme',n);
+});
 </script>
 </body>
 </html>
