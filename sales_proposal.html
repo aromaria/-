@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>販売提案書 — AI業務効率化ソフト</title>
+<style>
+  :root{
+    --ink:#1a2230; --sub:#5a6577; --line:#dde3ee; --paper:#f3f5fa; --card:#fff; --soft:#f6f8fc;
+    --navy:#12213f; --acc:#2f6bff; --accd:#1c4fd6; --accl:#e6eeff;
+    --ok:#0f7a43; --okl:#e4f4ea; --warn:#b45309; --warnl:#fbf0dd; --pink:#c81e50;
+    --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --ink:#e7ecf5; --sub:#9aa6bb; --line:#28324a; --paper:#0c1220; --card:#141d2e; --soft:#101827;
+      --navy:#0a1428; --accl:#16264f; --okl:#0f2a1c; --warnl:#33240f; }
+  }
+  :root[data-theme="dark"]{ --ink:#e7ecf5; --sub:#9aa6bb; --line:#28324a; --paper:#0c1220; --card:#141d2e; --soft:#101827; --navy:#0a1428; --accl:#16264f; --okl:#0f2a1c; --warnl:#33240f; }
+  :root[data-theme="light"]{ --ink:#1a2230; --sub:#5a6577; --line:#dde3ee; --paper:#f3f5fa; --card:#fff; --soft:#f6f8fc; --navy:#12213f; --accl:#e6eeff; --okl:#e4f4ea; --warnl:#fbf0dd; }
+
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.8;font-size:15.5px;-webkit-font-smoothing:antialiased}
+  .doc{max-width:840px;margin:0 auto;padding:0 20px 80px}
+  .cover{background:linear-gradient(180deg,var(--navy),#1c3364);color:#fff;border-radius:0 0 22px 22px;padding:38px 30px 30px;margin-bottom:26px}
+  .cover .k{color:#a9c3ff;font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px}
+  .cover h1{margin:0 0 8px;font-size:clamp(24px,4.6vw,34px);line-height:1.25;text-wrap:balance}
+  .cover .meta{color:#c6d6f5;font-size:13.5px;margin-top:14px}
+
+  h2{font-size:clamp(18px,3vw,22px);margin:34px 0 6px;padding-top:8px;border-top:2px solid var(--line);letter-spacing:-.01em}
+  h2 .n{color:var(--acc);font-weight:800;margin-right:8px}
+  h3{font-size:16px;margin:18px 0 6px}
+  p{margin:8px 0}
+  .lead{color:var(--sub)}
+  b{font-weight:800}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:4px 0}
+
+  .call{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:12px;padding:14px 18px;margin:14px 0}
+  .call.ok{border-left-color:var(--ok);background:var(--okl)}
+  .call.warn{border-left-color:var(--warn);background:var(--warnl)}
+  .call h3{margin:0 0 4px}
+
+  .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--soft);font-size:12.5px;color:var(--sub);font-weight:800}
+  tr:last-child td{border-bottom:none}
+  td .rec{display:inline-block;background:var(--accl);color:var(--accd);font-weight:800;font-size:11px;border-radius:6px;padding:1px 7px}
+  .tabnum{font-variant-numeric:tabular-nums}
+
+  .tiers{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:12px 0}
+  .tier{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;border-top:4px solid var(--acc)}
+  .tier .lvl{font-size:11.5px;font-weight:800;color:var(--sub);letter-spacing:.04em}
+  .tier h3{margin:4px 0 2px;font-size:16.5px}
+  .tier .price{font-size:20px;font-weight:800;color:var(--accd);font-variant-numeric:tabular-nums;margin:2px 0 6px}
+  .tier p{font-size:13px;color:var(--sub);margin:0}
+  .tier.hot{border-top-color:var(--ok)} .tier.hot .price{color:var(--ok)}
+
+  .steps{counter-reset:s;list-style:none;padding:0;display:grid;gap:10px}
+  .steps li{counter-increment:s;position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px 12px 50px}
+  .steps li::before{content:counter(s);position:absolute;left:12px;top:12px;width:26px;height:26px;background:var(--acc);color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px}
+
+  .toggle{position:fixed;top:12px;right:12px;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;z-index:9}
+  a{color:var(--accd)}
+  footer{color:var(--sub);font-size:12px;margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
+  @media print{ .toggle{display:none} .cover{border-radius:0} body{background:#fff} }
+</style>
+</head>
+<body>
+<button class="toggle" id="tg">◐ 表示</button>
+<div class="doc">
+  <div class="cover">
+    <div class="k">販売提案書 ／ PROPOSAL</div>
+    <h1>AI業務効率化ソフトを、どこで・どう売るか</h1>
+    <p style="margin:0;color:#dbe6fb">Claude × NotebookLM × Obsidian の「AI作業ハブ」＋連携キット＋手順書テンプレートの収益化プラン。</p>
+    <div class="meta">作成: 2026-07-08 ／ 宛先: 超古代PJ事務局 ／ 作成補助: Claude</div>
+  </div>
+
+  <h2><span class="n">01</span>まず結論（エグゼクティブサマリー）</h2>
+  <p class="lead">この製品は、アカウント管理や課金基盤を持つ本格「SaaS」ではありません。ですが、そこが弱点ではなく<b>強み</b>です。今の形（単一HTML＋テンプレ＋手順書＋ノウハウ）は、<b>「デジタル商品」＋「導入代行サービス」</b>として売るのが、最も早く・安全で・利益率も高い方法です。</p>
+  <div class="call ok"><h3>おすすめの主戦場（3点セット）</h3>
+    <ul style="margin:4px 0">
+      <li><b>note</b> … 無料記事で集客 → 有料noteで「方法＋テンプレ」を販売（信頼構築の入口）</li>
+      <li><b>BOOTH</b> … テンプレ一式（ZIP）を<b>手数料が安く</b>ダウンロード販売</li>
+      <li><b>ココナラ</b> … <b>「あなたの業務に導入代行します」</b>を高単価で出品（いちばん儲かる・あなたの得意を活かせる）</li>
+    </ul>
+  </div>
+  <p>理由：あなたは今回、非エンジニアの立場で<b>実際にゼロから全部セットアップし切りました</b>。この「非エンジニアでも入れられた実体験」こそが、同じ悩みを持つ人への最大の売り物です。ツールそのものより<b>「導入代行＋分かりやすい手順」</b>に価値が集まります。</p>
+
+  <h2><span class="n">02</span>売れる資産（今ある“商品のもと”）</h2>
+  <ul>
+    <li><b>AI作業ハブ</b>（guide.html）… 意図を打つと貼れる指示が出る／手順チェックリスト付き</li>
+    <li><b>連携キット生成ツール</b>（tools/連携キット生成.py）… 新しい業務に同じ仕組みを一発で作れる</li>
+    <li><b>テンプレート一式</b>… Obsidian保管庫・CLAUDE.md・NotebookLM資料・スタッフ手順書＋Q&A検索</li>
+    <li><b>ノウハウ（方法論）</b>… 「Claude×NotebookLM×Obsidianで作業効率化」の手順・つまずき対処（＝いちばん価値がある）</li>
+  </ul>
+
+  <h2><span class="n">03</span>何を「商品」にするか（4階層）</h2>
+  <div class="tiers">
+    <div class="tier"><div class="lvl">LV.1 手軽</div><h3>テンプレDL版</h3><div class="price">¥1,980〜3,980</div><p>AI作業ハブ＋テンプレ一式のダウンロード。BOOTH/noteで自動販売。</p></div>
+    <div class="tier"><div class="lvl">LV.2 定番</div><h3>キット＋手順書＋解説</h3><div class="price">¥5,980〜9,800</div><p>導入手順（画像/動画）＋Q&A＋連携キット。note/Brainで。</p></div>
+    <div class="tier hot"><div class="lvl">LV.3 高単価 ★</div><h3>導入代行＋個別サポート</h3><div class="price">¥30,000〜80,000</div><p>相手の業務に合わせて設定を代行。ココナラで。利益率が最も高い。</p></div>
+    <div class="tier"><div class="lvl">LV.4 継続</div><h3>月額メンバーシップ</h3><div class="price">¥980〜1,980/月</div><p>テンプレ更新＋質問対応。noteメンバーシップ/MOSHで安定収入。</p></div>
+  </div>
+  <p class="lead">おすすめ順序：<b>LV.1・2で入口を作り、LV.3（導入代行）で稼ぎ、LV.4で安定化</b>。まずはLV.1とLV.3から。</p>
+
+  <h2><span class="n">04</span>販売先の比較（2026年）</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>プラットフォーム</th><th>手数料の目安</th><th>客層・強み</th><th>この商品での使いどころ</th></tr></thead>
+    <tbody>
+      <tr><td><b>note</b></td><td class="tabnum">約10〜20%</td><td>日本語・文章/教材に強い。無料記事で集客し信頼構築</td><td><span class="rec">おすすめ</span> 方法＋テンプレの有料note。入口・集客</td></tr>
+      <tr><td><b>BOOTH</b>（pixiv）</td><td class="tabnum">5.6%＋¥45</td><td>手数料が安い。ファイルDL販売が得意</td><td><span class="rec">おすすめ</span> テンプレ一式(ZIP)の自動DL販売</td></tr>
+      <tr><td><b>ココナラ</b></td><td class="tabnum">22%（税込）</td><td>利用者が多い。サービス（代行・相談）が売れる</td><td><span class="rec">おすすめ</span> 導入代行・個別設定（高単価）</td></tr>
+      <tr><td><b>Brain / Tips</b></td><td class="tabnum">約12〜24%</td><td>ノウハウ販売＋紹介（アフィリ）で拡散しやすい</td><td>LV.2の教材を、紹介経由で広める</td></tr>
+      <tr><td><b>Gumroad</b></td><td class="tabnum">自リンク約10%</td><td>海外・英語圏に強い</td><td>将来、英語版で海外展開するなら</td></tr>
+      <tr><td><b>BASE / STORES</b></td><td class="tabnum">数%〜</td><td>自分の店。ブランド独立・囲い込み</td><td>実績が出た後の「自社ショップ」化</td></tr>
+      <tr><td><b>Udemy / MOSH</b></td><td class="tabnum">サービス次第</td><td>動画講座・オンライン講座/サブスク</td><td>LV.4（講座・メンバーシップ）</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2><span class="n">05</span>売上シミュレーション（控えめな例）</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>商品</th><th>単価</th><th>月の販売数</th><th>月の粗利（手数料後の目安）</th></tr></thead>
+    <tbody>
+      <tr><td>LV.1 テンプレDL（BOOTH）</td><td class="tabnum">¥2,980</td><td class="tabnum">10件</td><td class="tabnum">約¥27,000</td></tr>
+      <tr><td>LV.3 導入代行（ココナラ）</td><td class="tabnum">¥40,000</td><td class="tabnum">2件</td><td class="tabnum">約¥62,000</td></tr>
+      <tr><td>LV.4 メンバーシップ</td><td class="tabnum">¥1,480/月</td><td class="tabnum">20人</td><td class="tabnum">約¥26,000</td></tr>
+      <tr><td colspan="3"><b>合計（月）</b></td><td class="tabnum"><b>約¥115,000</b></td></tr>
+    </tbody>
+  </table></div>
+  <p class="lead">※ あくまで目安。<b>導入代行(LV.3)が2件入るだけで大きい</b>のがポイント。まずは1件の実績＆レビューを作ることが最優先。</p>
+
+  <h2><span class="n">06</span>販売までのステップ（約4週間）</h2>
+  <ol class="steps">
+    <li><b>売るものを決める</b>：まずは「テンプレDL(LV.1)」＋「導入代行(LV.3)」の2つに絞る。</li>
+    <li><b>紹介ページを用意</b>：今回の <b>guide.html（AI作業ハブ）</b> がそのまま“デモ＆説明資料”になる。スクショと「何ができるか」を1枚に。</li>
+    <li><b>note で無料記事を1本</b>：「非エンジニアがAIで業務効率化した話」→ 末尾で有料テンプレ/代行へ誘導。</li>
+    <li><b>BOOTHにテンプレZIPを出品</b>／<b>ココナラに「導入代行」を出品</b>（特商法表記・返金条件を明記）。</li>
+    <li><b>最初の1件をていねいに</b>：レビューをもらう → 実績として掲載 → 徐々に値上げ・横展開。</li>
+  </ol>
+
+  <h2><span class="n">07</span>注意点（安全・権利・法律）</h2>
+  <div class="call warn"><h3>他社ツールは“売らない”。売るのは自分のテンプレ＆方法</h3>
+    <p style="margin:4px 0">Claude・NotebookLM・Obsidian などは各社のもの。<b>再配布・再販はしない</b>。売るのは「あなたが作ったテンプレ・手順書・ノウハウ・導入代行」。買い手には各ツールを自分で入れてもらう形にする。</p></div>
+  <ul>
+    <li><b>非公式ツール（notebooklm-mcp等）は同梱・販売しない</b>。規約リスクがあるため、商品には含めず「各自が自己責任で導入」と案内（または公式手段のみ紹介）。</li>
+    <li><b>特定商取引法に基づく表記</b>（氏名/連絡先/価格/返金条件など）を販売ページに必ず記載（日本でネット販売する義務）。</li>
+    <li><b>秘密情報を載せない</b>：設定リンク(#setup=)・APIキー・スプレッドシートIDなど内部情報は商品に含めない（今のguide.htmlは含んでいない＝安全）。</li>
+    <li><b>サポート範囲を先に決める</b>：「メール質問は1週間」など。無限サポートは疲弊のもと。</li>
+    <li><b>個人情報・お金の扱い</b>：導入代行で顧客のアカウントに触れる場合は、事前同意と最小限の権限で。</li>
+  </ul>
+
+  <h2><span class="n">08</span>次のアクション（今日決めること）</h2>
+  <ul>
+    <li>売る階層を選ぶ（おすすめ：<b>LV.1 テンプレDL ＋ LV.3 導入代行</b>）</li>
+    <li>出品先を選ぶ（おすすめ：<b>note＋BOOTH＋ココナラ</b>）</li>
+    <li>紹介ページ（guide.htmlベース）と特商法表記を用意 ← <b>ここは私が作れます</b></li>
+  </ul>
+  <div class="call"><h3>私（Claude）ができるお手伝い</h3>
+    <p style="margin:4px 0">・販売用ランディングページ／商品説明文の作成　・特商法表記のひな型　・note記事の下書き　・BOOTH/ココナラの商品文と価格設計　・購入者向け「導入マニュアル」パッケージ化。「〇〇を作って」と言ってください。</p></div>
+
+  <footer>
+    出典（2026年時点の調査）：
+    <a href="https://note.com/freelife_creator/n/nf8e6f00008dc">BOOTH/Gumroad/Brain/Tips比較</a>、
+    <a href="https://crenavi.com/platform/gumroad">Gumroad手数料解説</a>、
+    <a href="https://alisphere.co.jp/guide/digital-content-platforms/">デジタルコンテンツ販売プラットフォーム8選</a>、
+    <a href="https://booth.pm/consignment_sale">BOOTH手数料</a>。
+    手数料は改定されることがあるため、出品前に各社の最新情報をご確認ください。
+  </footer>
+</div>
+<script>
+  document.getElementById('tg').addEventListener('click',function(){
+    var c=document.documentElement.getAttribute('data-theme');
+    var n=c==='dark'?'light':(c==='light'?'dark':(matchMedia('(prefers-color-scheme:dark)').matches?'light':'dark'));
+    document.documentElement.setAttribute('data-theme',n);
+  });
+</script>
+</body>
+</html>
