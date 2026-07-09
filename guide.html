@@ -6,7 +6,7 @@
 <title>事務局 AI作業ハブ — Claude × NotebookLM × Obsidian</title>
 <style>
   :root{
-    --navy:#0f1e3d; --navy2:#16294d; --ink:#141b26; --sub:#5a6577; --line:#dde3ee;
+    --navy:#0f1e3d; --navy2:#16294d; --ink:#141b26; --sub:#4a556a; --line:#dde3ee;
     --paper:#eef1f7; --card:#ffffff; --soft:#f6f8fc;
     --acc:#2f6bff; --accd:#1c4fd6; --accl:#e6eeff;
     --nb:#0e7c86; --cl:#2563eb; --ob:#6d3bd1; --dr:#0f7a43; --gm:#b45309;
@@ -22,7 +22,7 @@
   }
   :root[data-theme="dark"]{ --navy:#0a1428; --navy2:#0f1d38; --ink:#e8edf6; --sub:#9aa6bb; --line:#26314a;
     --paper:#0b1120; --card:#131c2e; --soft:#101827; --accl:#16264f; --okl:#0f2a1c; --warnl:#33240f; }
-  :root[data-theme="light"]{ --navy:#0f1e3d; --navy2:#16294d; --ink:#141b26; --sub:#5a6577; --line:#dde3ee;
+  :root[data-theme="light"]{ --navy:#0f1e3d; --navy2:#16294d; --ink:#141b26; --sub:#4a556a; --line:#dde3ee;
     --paper:#eef1f7; --card:#ffffff; --soft:#f6f8fc; --accl:#e6eeff; --okl:#e4f4ea; --warnl:#fbf0dd; }
 
   *{box-sizing:border-box}
@@ -90,7 +90,7 @@
   .prompt{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;
     display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;border-left-width:4px}
   .prompt .badge{font-size:10.5px;font-weight:800;color:#fff;border-radius:6px;padding:3px 7px;white-space:nowrap}
-  .prompt code{grid-column:2;font-family:var(--font);font-size:14.5px;color:var(--ink);line-height:1.5}
+  .prompt code{grid-column:2;font-family:var(--mono);font-size:14.5px;color:var(--ink);line-height:1.5}
   .prompt .fav,.prompt .copy{border:1px solid var(--line);background:var(--soft);border-radius:9px;cursor:pointer;
     font-size:12.5px;font-weight:800;padding:7px 10px;white-space:nowrap}
   .prompt .fav{color:var(--sub);padding:7px 9px}
@@ -144,7 +144,7 @@
     box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:50;pointer-events:none;transition:opacity .2s,transform .2s}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-  @media print{ .topbar,.chips,.catfilter,.searchwrap,.tbtn,#toast{display:none!important} .hero{border-radius:0} .console{box-shadow:none;margin-top:12px} }
+  @media print{ .topbar,.chips,.catfilter,.searchwrap,.tbtn,#toast{display:none!important} .hero{border-radius:0} .console{box-shadow:none;margin-top:12px} .prompt{border-left-color:#888!important} .prompt .badge{-webkit-print-color-adjust:exact;print-color-adjust:exact} body{background:#fff;color:#141b26} }
 </style>
 </head>
 <body>
@@ -153,7 +153,7 @@
   <nav class="navlinks">
     <a href="#do">できること</a><a href="#setup">セットアップ</a><a href="#roles">役割</a><a href="#trouble">困ったとき</a>
   </nav>
-  <button class="tbtn" id="tg">◐ 表示</button>
+  <button class="tbtn" id="tg" aria-label="テーマ切替">◐ 表示</button>
 </div></div>
 
 <div class="hero"><div class="in">
@@ -287,14 +287,14 @@ function copyText(t,btn){
   var done=function(){btn.textContent='✓ コピー';btn.classList.add('done');toastMsg('コピーしました');setTimeout(function(){btn.textContent='コピー';btn.classList.remove('done');},1600);};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fb(t,done);});}else{fb(t,done);}
 }
-function fb(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb();}catch(e){}ta.remove();}
+function fb(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb();}catch(e){toastMsg('コピーできませんでした');}ta.remove();}
 
 function promptRow(idx,item,nq){
   var cat=CATS[item[0]], id=String(idx);
   var el=document.createElement('div'); el.className='prompt'; el.style.borderLeftColor=cat.c;
   var badge=document.createElement('span'); badge.className='badge'; badge.style.background=cat.c; badge.textContent=cat.name.replace(/（.*/,''); el.appendChild(badge);
   var code=document.createElement('code'); code.innerHTML=hl(item[1],nq); el.appendChild(code);
-  var f=document.createElement('button'); f.className='fav'+(fav[id]?' on':''); f.type='button'; f.title='お気に入り'; f.textContent=fav[id]?'★':'☆';
+  var f=document.createElement('button'); f.className='fav'+(fav[id]?' on':''); f.type='button'; f.title='お気に入り'; f.setAttribute('aria-label','お気に入り'); f.textContent=fav[id]?'★':'☆';
   f.addEventListener('click',function(){ if(fav[id])delete fav[id]; else fav[id]=1; save(LS_FAV,fav); render(); });
   el.appendChild(f);
   var c=document.createElement('button'); c.className='copy'; c.type='button'; c.textContent='コピー';
@@ -342,7 +342,7 @@ function syncCat(){[].forEach.call(catEl.children,function(btn){btn.setAttribute
     b.addEventListener('click',function(){activeCat=k;qEl.value="";syncCat();render();});catEl.appendChild(b);});
   syncCat();
 })();
-qEl.addEventListener('input',function(){activeCat=activeCat; render();});
+qEl.addEventListener('input',function(){render();});
 render();
 
 // role grid

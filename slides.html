@@ -6,7 +6,7 @@
 <title>電話対応ソフト インストール手引書（スライド）</title>
 <style>
   :root{
-    --ink:#1d2430; --muted:#5a6474; --line:#e2e7ef;
+    --ink:#1d2430; --muted:#4d5666; --line:#e2e7ef;
     --acc:#2563eb; --accl:#e8f0fe; --accd:#1b4fd0;
     --ok:#128a4c; --okl:#e4f4ea; --pink:#e11d48; --pinkl:#fdeaee;
     --warm:#b45309; --warml:#fdf1e3; --teal:#0e7c86; --purp:#6d3bd1;
@@ -49,7 +49,7 @@
   .grid{display:grid;gap:clamp(12px,2vw,20px)}
   .g3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
   .g4{grid-template-columns:repeat(auto-fit,minmax(175px,1fr))}
-  .g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 
   .tile{border-radius:16px;padding:clamp(18px,3vw,30px) clamp(12px,2vw,18px);text-align:center}
   .tile .em{font-size:clamp(40px,9vw,60px);line-height:1}
@@ -143,6 +143,13 @@
   .counter{position:fixed;left:12px;bottom:12px;background:rgba(29,36,48,.72);color:#fff;font-weight:700;
     font-size:13px;padding:5px 12px;border-radius:999px;z-index:20;font-variant-numeric:tabular-nums}
   @media(max-width:640px){ .prog{right:7px} .prog a{width:7px;height:7px} }
+  @media print{
+    html{scroll-snap-type:none}
+    .slide{min-height:auto;page-break-after:always;page-break-inside:avoid}
+    .prog,.counter,.hint{display:none!important}
+    .title{background:var(--navy)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{background:#fff;color:#1d2430}
+  }
 </style>
 </head>
 <body>
@@ -300,8 +307,8 @@
     <div class="fcard" style="margin-bottom:clamp(14px,2.4vw,20px)">
       <div style="color:var(--acc);font-weight:800;font-size:clamp(17px,3vw,25px);margin-bottom:12px">① メールアドレス 読み上げ確認</div>
       <div style="background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:clamp(12px,2vw,18px);font-size:var(--fs-body)">
-        <div><span class="muted">入力：</span><b>i.aromaria@gmail.com</b></div>
-        <div style="margin-top:6px"><span class="muted">読み上げ：</span><b style="color:var(--pink)">アイ・ドット・アロマリア・アットマーク・ジーメール・ドット・コム</b></div>
+        <div><span class="muted">入力：</span><b>taro.yamada@example.com</b></div>
+        <div style="margin-top:6px"><span class="muted">読み上げ：</span><b style="color:var(--pink)">タロウ・ドット・ヤマダ・アットマーク・イグザンプル・ドット・コム</b></div>
       </div>
     </div>
     <div class="grid g2">
@@ -364,7 +371,7 @@
   var slides=[].slice.call(document.querySelectorAll('.slide'));
   var tot=slides.length; document.getElementById('tot').textContent=tot;
   var prog=document.getElementById('prog');
-  slides.forEach(function(s,k){ var a=document.createElement('a'); a.href='#'+s.id; prog.appendChild(a); });
+  slides.forEach(function(s,k){ var a=document.createElement('a'); a.href='#'+s.id; a.setAttribute('aria-label','スライド '+(k+1)); prog.appendChild(a); });
   var dots=[].slice.call(prog.children);
   var io=new IntersectionObserver(function(es){
     es.forEach(function(e){ if(e.isIntersecting){
@@ -376,7 +383,7 @@
   slides.forEach(function(s){ io.observe(s); });
   // keyboard for desktop
   document.addEventListener('keydown',function(e){
-    var cur=Math.round(window.scrollY/window.innerHeight);
+    var cur=dots.findIndex(function(d){return d.classList.contains('on');});
     if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ if(slides[cur+1]){slides[cur+1].scrollIntoView();e.preventDefault();} }
     if(e.key==='ArrowUp'||e.key==='ArrowLeft'||e.key==='PageUp'){ if(slides[cur-1]){slides[cur-1].scrollIntoView();e.preventDefault();} }
   });

@@ -40,7 +40,7 @@
   .warn{background:#fdf1e3;border:1px solid #f0d7ac;border-radius:10px;padding:12px 14px;font-size:13.5px;color:#8a5300;margin-top:12px}
   #copyArea{position:absolute;left:-9999px;top:0}
   .ok-flash{color:var(--ok);font-weight:700;font-size:14px;margin-top:8px;min-height:20px}
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px;border-top:1px solid var(--line);padding-top:16px}
 </style>
 </head>
 <body>
@@ -67,8 +67,8 @@
     <input id="url" placeholder="https://aromaria.github.io/-/">
 
     <div class="btns">
-      <button class="primary" onclick="dlZip()">📁 Obsidian用ZIPをダウンロード</button>
-      <button class="ghost" onclick="copyNb()">📄 NotebookLM用テキストをコピー</button>
+      <button type="button" class="primary" onclick="dlZip()">📁 Obsidian用ZIPをダウンロード</button>
+      <button type="button" class="ghost" onclick="copyNb()">📄 NotebookLM用テキストをコピー</button>
     </div>
     <div class="ok-flash" id="flash"></div>
   </div>
@@ -84,7 +84,7 @@
   <footer>Claude＋Obsidian＋NotebookLM 連携キット / トークン節約運用</footer>
 </div>
 
-<textarea id="copyArea"></textarea>
+<textarea id="copyArea" aria-hidden="true" tabindex="-1"></textarea>
 <script>
 function val(id){return document.getElementById(id).value.trim();}
 function splitList(s){return s.split(/[、,／\/\n]/).map(x=>x.trim()).filter(Boolean);}

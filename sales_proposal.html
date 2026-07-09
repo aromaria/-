@@ -6,7 +6,7 @@
 <title>販売提案書 — AI業務効率化ソフト</title>
 <style>
   :root{
-    --ink:#1a2230; --sub:#5a6577; --line:#dde3ee; --paper:#f3f5fa; --card:#fff; --soft:#f6f8fc;
+    --ink:#1a2230; --sub:#4a556a; --line:#dde3ee; --paper:#f3f5fa; --card:#fff; --soft:#f6f8fc;
     --navy:#12213f; --acc:#2f6bff; --accd:#1c4fd6; --accl:#e6eeff;
     --ok:#0f7a43; --okl:#e4f4ea; --warn:#b45309; --warnl:#fbf0dd; --pink:#c81e50;
     --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
@@ -16,7 +16,7 @@
       --navy:#0a1428; --accl:#16264f; --okl:#0f2a1c; --warnl:#33240f; }
   }
   :root[data-theme="dark"]{ --ink:#e7ecf5; --sub:#9aa6bb; --line:#28324a; --paper:#0c1220; --card:#141d2e; --soft:#101827; --navy:#0a1428; --accl:#16264f; --okl:#0f2a1c; --warnl:#33240f; }
-  :root[data-theme="light"]{ --ink:#1a2230; --sub:#5a6577; --line:#dde3ee; --paper:#f3f5fa; --card:#fff; --soft:#f6f8fc; --navy:#12213f; --accl:#e6eeff; --okl:#e4f4ea; --warnl:#fbf0dd; }
+  :root[data-theme="light"]{ --ink:#1a2230; --sub:#4a556a; --line:#dde3ee; --paper:#f3f5fa; --card:#fff; --soft:#f6f8fc; --navy:#12213f; --accl:#e6eeff; --okl:#e4f4ea; --warnl:#fbf0dd; }
 
   *{box-sizing:border-box}
   body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.8;font-size:15.5px;-webkit-font-smoothing:antialiased}
@@ -62,11 +62,11 @@
   .toggle{position:fixed;top:12px;right:12px;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;z-index:9}
   a{color:var(--accd)}
   footer{color:var(--sub);font-size:12px;margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
-  @media print{ .toggle{display:none} .cover{border-radius:0} body{background:#fff} }
+  @media print{ .toggle{display:none} .cover{border-radius:0;-webkit-print-color-adjust:exact;print-color-adjust:exact} body{background:#fff;color:#1a2230} table{page-break-inside:avoid} .tier{break-inside:avoid} }
 </style>
 </head>
 <body>
-<button class="toggle" id="tg">◐ 表示</button>
+<button class="toggle" id="tg" aria-label="テーマ切替">◐ 表示</button>
 <div class="doc">
   <div class="cover">
     <div class="k">販売提案書 ／ PROPOSAL</div>

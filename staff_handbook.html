@@ -6,7 +6,7 @@
 <title>電話対応ソフト かんたん手順書</title>
 <style>
   :root{
-    --navy:#102a54; --ink:#1b2430; --muted:#586373; --line:#e3e8f0;
+    --navy:#102a54; --ink:#1b2430; --muted:#4d5868; --line:#e3e8f0;
     --paper:#eef2f7; --card:#ffffff; --acc:#2563eb; --accd:#1b4fd0; --accl:#e7f0fe;
     --ok:#0f7a43; --okl:#e4f4ea; --warm:#b45309; --warml:#fdf1e3; --pink:#c81e50;
     --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
@@ -19,7 +19,7 @@
   }
   :root[data-theme="dark"]{ --navy:#0c1c38; --ink:#e7ecf4; --muted:#9aa7b8; --line:#28323f;
     --paper:#0e131b; --card:#161e29; --accl:#173257; --okl:#123324; --warml:#33240f; }
-  :root[data-theme="light"]{ --navy:#102a54; --ink:#1b2430; --muted:#586373; --line:#e3e8f0;
+  :root[data-theme="light"]{ --navy:#102a54; --ink:#1b2430; --muted:#4d5868; --line:#e3e8f0;
     --paper:#eef2f7; --card:#ffffff; --accl:#e7f0fe; --okl:#e4f4ea; --warml:#fdf1e3; }
 
   *{box-sizing:border-box}
@@ -87,10 +87,16 @@
   a{color:var(--accd)}
   .toggle{position:fixed;top:12px;right:12px;background:var(--card);border:1px solid var(--line);
     color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;z-index:9}
+  @media print{
+    .toggle,.searchbar,.chips{display:none!important}
+    body{background:#fff;color:#1b2430}
+    .qcard{break-inside:avoid}
+    header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
 </style>
 </head>
 <body>
-<button class="toggle" id="tg">◐ 表示</button>
+<button class="toggle" id="tg" aria-label="テーマ切替">◐ 表示</button>
 <header>
   <div class="eye">超古代PJ事務局 ／ スタッフ用</div>
   <h1>電話対応ソフト<br>かんたん手順書</h1>
@@ -153,8 +159,8 @@
       <button class="clr" id="clr" aria-label="消す">✕</button>
     </div>
     <div class="chips" id="chips"></div>
-    <p class="hitcount" id="hitcount"></p>
-    <div id="results"></div>
+    <p class="hitcount" id="hitcount" aria-live="polite"></p>
+    <div id="results" aria-live="polite"></div>
   </section>
 
   <footer>
@@ -236,9 +242,13 @@ function score(item,nq){
 }
 function hl(text,nq){
   if(!nq) return esc(text);
-  var e=esc(text);
-  // ハイライトは入力語そのものが答え文に含まれる場合のみ
-  try{ if(nq.length>=2){ var re=new RegExp(nq.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'); e=e.replace(re,'<mark>$&</mark>'); } }catch(_){}
+  var e=esc(text), raw=norm(text);
+  try{ if(nq.length>=2){
+    var re=new RegExp(nq.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');
+    e=e.replace(re,'<mark>$&</mark>');
+    var words=nq.split(/(?=[ぁ-ん])/);
+    if(words.length>1) words.forEach(function(w){ if(w.length>=2){ var wr=new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'); e=e.replace(wr,'<mark>$&</mark>'); }});
+  }}catch(_){}
   return e;
 }
 function card(item,nq,top){
@@ -264,7 +274,7 @@ function render(){
       KB.map(function(it){return card(it,"",false);}).join('');
     return;
   }
-  hit.textContent='「'+esc(raw)+'」に近い答え：'+scored.length+'件';
+  hit.textContent='「'+raw+'」に近い答え：'+scored.length+'件';
   resEl.innerHTML=scored.map(function(o,i){return card(o.it,nq,i===0);}).join('');
 }
 function setQ(v){qEl.value=v; render(); qEl.focus();}

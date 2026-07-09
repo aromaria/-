@@ -57,9 +57,10 @@
   .preset{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:11px 12px;text-align:left;font-size:13.5px;cursor:pointer}
   .preset:hover{border-color:var(--acc)} .preset b{display:block;font-size:13px}
   .console{background:#0b1220;color:#7fd7ff;font-family:var(--mono);font-size:12.5px;border-radius:10px;padding:12px;height:96px;overflow:auto;margin-top:12px}
-  .console .s{color:#94a3b8} .console .g{color:#5ee6a0} .console .r{color:#ff8b8b}
+  .console .s{color:#a8b6c8} .console .g{color:#5ee6a0} .console .r{color:#ff8b8b}
   aside .card{position:sticky;top:14px}
   #out{width:100%;min-height:420px;font-size:14px}
+  @media(max-width:520px){ #out{min-height:220px} }
   .badge{font-size:11px;font-weight:800;color:#fff;background:var(--ok);border-radius:999px;padding:2px 9px}
   footer{color:var(--sub);font-size:12px;text-align:center;margin-top:26px;line-height:1.8}
   :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
@@ -71,7 +72,7 @@
 <header class="top"><div class="row">
   <h1>AI事務局エージェント</h1>
   <span class="badge" id="keystate">キー未設定</span>
-  <button class="tbtn" id="tg">◐ 表示</button>
+  <button class="tbtn" id="tg" aria-label="テーマ切替">◐ 表示</button>
   <p class="sub">自分のAPIキーを入れると、この画面から直接AIに指示を出せます。キーは<b>あなたのブラウザだけ</b>に保存され、送信先は<b>AI提供元（OpenAI／Anthropic）のみ</b>です。</p>
 </div></header>
 
@@ -81,11 +82,11 @@
     <div class="card">
       <h2><span class="step">1</span> AIキーを取得する</h2>
       <p class="hint">初めての方向けの案内です。ボタンで切り替わります。（キーは各社の公式サイトで発行します）</p>
-      <div class="tabs" id="tabs">
-        <button class="tab" data-p="p-openai" aria-selected="true">🟢 OpenAI のキー</button>
-        <button class="tab" data-p="p-charge">💳 残高チャージ</button>
-        <button class="tab" data-p="p-claude">🟣 Claude のキー</button>
-        <button class="tab" data-p="p-price">💰 料金・安全</button>
+      <div class="tabs" id="tabs" role="tablist">
+        <button class="tab" role="tab" data-p="p-openai" aria-selected="true">🟢 OpenAI のキー</button>
+        <button class="tab" role="tab" data-p="p-charge" aria-selected="false">💳 残高チャージ</button>
+        <button class="tab" role="tab" data-p="p-claude" aria-selected="false">🟣 Claude のキー</button>
+        <button class="tab" role="tab" data-p="p-price" aria-selected="false">💰 料金・安全</button>
       </div>
       <div id="p-openai" class="panel on">
         <a class="link" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI キー発行ページを開く ↗</a>
@@ -249,17 +250,17 @@ $('run').addEventListener('click',async function(){
       var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
         headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
         body:JSON.stringify({model:model,max_tokens:2000,system:sys||undefined,messages:[{role:'user',content:inst}]})});
-      var d=await r.json();
+      var d; try{d=await r.json();}catch(_){throw {status:r.status,message:'応答の形式が不正です'};}
       if(!r.ok)throw {status:r.status,message:(d.error&&d.error.message)};
-      text=(d.content&&d.content[0]&&d.content[0].text)||'';
+      text=(d.content&&d.content.length>0&&d.content[0].text)||'';
     }else{
       var msgs=[]; if(sys)msgs.push({role:'system',content:sys}); msgs.push({role:'user',content:inst});
       var r2=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
         headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
         body:JSON.stringify({model:model,messages:msgs})});
-      var d2=await r2.json();
+      var d2; try{d2=await r2.json();}catch(_){throw {status:r2.status,message:'応答の形式が不正です'};}
       if(!r2.ok)throw {status:r2.status,message:(d2.error&&d2.error.message)};
-      text=(d2.choices&&d2.choices[0]&&d2.choices[0].message.content)||'';
+      text=(d2.choices&&d2.choices.length>0&&d2.choices[0].message&&d2.choices[0].message.content)||'';
     }
     $('out').value=text; log('完了しました。結果を表示しました。','g');
   }catch(err){
