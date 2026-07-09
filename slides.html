@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>電話対応ソフト インストール手引書（スライド）</title>
+<style>
+  :root{
+    --ink:#1d2430; --muted:#5a6474; --line:#e2e7ef;
+    --acc:#2563eb; --accl:#e8f0fe; --accd:#1b4fd0;
+    --ok:#128a4c; --okl:#e4f4ea; --pink:#e11d48; --pinkl:#fdeaee;
+    --warm:#b45309; --warml:#fdf1e3; --teal:#0e7c86; --purp:#6d3bd1;
+    --card:#fff; --paper:#f5f7fa; --navy:#102a54; --gray:#b6beca;
+    --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
+    --fs-eye:clamp(12px,2.4vw,15px);
+    --fs-h:clamp(24px,5.4vw,42px);
+    --fs-lead:clamp(16px,2.9vw,23px);
+    --fs-body:clamp(15px,2.6vw,21px);
+    --fs-small:clamp(13px,2.2vw,18px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{font-family:var(--font);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+
+  .slide{min-height:100svh;scroll-snap-align:start;scroll-snap-stop:always;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:clamp(22px,5.5vw,64px) clamp(18px,5vw,64px);position:relative}
+  .inner{width:100%;max-width:1040px;margin:0 auto}
+  .slide + .slide{border-top:1px solid rgba(0,0,0,.04)}
+
+  .eyebrow{font-size:var(--fs-eye);letter-spacing:.12em;color:var(--acc);font-weight:800;margin-bottom:8px;text-transform:uppercase}
+  h2{font-size:var(--fs-h);line-height:1.22;margin-bottom:clamp(14px,2.6vw,26px);text-wrap:balance}
+  .lead{font-size:var(--fs-lead);color:var(--muted);line-height:1.65;margin-bottom:clamp(14px,2.4vw,22px)}
+  .muted{color:var(--muted)} .b{font-weight:800} .center{text-align:center}
+
+  /* title */
+  .title{background:var(--navy);color:#fff}
+  .title .kick{color:#9cc0ff;font-weight:800;font-size:clamp(14px,3vw,20px);margin-bottom:14px}
+  .title h1{font-size:clamp(30px,8vw,60px);line-height:1.12;margin-bottom:clamp(16px,3vw,28px);text-wrap:balance}
+  .title p{color:#cfdef5;font-size:clamp(15px,3vw,23px);line-height:1.65}
+  .names{display:flex;gap:10px;margin-top:clamp(18px,3.4vw,32px);flex-wrap:wrap}
+  .names span{background:var(--accd);color:#fff;font-weight:800;border-radius:8px;padding:8px 18px;font-size:clamp(14px,2.6vw,20px)}
+  .tfoot{color:#9cc0ff;font-size:clamp(12px,2.2vw,17px);margin-top:22px}
+  .hint{position:absolute;left:0;right:0;bottom:clamp(16px,3vh,34px);text-align:center;color:#9cc0ff;font-size:14px;
+    animation:bob 1.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  @media(prefers-reduced-motion:reduce){.hint{animation:none}}
+
+  .grid{display:grid;gap:clamp(12px,2vw,20px)}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .g4{grid-template-columns:repeat(auto-fit,minmax(175px,1fr))}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+
+  .tile{border-radius:16px;padding:clamp(18px,3vw,30px) clamp(12px,2vw,18px);text-align:center}
+  .tile .em{font-size:clamp(40px,9vw,60px);line-height:1}
+  .tile .t{font-weight:800;font-size:clamp(18px,3.2vw,26px);margin:10px 0 4px}
+  .tile .d{color:var(--muted);font-size:var(--fs-small)}
+
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,3vw,28px) 12px;text-align:center}
+  .mcard .em{font-size:clamp(38px,8vw,56px)} .mcard .t{color:var(--pink);font-weight:800;font-size:clamp(17px,3vw,24px);margin:8px 0 4px}
+  .mcard .d{color:var(--muted);font-size:var(--fs-small)}
+
+  /* pipeline */
+  .pipe{display:flex;flex-direction:column;gap:clamp(8px,1.4vw,14px)}
+  .prow{display:flex;align-items:center;gap:clamp(12px,2vw,20px)}
+  .pnum{flex:none;width:clamp(38px,6vw,54px);height:clamp(38px,6vw,54px);border-radius:50%;background:var(--acc);color:#fff;
+    font-weight:800;font-size:clamp(18px,3vw,26px);display:flex;align-items:center;justify-content:center}
+  .prow.hi .pnum{background:var(--ok)}
+  .pbar{flex:1;background:var(--accl);border-radius:12px;padding:clamp(12px,2vw,18px) clamp(14px,2.2vw,22px);font-weight:700;font-size:var(--fs-body)}
+  .prow.hi .pbar{background:var(--okl)}
+
+  /* roadmap as responsive cards */
+  .road{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:clamp(12px,2vw,18px)}
+  .rcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,2.6vw,24px);text-align:center;position:relative}
+  .rcard.cur{border-color:var(--ok);box-shadow:0 0 0 3px var(--okl) inset}
+  .rdot{width:clamp(52px,8vw,66px);height:clamp(52px,8vw,66px);border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:clamp(24px,4vw,32px)}
+  .rname{font-weight:800;font-size:clamp(16px,2.8vw,22px)}
+  .rdesc{color:var(--muted);font-size:var(--fs-small);margin-top:4px}
+  .rpill{display:inline-block;margin-top:10px;font-weight:800;font-size:clamp(12px,2.2vw,16px);padding:4px 12px;border-radius:999px}
+  .curtag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;font-weight:800;
+    font-size:clamp(11px,2vw,14px);padding:4px 12px;border-radius:999px;white-space:nowrap}
+
+  /* steps */
+  .dhead{display:flex;align-items:center;gap:clamp(12px,2vw,20px);background:var(--accl);border-radius:16px;
+    padding:clamp(14px,2.4vw,22px) clamp(16px,2.6vw,26px);margin-bottom:clamp(16px,2.6vw,24px)}
+  .dhead .em{font-size:clamp(36px,7vw,52px)} .dhead h2{margin:0;font-size:clamp(20px,4.4vw,36px)} .dhead .os{color:var(--muted);font-size:var(--fs-small)}
+  .steps{display:flex;flex-direction:column;gap:clamp(12px,2vw,18px)}
+  .step{display:flex;gap:clamp(14px,2.2vw,22px);align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,2.6vw,24px)}
+  .snum{flex:none;width:clamp(42px,6.5vw,58px);height:clamp(42px,6.5vw,58px);border-radius:14px;background:var(--acc);color:#fff;
+    font-weight:800;font-size:clamp(20px,3.4vw,30px);display:flex;align-items:center;justify-content:center}
+  .snum.ok{background:var(--ok)}
+  .step .st{font-weight:800;font-size:clamp(17px,3vw,26px)} .step .sb{color:var(--muted);font-size:var(--fs-body);margin-top:5px;line-height:1.55}
+  .url{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2f8;border:1px solid var(--line);border-radius:6px;padding:.15em .45em;font-size:.86em;word-break:break-all}
+
+  /* usage */
+  .kv{display:flex;flex-direction:column;gap:clamp(12px,2vw,16px)}
+  .kvrow{display:flex;gap:clamp(14px,2.2vw,20px);align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(14px,2.4vw,22px)}
+  .kk{flex:none;width:clamp(46px,7vw,62px);height:clamp(46px,7vw,62px);border-radius:50%;background:var(--accl);color:var(--acc);
+    font-weight:800;font-size:clamp(20px,3.4vw,30px);display:flex;align-items:center;justify-content:center}
+  .kvrow .d{font-size:var(--fs-body);line-height:1.5}
+
+  /* fields */
+  .fcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,2.8vw,28px)}
+  .fcard li{list-style:none;font-size:var(--fs-body);padding:clamp(6px,1vw,10px) 0;display:flex;align-items:center;gap:.55em}
+  .fcard li::before{content:"●";color:var(--acc);font-size:.65em}
+  .req{color:var(--pink);font-weight:800;font-size:.72em;margin-left:.3em}
+
+  /* prices */
+  .prices{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,2.8vw,28px)}
+  .prices h3{font-size:clamp(17px,3vw,25px);color:var(--acc);margin-bottom:14px}
+  .prow2{margin-bottom:clamp(12px,2vw,18px)}
+  .prow2 .nm{font-weight:700;font-size:var(--fs-body);margin-bottom:6px}
+  .barline{display:flex;align-items:center;gap:12px}
+  .bar{height:clamp(24px,4vw,36px);border-radius:8px;min-width:8px}
+  .barval{font-weight:800;font-size:clamp(17px,3vw,26px);white-space:nowrap}
+  .sidecard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,2.4vw,22px)}
+  .sidecard .h{color:var(--acc);font-weight:800;font-size:clamp(16px,2.8vw,23px)}
+  .sidecard .m{font-size:var(--fs-body);margin-top:6px} .sidecard .s{color:var(--muted);font-size:var(--fs-small);margin-top:4px}
+
+  .callout{border-radius:16px;padding:clamp(16px,2.6vw,26px);font-size:var(--fs-body);line-height:1.6}
+  .callout.ok{background:var(--okl);border:1px solid #9fd8b4;color:#0d5a34}
+  .callout.warm{background:var(--warml);border:1px solid #e8c58a;color:#7a4a0a}
+  .callout.acc{background:var(--accl)}
+
+  .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(12px,2vw,20px)}
+  .scard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(14px,2.4vw,22px)}
+  .srow{padding:clamp(6px,1vw,9px) 0} .srow .n{font-weight:800;font-size:var(--fs-body);display:flex;gap:.5em;align-items:baseline}
+  .srow .n::before{content:"●";color:var(--acc);font-size:.55em}
+  .srow .m{color:var(--muted);font-size:var(--fs-small);margin-left:1.1em}
+
+  .qa{display:flex;flex-direction:column;gap:clamp(12px,2vw,16px)}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:clamp(15px,2.4vw,22px)}
+  .qcard .q{font-weight:800;font-size:var(--fs-body)} .qcard .q b{color:var(--pink)}
+  .qcard .a{color:var(--muted);font-size:var(--fs-body);margin-top:5px;line-height:1.5} .qcard .a b{color:var(--ok)}
+
+  .stack{display:flex;flex-direction:column;gap:clamp(14px,2.4vw,20px)}
+  .list2{font-size:var(--fs-body);line-height:1.75;margin-top:8px}
+
+  /* progress dots + counter */
+  .prog{position:fixed;right:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:20}
+  .prog a{width:9px;height:9px;border-radius:50%;background:rgba(29,36,48,.22);display:block}
+  .prog a.on{background:var(--acc);transform:scale(1.35)}
+  .counter{position:fixed;left:12px;bottom:12px;background:rgba(29,36,48,.72);color:#fff;font-weight:700;
+    font-size:13px;padding:5px 12px;border-radius:999px;z-index:20;font-variant-numeric:tabular-nums}
+  @media(max-width:640px){ .prog{right:7px} .prog a{width:7px;height:7px} }
+</style>
+</head>
+<body>
+
+  <!-- 1 -->
+  <section class="slide title" id="s1"><div class="inner">
+    <div class="kick">リザスト電話申込サポートソフト</div>
+    <h1>インストール & 使い方 手引書</h1>
+    <p>電話でのお申込みを、聞き取り→確認→リザスト手入力までサポート。<br>スマホ・パソコンで使えます。リンクを開いて名前を選ぶだけ。</p>
+    <div class="names"><span>玉川</span><span>岩本</span><span>藤本</span><span>田尻</span></div>
+    <div class="tfoot">事務局スタッフ4人用 ／ 第1段階（手入力サポート型）</div>
+  </div><div class="hint">↓ 指で上にスワイプ（スクロール）で次へ</div></section>
+
+  <!-- 2 -->
+  <section class="slide" id="s2"><div class="inner">
+    <div class="eyebrow">ひと目でわかる</div><h2>このソフトの特長</h2>
+    <div class="grid g3">
+      <div class="tile" style="background:var(--accl)"><div class="em">👥</div><div class="t" style="color:var(--acc)">4人で共有</div><div class="d">全員が同じ最新データ</div></div>
+      <div class="tile" style="background:#e1f1f2"><div class="em">📱💻</div><div class="t" style="color:var(--teal)">スマホ & PC</div><div class="d">どちらでも使える</div></div>
+      <div class="tile" style="background:#ece6fb"><div class="em">🔗</div><div class="t" style="color:var(--purp)">URLで開くだけ</div><div class="d">インストール不要</div></div>
+      <div class="tile" style="background:var(--okl)"><div class="em">🛡️</div><div class="t" style="color:var(--ok)">3つのミス防止</div><div class="d">聞き間違い・漏れ・区分</div></div>
+      <div class="tile" style="background:var(--accl)"><div class="em">💾</div><div class="t" style="color:var(--acc)">保存で自動共有</div><div class="d">クラウドに記録</div></div>
+      <div class="tile" style="background:var(--warml)"><div class="em">🚫</div><div class="t" style="color:var(--warm)">自動送信しない</div><div class="d">最後は人が手入力（安全）</div></div>
+    </div>
+  </div></section>
+
+  <!-- 3 -->
+  <section class="slide" id="s3"><div class="inner">
+    <div class="eyebrow">なぜ必要？</div><h2>目的 — 4つのミスを防ぐ</h2>
+    <p class="lead">電話でのお申込みは、事務局が本人に代わってリザスト申込画面へ手入力します。そのとき起きやすいミスを、このソフトで防ぎます。</p>
+    <div class="grid g4">
+      <div class="mcard"><div class="em">🗣️</div><div class="t">聞き間違い</div><div class="d">メール・氏名の聞き取り</div></div>
+      <div class="mcard"><div class="em">✍️</div><div class="t">入力漏れ</div><div class="d">必須項目の入れ忘れ</div></div>
+      <div class="mcard"><div class="em">🎫</div><div class="t">参加区分ミス</div><div class="d">参加回・方法の取り違え</div></div>
+      <div class="mcard"><div class="em">💳</div><div class="t">支払い確認漏れ</div><div class="d">方法・料金の確認忘れ</div></div>
+    </div>
+  </div></section>
+
+  <!-- 4 -->
+  <section class="slide" id="s4"><div class="inner">
+    <div class="eyebrow">全体の流れ</div><h2>電話を受けてから入金管理まで</h2>
+    <div class="pipe">
+      <div class="prow"><div class="pnum">1</div><div class="pbar">電話申込を受ける</div></div>
+      <div class="prow"><div class="pnum">2</div><div class="pbar">ソフトに入力</div></div>
+      <div class="prow hi"><div class="pnum">3</div><div class="pbar">入力漏れ・メール形式・参加区分を確認</div></div>
+      <div class="prow"><div class="pnum">4</div><div class="pbar">リザスト転記まとめを表示</div></div>
+      <div class="prow"><div class="pnum">5</div><div class="pbar">リザスト画面へ手入力</div></div>
+      <div class="prow"><div class="pnum">6</div><div class="pbar">ステータスを「リザスト入力済み」に</div></div>
+      <div class="prow"><div class="pnum">7</div><div class="pbar">入金状況を管理</div></div>
+    </div>
+  </div></section>
+
+  <!-- 5 -->
+  <section class="slide" id="s5"><div class="inner">
+    <div class="eyebrow">位置づけ</div><h2>開発ロードマップ — いまは第1段階</h2>
+    <div class="road">
+      <div class="rcard cur"><div class="curtag">▼ 現在地</div><div class="rdot" style="background:var(--ok)">1</div><div class="rname">第1段階</div><div class="rdesc">手入力サポート</div><div class="rpill" style="background:var(--okl);color:var(--ok)">✅ 稼働中</div></div>
+      <div class="rcard"><div class="rdot" style="background:var(--acc)">2</div><div class="rname">第2段階</div><div class="rdesc">CSV/シート保存・共有</div><div class="rpill" style="background:var(--accl);color:var(--acc)">○ 共有稼働</div></div>
+      <div class="rcard"><div class="rdot" style="background:var(--gray)">3</div><div class="rname">第3段階</div><div class="rdesc">API で登録確認</div><div class="rpill" style="background:#eef0f4;color:var(--muted)">将来</div></div>
+      <div class="rcard"><div class="rdot" style="background:var(--gray)">4</div><div class="rname">第4段階</div><div class="rdesc">承認後に自動登録</div><div class="rpill" style="background:#eef0f4;color:var(--muted)">将来</div></div>
+    </div>
+    <p class="center muted" style="margin-top:20px;font-size:var(--fs-small)">いきなり本番送信はしません。安全を確かめながら段階的に広げます。</p>
+  </div></section>
+
+  <!-- 6 -->
+  <section class="slide" id="s6"><div class="inner">
+    <div class="eyebrow">はじめる前に</div><h2>用意するもの</h2>
+    <div class="callout ok" style="margin-bottom:clamp(18px,3vw,28px)"><b>✅ 用意するもの：事務局から届く「接続リンク」だけ</b><br>1回開くと自動で準備完了。以後はふつうのURLを開くだけ。</div>
+    <div class="grid g3">
+      <div class="step" style="flex-direction:column;align-items:flex-start"><div class="snum">1</div><div><div class="st">リンクを開く</div><div class="sb">接続リンクをタップ/クリック</div></div></div>
+      <div class="step" style="flex-direction:column;align-items:flex-start"><div class="snum">2</div><div><div class="st">名前を選ぶ</div><div class="sb">右上「対応者」で自分の名前</div></div></div>
+      <div class="step" style="flex-direction:column;align-items:flex-start"><div class="snum ok">✓</div><div><div class="st">使えます</div><div class="sb">以後はURLを開くだけ</div></div></div>
+    </div>
+  </div></section>
+
+  <!-- 7 -->
+  <section class="slide" id="s7"><div class="inner">
+    <div class="dhead"><div class="em">💻</div><div><h2 style="margin:0">パソコン（Windows / Mac）</h2><div class="os">Chrome・Safari・Edge どれでもOK</div></div></div>
+    <div class="steps">
+      <div class="step"><div class="snum">1</div><div><div class="st">接続リンクを開く</div><div class="sb">接続リンクをクリック。アプリ画面（新規入力・リザスト転記・対応一覧）が出ます。</div></div></div>
+      <div class="step"><div class="snum">2</div><div><div class="st">自分の名前を選ぶ</div><div class="sb">右上「対応者」で自分の名前（玉川・岩本・藤本・田尻）。</div></div></div>
+      <div class="step"><div class="snum ok">✓</div><div><div class="st">完了・ブックマーク</div><div class="sb">お気に入りに追加。次からは <span class="url">https://aromaria.github.io/-/</span> を開くだけ。</div></div></div>
+    </div>
+  </div></section>
+
+  <!-- 8 -->
+  <section class="slide" id="s8"><div class="inner">
+    <div class="dhead"><div class="em">📱</div><div><h2 style="margin:0">iPhone</h2><div class="os">Safari で開きます</div></div></div>
+    <div class="steps">
+      <div class="step"><div class="snum">1</div><div><div class="st">接続リンクを Safari で開く</div><div class="sb">接続リンクをタップ。Safari で開きます。</div></div></div>
+      <div class="step"><div class="snum">2</div><div><div class="st">自分の名前を選ぶ</div><div class="sb">右上「対応者」で自分の名前。</div></div></div>
+      <div class="step"><div class="snum">3</div><div><div class="st">ホーム画面に追加</div><div class="sb">下の「共有」ボタン →「ホーム画面に追加」→「追加」。アイコンからアプリのように開けます。</div></div></div>
+    </div>
+  </div></section>
+
+  <!-- 9 -->
+  <section class="slide" id="s9"><div class="inner">
+    <div class="dhead"><div class="em">🤖</div><div><h2 style="margin:0">Android スマホ</h2><div class="os">Chrome で開きます</div></div></div>
+    <div class="steps">
+      <div class="step"><div class="snum">1</div><div><div class="st">接続リンクを Chrome で開く</div><div class="sb">接続リンクをタップ。Chrome で開きます。</div></div></div>
+      <div class="step"><div class="snum">2</div><div><div class="st">自分の名前を選ぶ</div><div class="sb">右上「対応者」で自分の名前。</div></div></div>
+      <div class="step"><div class="snum">3</div><div><div class="st">ホーム画面に追加</div><div class="sb">右上メニュー（︙）→「ホーム画面に追加」。アイコンから開けます。</div></div></div>
+    </div>
+  </div></section>
+
+  <!-- 10 -->
+  <section class="slide" id="s10"><div class="inner">
+    <div class="eyebrow">毎日の使い方</div><h2>4ステップ（始・受・写・進）</h2>
+    <div class="kv">
+      <div class="kvrow"><div class="kk">始</div><div class="d">作業の前に「対応一覧」→「<b>クラウドから読込</b>」を1回（みんなの最新がそろう）</div></div>
+      <div class="kvrow"><div class="kk">受</div><div class="d">電話を受けたら「<b>新規入力</b>」で聞き取り。「確認チェック」にも印をつける</div></div>
+      <div class="kvrow"><div class="kk">写</div><div class="d">「<b>リザスト転記</b>」でコピー → リザスト画面へ手入力 →「この内容で保存」</div></div>
+      <div class="kvrow"><div class="kk">進</div><div class="d">状況が変わったら「対応一覧」で<b>ステータス</b>を変える（保存で自動共有）</div></div>
+    </div>
+  </div></section>
+
+  <!-- 11 -->
+  <section class="slide" id="s11"><div class="inner">
+    <div class="eyebrow">新規入力</div><h2>電話で聞き取る項目</h2>
+    <div class="grid g2">
+      <ul class="fcard">
+        <li>受付日（自動）</li><li>対応者名</li><li>姓 / 名<span class="req">必須</span></li>
+        <li>ふりがな（せい / めい）<span class="req">必須</span></li><li>メールアドレス<span class="req">必須</span></li>
+        <li>メール（確認用）<span class="req">必須</span></li><li>携帯電話番号<span class="req">必須</span></li><li>領収書の宛名</li>
+      </ul>
+      <ul class="fcard">
+        <li>参加希望回<span class="req">必須</span></li><li>参加方法<span class="req">必須</span></li><li>支払い方法<span class="req">必須</span></li>
+        <li>振込予定日</li><li>備考メモ</li>
+        <li style="color:var(--muted);font-size:var(--fs-small)">※ 赤い「必須」は入れないと先へ進めません</li>
+      </ul>
+    </div>
+  </div></section>
+
+  <!-- 12 -->
+  <section class="slide" id="s12"><div class="inner">
+    <div class="eyebrow">選択のポイント</div><h2>料金・参加回・支払い（選択式でミス防止）</h2>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div class="prices">
+        <h3>参加方法と料金</h3>
+        <div class="prow2"><div class="nm">会場参加＋アーカイブ</div><div class="barline"><div class="bar" style="flex:0 0 74%;background:var(--acc)"></div><div class="barval" style="color:var(--acc)">7,000円</div></div></div>
+        <div class="prow2"><div class="nm">Zoom参加＋アーカイブ</div><div class="barline"><div class="bar" style="flex:0 0 42%;background:var(--teal)"></div><div class="barval" style="color:var(--teal)">4,000円</div></div></div>
+        <div class="prow2" style="margin-bottom:0"><div class="nm">アーカイブ視聴のみ</div><div class="barline"><div class="bar" style="flex:0 0 21%;background:var(--purp)"></div><div class="barval" style="color:var(--purp)">2,000円</div></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:clamp(12px,2vw,18px)">
+        <div class="sidecard"><div class="h">参加回</div><div class="m">第1〜5回 ／ 全5回</div><div class="s">複数回もOK</div></div>
+        <div class="sidecard"><div class="h">支払い方法</div><div class="m">銀行振込／PayPal／その他</div><div class="s">電話申込は銀行振込が基本</div></div>
+      </div>
+    </div>
+    <div class="callout ok" style="margin-top:clamp(16px,2.6vw,24px)"><b>合計金額は「参加方法 × 参加回数」で自動表示</b> → 料金の言い間違い・確認漏れを防ぎます</div>
+  </div></section>
+
+  <!-- 13 -->
+  <section class="slide" id="s13"><div class="inner">
+    <div class="eyebrow" style="color:var(--ok)">安心機能</div><h2>入力ミスを防ぐ3つのしくみ</h2>
+    <div class="fcard" style="margin-bottom:clamp(14px,2.4vw,20px)">
+      <div style="color:var(--acc);font-weight:800;font-size:clamp(17px,3vw,25px);margin-bottom:12px">① メールアドレス 読み上げ確認</div>
+      <div style="background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:clamp(12px,2vw,18px);font-size:var(--fs-body)">
+        <div><span class="muted">入力：</span><b>i.aromaria@gmail.com</b></div>
+        <div style="margin-top:6px"><span class="muted">読み上げ：</span><b style="color:var(--pink)">アイ・ドット・アロマリア・アットマーク・ジーメール・ドット・コム</b></div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="fcard"><div style="color:var(--acc);font-weight:800;font-size:clamp(17px,3vw,25px)">② 必須項目チェック</div><div style="font-size:var(--fs-body);margin-top:8px">姓・名・ふりがな・メール・携帯・参加回・参加方法・支払い方法</div><div class="muted" style="font-size:var(--fs-small);margin-top:6px">未入力があると確認画面へ進めません</div></div>
+      <div class="fcard"><div style="color:var(--acc);font-weight:800;font-size:clamp(17px,3vw,25px)">③ 二重登録チェック</div><div style="font-size:var(--fs-body);margin-top:8px">同じメール／電話の申込があると警告</div><div style="color:var(--pink);font-size:var(--fs-small);margin-top:6px">「同じメールの申込があります。ご確認ください」</div></div>
+    </div>
+  </div></section>
+
+  <!-- 14 -->
+  <section class="slide" id="s14"><div class="inner">
+    <div class="eyebrow">対応状況の共有</div><h2>対応ステータス（4人で進捗を共有）</h2>
+    <div class="sgrid">
+      <div class="scard">
+        <div class="srow"><div class="n">未対応</div><div class="m">まだ手をつけていない</div></div>
+        <div class="srow"><div class="n">聞き取り中</div><div class="m">電話で聞き取り中</div></div>
+        <div class="srow"><div class="n">確認待ち</div><div class="m">内容の確認待ち</div></div>
+        <div class="srow"><div class="n">リザスト入力待ち</div><div class="m">入力する前</div></div>
+        <div class="srow"><div class="n">リザスト入力済み</div><div class="m">申込画面へ入力済み</div></div>
+        <div class="srow"><div class="n">①振込先伝達・入金予定日確認済み</div><div class="m">電話で伝え、予定日を確認</div></div>
+      </div>
+      <div class="scard">
+        <div class="srow"><div class="n">②入金予定日を田尻さんへ連絡済み</div><div class="m">田尻さんへ連絡した</div></div>
+        <div class="srow"><div class="n">③ソフトに記入・保存済み</div><div class="m">このソフトに保存した</div></div>
+        <div class="srow"><div class="n">未入金</div><div class="m">入金がまだ</div></div>
+        <div class="srow"><div class="n">入金確認済み</div><div class="m">入金を確認</div></div>
+        <div class="srow"><div class="n">キャンセル</div><div class="m">申込取消</div></div>
+        <div class="srow"><div class="n">要確認</div><div class="m">誰かの確認が必要</div></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- 15 -->
+  <section class="slide" id="s15"><div class="inner">
+    <div class="eyebrow" style="color:var(--pink)">困ったとき</div><h2>Q & A</h2>
+    <div class="qa">
+      <div class="qcard"><div class="q"><b>Q.</b> アプリの画面が出ない／英語ばかり</div><div class="a"><b>A.</b> 接続リンクをもう一度開く。ダメなら事務局へ。</div></div>
+      <div class="qcard"><div class="q"><b>Q.</b> 他の人の入力が見えない</div><div class="a"><b>A.</b> 「対応一覧」→「クラウドから読込」で全員の最新がそろう。</div></div>
+      <div class="qcard"><div class="q"><b>Q.</b> 「読込に失敗しました」と赤く出る</div><div class="a"><b>A.</b> 接続リンクを開き直すと直る。直らなければ事務局へ。</div></div>
+      <div class="qcard"><div class="q"><b>Q.</b> 名前が選べない／画面が古い</div><div class="a"><b>A.</b> ページを再読み込み（更新）する。</div></div>
+    </div>
+  </div></section>
+
+  <!-- 16 -->
+  <section class="slide" id="s16"><div class="inner">
+    <div class="eyebrow">4人で使うために</div><h2>共有するもの と 安全のお約束</h2>
+    <div class="stack">
+      <div class="callout acc"><b style="color:var(--acc);font-size:clamp(18px,3vw,26px)">3名に送るのは、この2つだけ</b>
+        <div class="list2">① 手引書（この資料 / Webリンク）… 読む用<br>② 接続リンク … 1回開くと自動でつながる（右上で名前を選ぶ）<br><span class="muted">スマホは「ホーム画面に追加」でアプリのように使えます</span></div>
+      </div>
+      <div class="callout warm"><b style="font-size:clamp(17px,2.8vw,24px)">🔒 安全のお約束</b>
+        <div class="list2">・リザストへ自動送信しません（最後は必ず人が手入力）<br>・APIトークンは画面・コード・共有資料に一切表示しません<br>・接続リンクは事務局内（4人）だけで共有。SNS等に貼らない<br>・申込データは全員共有のスプレッドシートに安全に保存されます</div>
+      </div>
+    </div>
+  </div></section>
+
+  <nav class="prog" id="prog" aria-label="スライド"></nav>
+  <div class="counter"><span id="cur">1</span> / <span id="tot">16</span></div>
+
+<script>
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var tot=slides.length; document.getElementById('tot').textContent=tot;
+  var prog=document.getElementById('prog');
+  slides.forEach(function(s,k){ var a=document.createElement('a'); a.href='#'+s.id; prog.appendChild(a); });
+  var dots=[].slice.call(prog.children);
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){
+      var idx=slides.indexOf(e.target);
+      document.getElementById('cur').textContent=idx+1;
+      dots.forEach(function(d,i){ d.classList.toggle('on',i===idx); });
+    }});
+  },{threshold:0.55});
+  slides.forEach(function(s){ io.observe(s); });
+  // keyboard for desktop
+  document.addEventListener('keydown',function(e){
+    var cur=Math.round(window.scrollY/window.innerHeight);
+    if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ if(slides[cur+1]){slides[cur+1].scrollIntoView();e.preventDefault();} }
+    if(e.key==='ArrowUp'||e.key==='ArrowLeft'||e.key==='PageUp'){ if(slides[cur-1]){slides[cur-1].scrollIntoView();e.preventDefault();} }
+  });
+</script>
+</body>
+</html>
