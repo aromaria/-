@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アロマリア美健康メルマガ生成ソフト</title>
+<style>
+  :root{
+    --ink:#131a26;--sub:#5c6675;--line:#dce2ec;--paper:#eef1f7;--card:#fff;--soft:#f5f8fc;
+    --navy:#12213f;--acc:#8b5cf6;--accd:#7c3aed;--accl:#ede9fe;
+    --ok:#0f7a43;--okl:#e4f4ea;--warn:#b45309;--warnl:#fbf0dd;--err:#c02636;--errl:#fdeaec;
+    --rose:#e11d77;--rosel:#fce7f3;--gold:#d97706;--goldl:#fef3c7;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --font:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif;
+    --r:14px;
+  }
+  @media(prefers-color-scheme:dark){:root{--ink:#e7ecf5;--sub:#9aa6bb;--line:#28324a;--paper:#0b1120;--card:#131c2e;--soft:#101827;--navy:#0a1428;--accl:#1e1338;--okl:#0f2a1c;--warnl:#33240f;--errl:#3a1418;--rosel:#3a0f20;--goldl:#33240a;}}
+  :root[data-theme="dark"]{--ink:#e7ecf5;--sub:#9aa6bb;--line:#28324a;--paper:#0b1120;--card:#131c2e;--soft:#101827;--navy:#0a1428;--accl:#1e1338;--okl:#0f2a1c;--warnl:#33240f;--errl:#3a1418;--rosel:#3a0f20;--goldl:#33240a;}
+  :root[data-theme="light"]{--ink:#131a26;--sub:#5c6675;--line:#dce2ec;--paper:#eef1f7;--card:#fff;--soft:#f5f8fc;--navy:#12213f;--accl:#ede9fe;--okl:#e4f4ea;--warnl:#fbf0dd;--errl:#fdeaec;--rosel:#fce7f3;--goldl:#fef3c7;}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:var(--font);color:var(--ink);background:var(--paper);line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 16px 60px}
+
+  header.top{background:linear-gradient(135deg,#1a0533 0%,#2d1b69 40%,#4c1d95 70%,#7c3aed 100%);color:#fff;border-radius:0 0 24px 24px;padding:26px 24px 22px;margin-bottom:22px;position:relative;overflow:hidden}
+  header.top::before{content:'';position:absolute;top:-40%;right:-10%;width:60%;height:180%;background:radial-gradient(ellipse,rgba(139,92,246,.25),transparent 70%);pointer-events:none}
+  header .row{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:relative}
+  header h1{font-size:clamp(18px,3.6vw,26px);line-height:1.2;display:flex;align-items:center;gap:10px}
+  header h1 .icon{font-size:1.4em}
+  header .sub{color:#c4b5fd;font-size:13px;margin:6px 0 0;width:100%}
+  .tbtn{margin-left:auto;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+  .badge{font-size:11px;font-weight:800;color:#fff;background:var(--ok);border-radius:999px;padding:2px 9px}
+
+  .layout{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:16px}
+  h2{margin:0 0 4px;font-size:16.5px;display:flex;align-items:center;gap:9px}
+  .step{flex:none;width:26px;height:26px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+  .hint{color:var(--sub);font-size:13px;margin:2px 0 10px}
+  label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:12px 0 5px}
+  label:first-child{margin-top:0}
+  input,select,textarea{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:var(--soft);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--acc);background:var(--card)}
+  textarea{resize:vertical}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.two{grid-template-columns:1fr}}
+
+  .btn{background:var(--acc);color:#fff;border:none;border-radius:10px;font-weight:800;font-size:15px;padding:12px 16px;cursor:pointer;width:100%;display:flex;justify-content:center;align-items:center;gap:8px;transition:.15s}
+  .btn:hover{background:var(--accd);transform:translateY(-1px)} .btn:disabled{background:var(--sub);cursor:not-allowed;transform:none}
+  .btn.sub{background:var(--soft);color:var(--accd);border:1px solid var(--line)} .btn.sub:hover{background:var(--accl)}
+  .btn.ok{background:var(--ok)} .btn.ok:hover{filter:brightness(.92)}
+  .btn.rose{background:var(--rose)} .btn.rose:hover{filter:brightness(.92)}
+  .btn.sm{font-size:13px;padding:8px 12px;border-radius:8px;width:auto}
+  .rowbtn{display:flex;gap:9px;margin-top:12px}
+
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:6px}
+  @media(max-width:520px){.presets{grid-template-columns:1fr}}
+  .preset{background:var(--soft);border:2px solid var(--line);border-radius:12px;padding:12px;text-align:left;font-size:13px;cursor:pointer;transition:.15s;position:relative}
+  .preset:hover{border-color:var(--acc);background:var(--accl)}
+  .preset.active{border-color:var(--acc);background:var(--accl)}
+  .preset b{display:block;font-size:14px;margin-bottom:3px}
+  .preset .emoji{font-size:20px;position:absolute;top:10px;right:10px}
+
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .tag{font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;cursor:pointer;border:1.5px solid var(--line);background:var(--soft);color:var(--sub);transition:.1s}
+  .tag:hover,.tag.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+
+  .box{border-radius:10px;padding:10px 13px;font-size:13px;margin:8px 0;border-left:4px solid}
+  .box.ok{background:var(--okl);border-color:var(--ok);color:var(--ok)}
+  .box.warn{background:var(--warnl);border-color:var(--warn);color:var(--warn)}
+  .box.err{background:var(--errl);border-color:var(--err);color:var(--err)}
+  .box.info{background:var(--accl);border-color:var(--acc)}
+
+  .console{background:#0b0e1a;color:#a5b4fc;font-family:var(--mono);font-size:12px;border-radius:10px;padding:12px;max-height:120px;overflow-y:auto;margin-top:12px;line-height:1.6}
+  .console .dim{color:#475569} .console .g{color:#5ee6a0} .console .r{color:#ff8b8b} .console .y{color:#fbbf24} .console .p{color:#c084fc}
+
+  aside .card{position:sticky;top:14px}
+  .preview-frame{background:#fff;color:#333;border:1px solid var(--line);border-radius:10px;padding:16px;font-size:14px;line-height:1.9;min-height:300px;max-height:520px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,sans-serif}
+
+  .subject-list{list-style:none;padding:0;margin:8px 0}
+  .subject-list li{background:var(--soft);border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;margin:5px 0;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.1s}
+  .subject-list li:hover{border-color:var(--acc);background:var(--accl)}
+  .subject-list li.pick{border-color:var(--acc);background:var(--accl);font-weight:700}
+  .subject-list li .num{flex:none;width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center}
+
+  .compliance-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;margin:10px 0}
+  .compliance-bar.pass{background:var(--okl);color:var(--ok)}
+  .compliance-bar.fail{background:var(--errl);color:var(--err)}
+
+  .meter{height:6px;background:var(--line);border-radius:999px;margin:6px 0;overflow:hidden}
+  .meter .fill{height:100%;border-radius:999px;transition:width .4s}
+
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+  .stat{text-align:center;background:var(--soft);border-radius:10px;padding:8px}
+  .stat .val{font-size:20px;font-weight:800;color:var(--acc)}
+  .stat .lbl{font-size:11px;color:var(--sub)}
+
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);opacity:0;background:var(--navy);color:#fff;font-size:13px;font-weight:700;padding:10px 16px;border-radius:999px;z-index:50;transition:.2s;pointer-events:none}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .spinner{width:18px;height:18px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  footer{color:var(--sub);font-size:12px;text-align:center;margin-top:30px;line-height:1.8}
+  :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+  .tab{border:1px solid var(--line);background:var(--soft);color:var(--sub);border-radius:8px;font-size:12.5px;font-weight:800;padding:7px 11px;cursor:pointer;transition:.1s}
+  .tab[aria-selected="true"]{background:var(--acc);color:#fff;border-color:var(--acc)}
+
+  .var-tabs{display:flex;gap:6px;margin-bottom:10px}
+  .var-tab{border:2px solid var(--line);background:var(--soft);color:var(--sub);border-radius:10px;font-size:13px;font-weight:800;padding:8px 14px;cursor:pointer;flex:1;text-align:center;transition:.1s}
+  .var-tab.on{border-color:var(--acc);background:var(--accl);color:var(--accd)}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="row">
+  <h1><span class="icon">💜</span> アロマリア美健康メルマガ生成ソフト</h1>
+  <span class="badge" id="keystate">キー未設定</span>
+  <button class="tbtn" id="tg">◐ 表示</button>
+  <p class="sub">「アロマリア美健康の秘訣」読者の心身魂に響き、メタトロン解析ケアの予約・スクール受講に自然に導くメルマガを、AIが岩本純子先生の文体で生成します。<br>キーは<b>あなたのブラウザだけ</b>に保存。送信先は<b>AI提供元のみ</b>。</p>
+</div></header>
+
+<div class="wrap">
+<div class="layout">
+<main>
+
+  <!-- STEP 1: APIキー -->
+  <div class="card">
+    <h2><span class="step">1</span> APIキーを設定</h2>
+    <p class="hint">OpenAIまたはAnthropicのキーを入れてください。</p>
+    <div class="two">
+      <div>
+        <label for="provider">AI提供元</label>
+        <select id="provider">
+          <option value="openai">ChatGPT（OpenAI）</option>
+          <option value="anthropic">Claude（Anthropic）</option>
+        </select>
+      </div>
+      <div>
+        <label for="model">モデル</label>
+        <input id="model" autocomplete="off">
+      </div>
+    </div>
+    <label for="key">APIキー</label>
+    <input id="key" type="password" placeholder="sk-... / sk-ant-..." autocomplete="off">
+    <div class="rowbtn">
+      <button class="btn ok sm" id="save" style="flex:1">この端末に保存</button>
+      <button class="btn sub sm" id="clear">キーを消す</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: テーマ -->
+  <div class="card">
+    <h2><span class="step">2</span> メルマガのテーマ</h2>
+    <p class="hint">プリセットを選ぶか、自由入力。選ぶとカスタマイズ可能な形で入ります。</p>
+    <div class="presets" id="themePresets"></div>
+    <label for="theme">テーマ（編集OK）</label>
+    <textarea id="theme" rows="2" placeholder="例：メタトロンで見える、あなたの細胞が本当に求めているもの"></textarea>
+  </div>
+
+  <!-- STEP 3: ターゲット読者 -->
+  <div class="card">
+    <h2><span class="step">3</span> ターゲット読者</h2>
+    <p class="hint">タグを押すと追加。複数OK。</p>
+    <div class="tags" id="targetTags"></div>
+    <label for="target">ターゲット詳細（編集OK）</label>
+    <textarea id="target" rows="2" placeholder="例：更年期の不調で悩むが薬に頼りたくない40-50代女性"></textarea>
+  </div>
+
+  <!-- STEP 4: オプション -->
+  <div class="card">
+    <h2><span class="step">4</span> 生成オプション</h2>
+    <div class="two">
+      <div>
+        <label for="cta">メインCTA（誘導先）</label>
+        <select id="cta">
+          <option value="metatron">メタトロン解析ケア予約</option>
+          <option value="school">自然療法スクール説明会</option>
+          <option value="session">個別体験セッション</option>
+          <option value="orientation">無料オリエンテーション</option>
+          <option value="all">すべて紹介</option>
+        </select>
+      </div>
+      <div>
+        <label for="season">季節感</label>
+        <select id="season">
+          <option value="auto">自動（今の季節）</option>
+          <option value="spring">春（3-5月）</option>
+          <option value="summer">夏（6-8月）</option>
+          <option value="autumn">秋（9-11月）</option>
+          <option value="winter">冬（12-2月）</option>
+        </select>
+      </div>
+    </div>
+    <div class="two" style="margin-top:4px">
+      <div>
+        <label for="variations">バリエーション数</label>
+        <select id="variations">
+          <option value="1">1パターン</option>
+          <option value="2">2パターン（比較）</option>
+          <option value="3">3パターン（A/B/C）</option>
+        </select>
+      </div>
+      <div>
+        <label for="length">文量</label>
+        <select id="length">
+          <option value="standard">標準（1500-2000字）</option>
+          <option value="short">ライト（800-1200字）</option>
+          <option value="long">じっくり（2000-2800字）</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 実行ボタン -->
+  <div class="card">
+    <button class="btn rose" id="run" style="font-size:17px;padding:14px">
+      <span id="runLabel">💜 メルマガを生成する</span>
+    </button>
+    <div class="console" id="log"><span class="dim">[準備OK]</span> テーマとターゲットを設定して「生成」を押してください。</div>
+  </div>
+
+</main>
+
+<aside>
+  <!-- 件名候補 -->
+  <div class="card" id="subjectCard" style="display:none">
+    <h2>💌 件名候補</h2>
+    <p class="hint">クリックで選択。選んだ件名がコピーに含まれます。</p>
+    <ul class="subject-list" id="subjectList"></ul>
+  </div>
+
+  <!-- プレビュー -->
+  <div class="card" id="previewCard" style="display:none">
+    <h2>📱 メルマガプレビュー</h2>
+    <div id="varTabs" class="var-tabs"></div>
+    <div class="stat-row" id="stats"></div>
+    <div id="complianceBar" class="compliance-bar pass" style="display:none"></div>
+    <div class="preview-frame" id="preview"></div>
+    <div class="rowbtn">
+      <button class="btn sm" id="copyBtn" style="flex:1">📋 本文をコピー</button>
+      <button class="btn sub sm" id="copyAllBtn">件名＋本文</button>
+      <button class="btn sub sm" id="dlBtn">💾 保存</button>
+    </div>
+  </div>
+</aside>
+</div>
+
+<footer>
+  アロマリア美健康メルマガ生成ソフト — 薬機法準拠・リザスト最適化<br>
+  生成結果は必ず内容を確認してからリザストに貼り付けてください。
+</footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  設定・定数
+// ═══════════════════════════════════════════════════════════
+
+const LS_KEY = 'aromaria_nl_key';
+const LS_PROV = 'aromaria_nl_prov';
+const LS_MODEL = 'aromaria_nl_model';
+const LS_HISTORY = 'aromaria_nl_hist';
+
+const DEFAULT_MODELS = { openai: 'gpt-4o', anthropic: 'claude-sonnet-4-20250514' };
+
+const FORBIDDEN = [
+  '完治','治る','治った','治癒する','治療する',
+  '癌が消','がんが消','ガンが消','腫瘍が消',
+  '効果があ','効きます','必ず治','絶対に治','100%',
+  '断薬でき','薬をやめ','薬が不要','薬はいらない',
+  '奇跡的に治','病気が治',
+];
+
+// ═══════════════════════════════════════════════════════════
+//  テーマプリセット
+// ═══════════════════════════════════════════════════════════
+
+const THEMES = [
+  {
+    icon:'🔬', title:'メタトロン解析',
+    text:'量子力学測定器メタトロンで「見えない不調」の原因を細胞レベルで可視化する — 自分の身体の声を聴く新しいケアの形',
+    cta:'metatron'
+  },
+  {
+    icon:'🌿', title:'自己治癒力の目覚め',
+    text:'お薬に頼り切る前に、あなたの細胞が本来持っている「自己治癒力」をセルフケアで呼び覚ます方法',
+    cta:'session'
+  },
+  {
+    icon:'🎓', title:'自然療法を学ぶ',
+    text:'英国IFA認定のプロが教える本物の自然療法 — アロマリア自然療法の学校（AEAJ総合資格認定校）で一生ものの知識を手にする',
+    cta:'school'
+  },
+  {
+    icon:'💎', title:'美と健康の波動',
+    text:'波動・エネルギーの観点から心身魂のバランスを見直す — 内側から輝く美健康のホリスティックアプローチ',
+    cta:'session'
+  },
+  {
+    icon:'🌸', title:'心身魂の三位一体',
+    text:'心・身・魂はすべて繋がっている — どれか一つだけ整えても本当の健やかさには届かない理由と、今日からできること',
+    cta:'orientation'
+  },
+  {
+    icon:'✨', title:'アロマで感情解放',
+    text:'香りが脳と感情に直接作用するメカニズム — アロマテラピーで深層心理にアプローチし、心のブロックを優しく溶かす',
+    cta:'session'
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  ターゲットタグ
+// ═══════════════════════════════════════════════════════════
+
+const TARGETS = [
+  {label:'原因不明の不調', text:'原因不明の体調不良が続き、病院では「異常なし」と言われるが辛い方'},
+  {label:'薬を減らしたい', text:'これ以上お薬を増やしたくないが、代わりの方法がわからない方'},
+  {label:'更年期の悩み', text:'更年期の心身の揺らぎに悩む40-60代女性'},
+  {label:'美容と健康', text:'内側から輝く美しさと健康を両方叶えたい美意識の高い方'},
+  {label:'資格に興味', text:'アロマや自然療法の資格取得（AEAJ等）に興味がある方'},
+  {label:'ストレス・不眠', text:'仕事や人間関係のストレスで心身が限界、眠れない方'},
+  {label:'家族の健康', text:'大切な家族の健康を自然な方法で守りたいお母さん・お父さん'},
+  {label:'スピ・波動', text:'波動やエネルギー、スピリチュアルなケアに関心がある方'},
+];
+
+// ═══════════════════════════════════════════════════════════
+//  季節検出
+// ═══════════════════════════════════════════════════════════
+
+function detectSeason() {
+  const m = new Date().getMonth() + 1;
+  if (m >= 3 && m <= 5) return 'spring';
+  if (m >= 6 && m <= 8) return 'summer';
+  if (m >= 9 && m <= 11) return 'autumn';
+  return 'winter';
+}
+
+const SEASON_WORDS = {
+  spring: '春の芽吹き、花粉の季節、新生活の疲れ、デトックス、春の養生',
+  summer: '夏の暑さ、冷え対策（冷房冷え）、紫外線ケア、夏バテ、夏の養生',
+  autumn: '秋の乾燥、季節の変わり目、免疫ケア、秋の実り、心身の整え',
+  winter: '冬の冷え、乾燥、免疫力、年末の疲れ、温活、冬の養生',
+};
+
+// ═══════════════════════════════════════════════════════════
+//  CTA定義
+// ═══════════════════════════════════════════════════════════
+
+const CTA_TEXTS = {
+  metatron: `あなたの身体の声、聴いてみませんか？☆
+
+量子力学測定器メタトロンで、
+今のあなたの細胞が何を求めているか
+目に見える形でお伝えします✨
+
+初めての方も安心の個別対応です♡
+
+▼ メタトロン解析ケアの詳細・ご予約はこちら ▼
+【リザストお申込みリンク】`,
+
+  school: `一生ものの知識を、
+あなたの手に☆
+
+アロマリア自然療法の学校は
+AEAJ総合資格認定校。
+
+プロの自然療法家が丁寧に
+あなたの学びをサポートします✨
+
+まずは気軽にお話ししませんか？♡
+
+▼ スクール無料説明会のお申込みはこちら ▼
+【リザストお申込みリンク】`,
+
+  session: `「私の場合はどうなんだろう？」
+
+そう思ったあなたへ☆
+
+個別体験セッションで
+あなただけのケアプランを
+一緒に見つけましょう✨
+
+お気軽にご相談くださいね♡
+
+▼ 体験セッションの詳細・ご予約はこちら ▼
+【リザストお申込みリンク】`,
+
+  orientation: `「ちょっと話を聞いてみたい」
+
+その気持ちだけで十分です☆
+
+無料オリエンテーションで
+自然療法の世界を
+のぞいてみませんか？✨
+
+▼ 無料オリエンテーションのお申込みはこちら ▼
+【リザストお申込みリンク】`,
+
+  all: `あなたに合った入口を
+お選びくださいね☆
+
+🔬 メタトロン解析ケア
+　→ 身体の今を細胞レベルで見る
+　▼ ご予約はこちら ▼
+　【リザストお申込みリンク】
+
+🌿 個別体験セッション
+　→ あなただけのケアプランを一緒に
+　▼ ご予約はこちら ▼
+　【リザストお申込みリンク】
+
+🎓 自然療法スクール説明会
+　→ 一生ものの知識を手にする
+　▼ お申込みはこちら ▼
+　【リザストお申込みリンク】`,
+};
+
+// ═══════════════════════════════════════════════════════════
+//  システムプロンプト（ペルソナ＋文体＋薬機法）
+// ═══════════════════════════════════════════════════════════
+
+function buildSystemPrompt(seasonKey, ctaKey, lengthKey) {
+  const season = SEASON_WORDS[seasonKey] || SEASON_WORDS[detectSeason()];
+  const ctaText = CTA_TEXTS[ctaKey] || CTA_TEXTS.metatron;
+
+  const lengthGuide = {
+    short: '800〜1200文字',
+    standard: '1500〜2000文字',
+    long: '2000〜2800文字',
+  }[lengthKey] || '1500〜2000文字';
+
+  return `あなたは、青森県八戸市と東京で「アロマリア自然療法の学校（AEAJ総合資格認定校）」を主宰する校長であり自然療法家の『岩本純子』として、リザスト（リザーブストック）のメルマガ「アロマリア美健康の秘訣」を執筆します。
+
+━━━ 岩本純子の人物像（事実ベース）━━━
+・英国IFA認定国際メディカルアロマセラピスト
+・延べ3,000名以上の心身魂のケア・サポート実績
+・自身も20代で深刻な婦人科系の問題、椎間板ヘルニアによる歩行困難を経験 → 自然療法によるセルフケアで前向きな変化を実感し、現在は30kgのキャリーバッグを軽々持って国内外を飛び回る日々
+・クライアントの多くが免疫バランス、肌トラブル、慢性的な不調などでQOL向上を実感
+・量子力学測定器メタトロンによる全身の細胞情報解析を導入
+・健美イオン負荷ケア、フォトン負荷ケア、アルペオンクォンタムスマートによる心身魂・深層心理の解放
+・信念：「人の身体には本来、驚くほどの回復力が備わっている」「心・身・魂は繋がっている」「自然療法は西洋医学のパートナー」
+
+━━━ 文体ルール（必ず守る）━━━
+1. 1文ごとに改行。意味の区切りで空行（2〜3文ごと）
+2. 1行は全角35文字以内（スマホのリザスト表示で折り返さない）
+3. 「☆」「♪」「♡」「✨」「💓」を温かみのアクセントに使う（1段落に2つまで）
+4. 時折お茶目な表現を入れる（「ぴょん〜♪」「キラキラ✨」「ひとっ飛び♪」）
+5. 「〜なんですよね」「〜なんです♡」のような語りかけ口調
+6. 押し売りは絶対にしない。寄り添い→共感→気づき→自然な導線
+
+━━━ 構成（この順番で書く）━━━
+① 冒頭の挨拶（季節感＋読者への語りかけ）… 3〜5行
+② テーマ導入（読者の悩みへの共感から入る）… 5〜8行
+③ 本題（具体的な知識・岩本純子自身の体験・気づき）… 本文の中核
+④ まとめ（読者への温かいメッセージ）… 3〜5行
+⑤ CTA（以下のテキストを自然に組み込む）:
+
+${ctaText}
+
+⑥ 署名:
+───────────
+岩本純子
+アロマリア自然療法の学校
+（AEAJ総合資格認定校）
+英国IFA認定国際メディカルアロマセラピスト
+───────────
+
+※ 体験談は個人の感想であり、
+効果を保証するものではありません。
+主治医とご相談の上、
+セルフケアにお役立てください。
+
+━━━ 薬機法コンプライアンス（絶対厳守）━━━
+❌ 使ってはいけない表現:
+・「完治」「治る」「治療」「治癒」→ ✅「ケア」「サポート」「整える」
+・「癌/がんが消えた」「病気が治った」→ ✅「QOLが向上」「前向きな変化」
+・「効果がある」「効く」→ ✅「多くの方が変化を実感」
+・「断薬できる」→ ✅「お薬との付き合い方を見直すきっかけ」
+・特定の病名＋改善の直接結合
+・「必ず」「絶対に」「100%」等の断定
+✅ 必須: 体験談の後に「個人の感想です」を添える
+
+━━━ 季節の素材（活用して）━━━
+${season}
+
+━━━ 文字数 ━━━
+${lengthGuide}
+
+━━━ 心理テクニック（自然に織り込む）━━━
+・共感ファースト: 読者の悩みを「わかります」と受け止めてから本題へ
+・ストーリー: 岩本純子自身の体験や、名前を出さないクライアントの変化を物語として
+・好奇心ギャップ: 「実は…」「ここが面白いところで」で読み進めたくなる仕掛け
+・社会的証明: 「3,000名以上の方と向き合ってきた中で」を自然に
+・権威性: IFA認定、AEAJ認定校を押し付けず自然に
+・希少性: 「少人数制」「お一人おひとりに合わせた」
+`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  件名生成プロンプト
+// ═══════════════════════════════════════════════════════════
+
+const SUBJECT_SYSTEM = `あなたはメルマガの件名（タイトル）の専門家です。以下のルールで件名を5つ提案してください。
+
+【ルール】
+・全角18文字以内（スマホ通知で全文見える長さ）
+・読者の好奇心または共感を刺激する
+・岩本純子さんらしい温かみ
+・記号（♡✨☆）は1つまで
+・薬機法に抵触する表現は禁止
+・煽りすぎない
+
+【件名の型（これらを参考に）】
+・疑問型: 「あなたの細胞、今何を求めてる？」
+・共感型: 「なんとなく不調…それ、身体の声です」
+・発見型: 「知らなかった！香りと感情の深い関係」
+・語りかけ型: 「今日は大切なお話を♡」
+・季節型: 「梅雨の身体に、このケア✨」
+
+出力形式: JSON配列のみ。説明は不要。
+["件名1","件名2","件名3","件名4","件名5"]`;
+
+
+// ═══════════════════════════════════════════════════════════
+//  DOM参照
+// ═══════════════════════════════════════════════════════════
+
+const $ = id => document.getElementById(id);
+const providerEl=$('provider'), modelEl=$('model'), keyEl=$('key');
+const themeEl=$('theme'), targetEl=$('target');
+const ctaEl=$('cta'), seasonEl=$('season'), variationsEl=$('variations'), lengthEl=$('length');
+const logEl=$('log'), previewEl=$('preview'), runBtn=$('run'), runLabel=$('runLabel');
+const subjectCard=$('subjectCard'), subjectList=$('subjectList');
+const previewCard=$('previewCard'), varTabs=$('varTabs'), statsEl=$('stats');
+const complianceBar=$('complianceBar');
+
+let results = []; // [{body, subjects, warnings}]
+let activeVar = 0;
+let selectedSubject = 0;
+
+// ═══════════════════════════════════════════════════════════
+//  テーマプリセット描画
+// ═══════════════════════════════════════════════════════════
+
+(function renderThemes(){
+  const c = $('themePresets');
+  THEMES.forEach((t,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'preset';
+    btn.innerHTML = `<span class="emoji">${t.icon}</span><b>${t.title}</b>${t.text.slice(0,40)}…`;
+    btn.onclick = ()=>{
+      c.querySelectorAll('.preset').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      themeEl.value = t.text;
+      ctaEl.value = t.cta;
+    };
+    c.appendChild(btn);
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  ターゲットタグ描画
+// ═══════════════════════════════════════════════════════════
+
+(function renderTargets(){
+  const c = $('targetTags');
+  TARGETS.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.className = 'tag';
+    btn.textContent = t.label;
+    btn.onclick = ()=>{
+      btn.classList.toggle('on');
+      rebuildTarget();
+    };
+    c.appendChild(btn);
+  });
+  function rebuildTarget(){
+    const active = [...c.querySelectorAll('.tag.on')].map(b=>b.textContent);
+    const texts = TARGETS.filter(t=>active.includes(t.label)).map(t=>t.text);
+    targetEl.value = texts.join('。\n');
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  キー管理
+// ═══════════════════════════════════════════════════════════
+
+function loadKey(){
+  const k = localStorage.getItem(LS_KEY)||'';
+  const p = localStorage.getItem(LS_PROV)||'openai';
+  const m = localStorage.getItem(LS_MODEL)||'';
+  keyEl.value = k;
+  providerEl.value = p;
+  modelEl.value = m || DEFAULT_MODELS[p];
+  updateBadge();
+}
+function updateBadge(){
+  const k = keyEl.value.trim();
+  $('keystate').textContent = k ? '✅ キー設定済' : 'キー未設定';
+  $('keystate').style.background = k ? 'var(--ok)' : 'var(--warn)';
+}
+providerEl.onchange = ()=>{ modelEl.value = DEFAULT_MODELS[providerEl.value]; };
+$('save').onclick = ()=>{
+  localStorage.setItem(LS_KEY, keyEl.value.trim());
+  localStorage.setItem(LS_PROV, providerEl.value);
+  localStorage.setItem(LS_MODEL, modelEl.value);
+  updateBadge(); toast('保存しました');
+};
+$('clear').onclick = ()=>{
+  localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_PROV);localStorage.removeItem(LS_MODEL);
+  keyEl.value=''; updateBadge(); toast('キーを削除しました');
+};
+loadKey();
+
+// ═══════════════════════════════════════════════════════════
+//  テーマ切替
+// ═══════════════════════════════════════════════════════════
+
+$('tg').onclick = ()=>{
+  const d = document.documentElement;
+  const cur = d.getAttribute('data-theme');
+  d.setAttribute('data-theme', cur==='dark'?'light':'dark');
+};
+
+// ═══════════════════════════════════════════════════════════
+//  ログ出力
+// ═══════════════════════════════════════════════════════════
+
+function log(msg, cls=''){
+  const t = new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  logEl.innerHTML += `<div><span class="dim">[${t}]</span> <span class="${cls}">${msg}</span></div>`;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  APIコール
+// ═══════════════════════════════════════════════════════════
+
+async function callAPI(messages, maxTokens, temperature){
+  const key = keyEl.value.trim();
+  const prov = providerEl.value;
+  const model = modelEl.value.trim();
+  if(!key) throw new Error('APIキーが未設定です');
+
+  if(prov === 'openai'){
+    const r = await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model, messages, max_tokens:maxTokens, temperature})
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`API ${r.status}`);}
+    const d = await r.json();
+    return d.choices[0].message.content;
+  } else {
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model, max_tokens:maxTokens, temperature, system:messages[0].content,
+        messages: messages.slice(1).map(m=>({role:m.role,content:m.content}))
+      })
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`API ${r.status}`);}
+    const d = await r.json();
+    return d.content[0].text;
+  }
+}
+
+async function callWithRetry(messages, maxTokens, temperature, retries=3){
+  for(let i=0;i<retries;i++){
+    try{return await callAPI(messages, maxTokens, temperature);}
+    catch(e){
+      if(i===retries-1) throw e;
+      const wait = 2*(2**i);
+      log(`⏳ リトライ ${i+1}/${retries}（${wait}秒後）: ${e.message}`,'y');
+      await new Promise(r=>setTimeout(r, wait*1000));
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  薬機法チェック
+// ═══════════════════════════════════════════════════════════
+
+function checkCompliance(text){
+  const found = [];
+  FORBIDDEN.forEach(p=>{if(text.includes(p)) found.push(p);});
+  return found;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  メイン生成パイプライン
+// ═══════════════════════════════════════════════════════════
+
+runBtn.onclick = async ()=>{
+  const theme = themeEl.value.trim();
+  const target = targetEl.value.trim();
+  if(!theme){toast('テーマを入力してください');return;}
+  if(!target){toast('ターゲットを入力してください');return;}
+  if(!keyEl.value.trim()){toast('APIキーを設定してください');return;}
+
+  const numVar = parseInt(variationsEl.value);
+  const seasonKey = seasonEl.value === 'auto' ? detectSeason() : seasonEl.value;
+  const ctaKey = ctaEl.value;
+  const lengthKey = lengthEl.value;
+
+  runBtn.disabled = true;
+  runLabel.innerHTML = '<span class="spinner"></span> 生成中…';
+  logEl.innerHTML = '';
+  results = [];
+
+  try {
+    const sysProm = buildSystemPrompt(seasonKey, ctaKey, lengthKey);
+
+    for(let v = 0; v < numVar; v++){
+      const label = numVar > 1 ? `[${v+1}/${numVar}] ` : '';
+
+      // ── 本文生成 ──
+      log(`${label}📝 本文を生成中…`, 'p');
+      let body = await callWithRetry([
+        {role:'system', content:sysProm},
+        {role:'user', content:`以下の条件でメルマガを1通書いてください。\n\n【テーマ】${theme}\n【ターゲット読者】${target}\n\n読者が「岩本さんに相談してみたい！」「メタトロンを受けてみたい！」「スクールで学びたい！」と自然に感じる記事にしてください。`}
+      ], lengthKey==='long'?3500 : lengthKey==='short'?1500 : 2500, 0.72);
+
+      // ── 薬機法チェック ──
+      let warnings = checkCompliance(body);
+      if(warnings.length > 0){
+        log(`${label}🔍 薬機法: ${warnings.length}件検出 → 自動修正中…`, 'y');
+        body = await callWithRetry([
+          {role:'system', content:'あなたは薬機法（医薬品医療機器等法）と景品表示法の専門家です。指摘された表現のみを、意味を保ちつつ薬機法準拠の表現に書き換えてください。それ以外の文章は一切変えないでください。'},
+          {role:'user', content:`以下のメルマガに薬機法リスクがあります。\n\n【検出】${warnings.map(w=>'「'+w+'」').join('、')}\n\n【本文】\n${body}`}
+        ], 3000, 0.3);
+        warnings = checkCompliance(body);
+        if(warnings.length > 0) log(`${label}⚠️ 残存: ${warnings.join('、')}（手動確認を）`, 'r');
+        else log(`${label}✅ 薬機法修正完了`, 'g');
+      } else {
+        log(`${label}✅ 薬機法チェック通過`, 'g');
+      }
+
+      // ── 件名生成 ──
+      log(`${label}💌 件名を生成中…`, 'p');
+      const subRaw = await callWithRetry([
+        {role:'system', content:SUBJECT_SYSTEM},
+        {role:'user', content:`以下のメルマガ本文に最適な件名を5つ:\n\n${body}`}
+      ], 200, 0.85);
+
+      let subjects = [];
+      try{
+        const s = subRaw.indexOf('['), e = subRaw.lastIndexOf(']')+1;
+        subjects = JSON.parse(subRaw.slice(s,e));
+      }catch(_){subjects = [subRaw.trim()];}
+
+      results.push({body, subjects, warnings});
+      log(`${label}✅ 完了（${body.length}文字）`, 'g');
+    }
+
+    // ── 表示 ──
+    activeVar = 0;
+    selectedSubject = 0;
+    renderResults();
+    saveHistory(theme, target);
+
+  } catch(e){
+    log(`❌ エラー: ${e.message}`, 'r');
+  } finally {
+    runBtn.disabled = false;
+    runLabel.textContent = '💜 メルマガを生成する';
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+//  結果表示
+// ═══════════════════════════════════════════════════════════
+
+function renderResults(){
+  if(!results.length) return;
+
+  // バリエーションタブ
+  if(results.length > 1){
+    varTabs.innerHTML = '';
+    results.forEach((_,i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'var-tab' + (i===activeVar?' on':'');
+      btn.textContent = String.fromCharCode(65+i) + 'パターン';
+      btn.onclick = ()=>{activeVar=i;selectedSubject=0;renderResults();};
+      varTabs.appendChild(btn);
+    });
+    varTabs.style.display = 'flex';
+  } else {
+    varTabs.style.display = 'none';
+  }
+
+  const r = results[activeVar];
+
+  // 件名
+  subjectList.innerHTML = '';
+  r.subjects.forEach((s,i)=>{
+    const li = document.createElement('li');
+    li.className = i===selectedSubject?'pick':'';
+    li.innerHTML = `<span class="num">${i+1}</span>${s}`;
+    li.onclick = ()=>{selectedSubject=i;renderResults();};
+    subjectList.appendChild(li);
+  });
+  subjectCard.style.display = 'block';
+
+  // 統計
+  const charCount = r.body.length;
+  const lineCount = r.body.split('\n').length;
+  const readMin = Math.max(1, Math.round(charCount / 500));
+  statsEl.innerHTML = `
+    <div class="stat"><div class="val">${charCount}</div><div class="lbl">文字</div></div>
+    <div class="stat"><div class="val">${lineCount}</div><div class="lbl">行</div></div>
+    <div class="stat"><div class="val">${readMin}分</div><div class="lbl">読了目安</div></div>
+  `;
+
+  // コンプライアンス
+  if(r.warnings.length > 0){
+    complianceBar.className = 'compliance-bar fail';
+    complianceBar.innerHTML = `⚠️ 薬機法リスク: ${r.warnings.map(w=>'「'+w+'」').join(' ')} — 手動確認を推奨`;
+  } else {
+    complianceBar.className = 'compliance-bar pass';
+    complianceBar.innerHTML = '✅ 薬機法チェック通過';
+  }
+  complianceBar.style.display = 'flex';
+
+  // プレビュー
+  previewEl.textContent = r.body;
+  previewCard.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  コピー・保存
+// ═══════════════════════════════════════════════════════════
+
+$('copyBtn').onclick = ()=>{
+  if(!results.length) return;
+  navigator.clipboard.writeText(results[activeVar].body).then(()=>toast('本文をコピーしました'));
+};
+
+$('copyAllBtn').onclick = ()=>{
+  if(!results.length) return;
+  const r = results[activeVar];
+  const subj = r.subjects[selectedSubject] || r.subjects[0] || '';
+  const full = `【件名】${subj}\n\n${r.body}`;
+  navigator.clipboard.writeText(full).then(()=>toast('件名＋本文をコピーしました'));
+};
+
+$('dlBtn').onclick = ()=>{
+  if(!results.length) return;
+  let out = '';
+  results.forEach((r,i)=>{
+    if(results.length>1) out += `━━━ ${String.fromCharCode(65+i)}パターン ━━━\n\n`;
+    out += `【件名候補】\n`;
+    r.subjects.forEach((s,j)=>out+=`  ${j+1}. ${s}\n`);
+    out += `\n【本文】(${r.body.length}文字)\n${'─'.repeat(30)}\n${r.body}\n${'─'.repeat(30)}\n\n`;
+  });
+  const blob = new Blob([out],{type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `メルマガ_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('ファイルを保存しました');
+};
+
+// ═══════════════════════════════════════════════════════════
+//  履歴（localStorage）
+// ═══════════════════════════════════════════════════════════
+
+function saveHistory(theme, target){
+  try{
+    let hist = JSON.parse(localStorage.getItem(LS_HISTORY)||'[]');
+    hist.unshift({date:new Date().toISOString().slice(0,10), theme:theme.slice(0,50), target:target.slice(0,50)});
+    if(hist.length>20) hist=hist.slice(0,20);
+    localStorage.setItem(LS_HISTORY, JSON.stringify(hist));
+  }catch(_){}
+}
+
+</script>
+</body>
+</html>
