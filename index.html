@@ -654,34 +654,38 @@
   }
   function cloudPull(cb){
     var u=cloudUrl(); if(!u){ cb(null); return; }
-    // iframe+postMessage → JSONP の順に試行
-    var iframe=document.createElement("iframe");
-    iframe.style.cssText="position:absolute;width:1px;height:1px;left:-9999px;opacity:0;pointer-events:none";
-    var done=false;
-    function finish(data){ if(done)return; done=true; window.removeEventListener("message",onMsg); clearTimeout(to); if(iframe.parentNode)iframe.parentNode.removeChild(iframe); cb(data); }
-    function onMsg(ev){
-      var d=ev.data;
-      if(d&&typeof d==="object"&&"ok" in d) finish(d);
-    }
-    window.addEventListener("message",onMsg);
-    var to=setTimeout(function(){
-      if(done)return; done=true; window.removeEventListener("message",onMsg); if(iframe.parentNode)iframe.parentNode.removeChild(iframe);
-      cloudPullJsonp(u,cb);
-    },12000);
-    iframe.onerror=function(){
-      if(done)return; done=true; window.removeEventListener("message",onMsg); clearTimeout(to); if(iframe.parentNode)iframe.parentNode.removeChild(iframe);
-      cloudPullJsonp(u,cb);
-    };
-    iframe.src=u+(u.indexOf("?")<0?"?":"&")+"pm=1&_="+Date.now();
-    document.body.appendChild(iframe);
+    var sid=localStorage.getItem("rezast_intake_sheet_id")||"";
+    if(sid){ cloudPullGviz(sid,cb); }
+    else { cloudPullScript(u,cb); }
   }
-  function cloudPullJsonp(u,cb){
+  function cloudPullGviz(sid,cb){
+    var name="__gvCb"+Date.now();
+    var s=document.createElement("script");
+    var to=setTimeout(function(){ cleanup(); cloudPullScript(cloudUrl(),cb); },12000);
+    function cleanup(){ try{delete window[name];}catch(e){window[name]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
+    window[name]=function(resp){
+      cleanup();
+      try{
+        if(resp.status!=="ok"){ cloudPullScript(cloudUrl(),cb); return; }
+        var records=[], rows=resp.table.rows||[];
+        for(var i=0;i<rows.length;i++){
+          var c=rows[i].c; if(!c||!c[0]||!c[0].v) continue;
+          try{ records.push(JSON.parse(c[0].v)); }catch(e){}
+        }
+        cb({ok:true,records:records});
+      }catch(e){ cloudPullScript(cloudUrl(),cb); }
+    };
+    s.onerror=function(){ cleanup(); cloudPullScript(cloudUrl(),cb); };
+    s.src="https://docs.google.com/spreadsheets/d/"+sid+"/gviz/tq?tqx=out:json;responseHandler:"+name+"&tq=SELECT%20R&headers=1&_="+Date.now();
+    document.body.appendChild(s);
+  }
+  function cloudPullScript(u,cb){
     var name="__cloudCb"+Date.now();
     var s=document.createElement("script");
-    var to=setTimeout(function(){ cleanup(); cb({ok:false,error:"タイムアウト（応答なし）。Apps Scriptの「デプロイを管理」で新バージョンを公開してください"}); },10000);
+    var to=setTimeout(function(){ cleanup(); cb({ok:false,error:"タイムアウト"}); },10000);
     function cleanup(){ try{delete window[name];}catch(e){window[name]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
     window[name]=function(data){ cleanup(); cb(data); };
-    s.onerror=function(){ cleanup(); cb({ok:false,error:"読込がブロックされました。Safariの場合は「設定→Webサイト→コンテンツブロッカー」でこのサイトをオフにしてください"}); };
+    s.onerror=function(){ cleanup(); cb({ok:false,error:"読込がブロックされました。Safariの場合は「設定→コンテンツブロッカー」をこのサイトでオフにしてください"}); };
     s.src=u+(u.indexOf("?")<0?"?":"&")+"callback="+name+"&_="+Date.now();
     document.body.appendChild(s);
   }
@@ -694,6 +698,8 @@
         var su=decodeURIComponent(m[1]);
         if(/^https:\/\/script\.google\.com\//.test(su)){
           localStorage.setItem(CLOUD_URL, su);
+          var sm=(location.hash||location.search||"").match(/sid=([^&]+)/);
+          if(sm) localStorage.setItem("rezast_intake_sheet_id", decodeURIComponent(sm[1]));
           setTimeout(function(){ toast("クラウドに接続しました"); },300);
         }
         history.replaceState(null, "", location.pathname);
