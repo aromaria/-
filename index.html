@@ -654,27 +654,28 @@
   }
   function cloudPull(cb){
     var u=cloudUrl(); if(!u){ cb(null); return; }
-    var done=false;
-    var iframe=document.createElement('iframe');
-    iframe.style.display='none';
-    var to=setTimeout(function(){ cleanup(); cloudPullJsonp_(u,cb); },12000);
-    function cleanup(){ done=true; window.removeEventListener('message',onMsg); if(iframe.parentNode)iframe.parentNode.removeChild(iframe); clearTimeout(to); }
-    function onMsg(ev){
-      if(done) return;
-      if(!ev.data || typeof ev.data.ok==='undefined') return;
-      cleanup(); cb(ev.data);
+    if(window.fetch){
+      fetch(u+(u.indexOf("?")<0?"?":"&")+"_="+Date.now(),{redirect:"follow"})
+        .then(function(r){
+          if(!r.ok) throw new Error("HTTP "+r.status);
+          return r.text();
+        })
+        .then(function(txt){
+          try{ var d=JSON.parse(txt); cb(d); }
+          catch(e){ cb({ok:false,error:"JSON解析失敗: "+txt.substring(0,80)}); }
+        })
+        .catch(function(err){ cb({ok:false,error:"fetch: "+err.message}); });
+      return;
     }
-    window.addEventListener('message',onMsg);
-    iframe.src=u+(u.indexOf("?")<0?"?":"&")+"pm=1&_="+Date.now();
-    document.body.appendChild(iframe);
+    cloudPullJsonp_(u,cb);
   }
   function cloudPullJsonp_(u,cb){
     var name="__cloudCb"+Date.now();
     var s=document.createElement("script");
-    var to=setTimeout(function(){ cleanup(); cb(null); },15000);
+    var to=setTimeout(function(){ cleanup(); cb({ok:false,error:"JSONP timeout"}); },15000);
     function cleanup(){ try{delete window[name];}catch(e){window[name]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
     window[name]=function(data){ cleanup(); cb(data); };
-    s.onerror=function(){ cleanup(); cb(null); };
+    s.onerror=function(){ cleanup(); cb({ok:false,error:"JSONP load error"}); };
     s.src=u+(u.indexOf("?")<0?"?":"&")+"action=list&callback="+name+"&_="+Date.now();
     document.body.appendChild(s);
   }
@@ -707,7 +708,7 @@
       if(!cloudUrl()){ cloudMsg("先に送信先URLを保存してください。","dup"); return; }
       cloudMsg("クラウドから読込中…");
       cloudPull(function(data){
-        if(!data||!data.ok){ cloudMsg("読込に失敗しました。URLと公開設定（アクセス権：全員）をご確認ください。","dup"); return; }
+        if(!data||!data.ok){ cloudMsg("読込に失敗しました。"+(data&&data.error?("("+data.error+") "):"")+"URLと公開設定（アクセス権：全員）をご確認ください。","dup"); return; }
         var map={}; Store.all().forEach(function(r){ map[r.id]=r; });
         (data.records||[]).forEach(function(r){ if(r&&r.id) map[r.id]=r; });
         var merged=Object.keys(map).map(function(k){ return map[k]; });
