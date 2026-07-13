@@ -654,6 +654,16 @@
   }
   function cloudPull(cb){
     var u=cloudUrl(); if(!u){ cb(null); return; }
+    if(window.fetch){
+      fetch(u+(u.indexOf("?")<0?"?":"&")+"_="+Date.now(),{redirect:"follow"})
+        .then(function(r){ return r.json(); })
+        .then(function(data){ cb(data); })
+        .catch(function(){ cloudPullJsonp_(u,cb); });
+      return;
+    }
+    cloudPullJsonp_(u,cb);
+  }
+  function cloudPullJsonp_(u,cb){
     var name="__cloudCb"+Date.now();
     var s=document.createElement("script");
     var to=setTimeout(function(){ cleanup(); cb(null); },15000);
