@@ -654,12 +654,34 @@
   }
   function cloudPull(cb){
     var u=cloudUrl(); if(!u){ cb(null); return; }
+    // iframe+postMessage → JSONP の順に試行
+    var iframe=document.createElement("iframe");
+    iframe.style.cssText="position:absolute;width:1px;height:1px;left:-9999px;opacity:0;pointer-events:none";
+    var done=false;
+    function finish(data){ if(done)return; done=true; window.removeEventListener("message",onMsg); clearTimeout(to); if(iframe.parentNode)iframe.parentNode.removeChild(iframe); cb(data); }
+    function onMsg(ev){
+      var d=ev.data;
+      if(d&&typeof d==="object"&&"ok" in d) finish(d);
+    }
+    window.addEventListener("message",onMsg);
+    var to=setTimeout(function(){
+      if(done)return; done=true; window.removeEventListener("message",onMsg); if(iframe.parentNode)iframe.parentNode.removeChild(iframe);
+      cloudPullJsonp(u,cb);
+    },12000);
+    iframe.onerror=function(){
+      if(done)return; done=true; window.removeEventListener("message",onMsg); clearTimeout(to); if(iframe.parentNode)iframe.parentNode.removeChild(iframe);
+      cloudPullJsonp(u,cb);
+    };
+    iframe.src=u+(u.indexOf("?")<0?"?":"&")+"pm=1&_="+Date.now();
+    document.body.appendChild(iframe);
+  }
+  function cloudPullJsonp(u,cb){
     var name="__cloudCb"+Date.now();
     var s=document.createElement("script");
-    var to=setTimeout(function(){ cleanup(); cb({ok:false,error:"JSONP: 15秒タイムアウト（応答なし）"}); },15000);
+    var to=setTimeout(function(){ cleanup(); cb({ok:false,error:"タイムアウト（応答なし）。Apps Scriptの「デプロイを管理」で新バージョンを公開してください"}); },10000);
     function cleanup(){ try{delete window[name];}catch(e){window[name]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
     window[name]=function(data){ cleanup(); cb(data); };
-    s.onerror=function(){ cleanup(); cb({ok:false,error:"JSONP: スクリプト読込エラー（ブロックされた可能性）"}); };
+    s.onerror=function(){ cleanup(); cb({ok:false,error:"読込がブロックされました。Safariの場合は「設定→Webサイト→コンテンツブロッカー」でこのサイトをオフにしてください"}); };
     s.src=u+(u.indexOf("?")<0?"?":"&")+"callback="+name+"&_="+Date.now();
     document.body.appendChild(s);
   }
