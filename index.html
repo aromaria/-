@@ -654,29 +654,13 @@
   }
   function cloudPull(cb){
     var u=cloudUrl(); if(!u){ cb(null); return; }
-    if(window.fetch){
-      fetch(u+(u.indexOf("?")<0?"?":"&")+"_="+Date.now(),{redirect:"follow"})
-        .then(function(r){
-          if(!r.ok) throw new Error("HTTP "+r.status);
-          return r.text();
-        })
-        .then(function(txt){
-          try{ var d=JSON.parse(txt); cb(d); }
-          catch(e){ cb({ok:false,error:"JSON解析失敗: "+txt.substring(0,80)}); }
-        })
-        .catch(function(err){ cb({ok:false,error:"fetch: "+err.message}); });
-      return;
-    }
-    cloudPullJsonp_(u,cb);
-  }
-  function cloudPullJsonp_(u,cb){
     var name="__cloudCb"+Date.now();
     var s=document.createElement("script");
-    var to=setTimeout(function(){ cleanup(); cb({ok:false,error:"JSONP timeout"}); },15000);
+    var to=setTimeout(function(){ cleanup(); cb({ok:false,error:"JSONP: 15秒タイムアウト（応答なし）"}); },15000);
     function cleanup(){ try{delete window[name];}catch(e){window[name]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
     window[name]=function(data){ cleanup(); cb(data); };
-    s.onerror=function(){ cleanup(); cb({ok:false,error:"JSONP load error"}); };
-    s.src=u+(u.indexOf("?")<0?"?":"&")+"action=list&callback="+name+"&_="+Date.now();
+    s.onerror=function(){ cleanup(); cb({ok:false,error:"JSONP: スクリプト読込エラー（ブロックされた可能性）"}); };
+    s.src=u+(u.indexOf("?")<0?"?":"&")+"callback="+name+"&_="+Date.now();
     document.body.appendChild(s);
   }
   (function(){
