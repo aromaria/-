@@ -654,14 +654,19 @@
   }
   function cloudPull(cb){
     var u=cloudUrl(); if(!u){ cb(null); return; }
-    if(window.fetch){
-      fetch(u+(u.indexOf("?")<0?"?":"&")+"_="+Date.now(),{redirect:"follow"})
-        .then(function(r){ return r.json(); })
-        .then(function(data){ cb(data); })
-        .catch(function(){ cloudPullJsonp_(u,cb); });
-      return;
+    var done=false;
+    var iframe=document.createElement('iframe');
+    iframe.style.display='none';
+    var to=setTimeout(function(){ cleanup(); cloudPullJsonp_(u,cb); },12000);
+    function cleanup(){ done=true; window.removeEventListener('message',onMsg); if(iframe.parentNode)iframe.parentNode.removeChild(iframe); clearTimeout(to); }
+    function onMsg(ev){
+      if(done) return;
+      if(!ev.data || typeof ev.data.ok==='undefined') return;
+      cleanup(); cb(ev.data);
     }
-    cloudPullJsonp_(u,cb);
+    window.addEventListener('message',onMsg);
+    iframe.src=u+(u.indexOf("?")<0?"?":"&")+"pm=1&_="+Date.now();
+    document.body.appendChild(iframe);
   }
   function cloudPullJsonp_(u,cb){
     var name="__cloudCb"+Date.now();

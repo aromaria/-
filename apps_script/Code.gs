@@ -120,9 +120,28 @@ function doPost(e) {
   }
 }
 
-// GET：action=save の場合は保存、それ以外は一覧返却（JSONP対応）
+// GET：action=save の場合は保存、pm=1 の場合は iframe+postMessage、それ以外は一覧返却（JSONP対応）
 // ローカルファイル(file://)からはPOSTが弾かれるため、保存もGETで受け取れるようにする
 function doGet(e) {
+  // iframe+postMessage方式（Safari等でJSONP/fetchが通らない場合の確実な経路）
+  if (e && e.parameter && e.parameter.pm) {
+    var result;
+    try {
+      var sh = getSheet_();
+      var values = sh.getDataRange().getValues();
+      var records = [];
+      for (var i = 1; i < values.length; i++) {
+        if (values[i][0] === '' && values[i][17] === '') continue;
+        records.push(rowToRec_(values[i]));
+      }
+      result = {ok: true, records: records};
+    } catch (err) {
+      result = {ok: false, error: String(err)};
+    }
+    var safe = JSON.stringify(result).replace(/</g, '\\u003c');
+    return HtmlService.createHtmlOutput('<script>window.top.postMessage(' + safe + ',"*")<\/script>')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
   var action = e && e.parameter && e.parameter.action;
   if (action === 'save') {
     var lock = LockService.getScriptLock();
