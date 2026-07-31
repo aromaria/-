@@ -690,6 +690,11 @@ async function callAPI(messages, maxTokens, temperature){
       if(r.status===404)
         throw new Error(`モデル「${model}」が見つかりません。gemini-2.5-flash または gemini-2.0-flash をお試しください。`);
       if(r.status===429){
+        if(msg.includes('limit: 0') || msg.includes('quota')){
+          const err = new Error('⚠️ Gemini無料枠の上限に達しました（1日ごとにリセット）。\n→「AI提供元」をOpenAIかClaudeに切り替えるか、明日お試しください。');
+          err.noRetry = true;
+          throw err;
+        }
         const err = new Error('レート制限: ' + (msg||'しばらく待ってから再試行してください'));
         err.retryAfter = 30;
         throw err;
@@ -720,7 +725,7 @@ async function callWithRetry(messages, maxTokens, temperature, retries=3){
   for(let i=0;i<retries;i++){
     try{return await callAPI(messages, maxTokens, temperature);}
     catch(e){
-      if(i===retries-1) throw e;
+      if(e.noRetry || i===retries-1) throw e;
       const wait = e.retryAfter || 2*(2**i);
       log(`⏳ リトライ ${i+1}/${retries}（${wait}秒後）: ${e.message}`,'y');
       await new Promise(r=>setTimeout(r, wait*1000));
