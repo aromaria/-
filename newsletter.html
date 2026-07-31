@@ -135,6 +135,7 @@
         <select id="provider">
           <option value="openai">ChatGPT（OpenAI）</option>
           <option value="anthropic">Claude（Anthropic）</option>
+          <option value="gemini">Gemini（Google）</option>
         </select>
       </div>
       <div>
@@ -143,7 +144,7 @@
       </div>
     </div>
     <label for="key">APIキー</label>
-    <input id="key" type="password" placeholder="sk-... / sk-ant-..." autocomplete="off">
+    <input id="key" type="password" placeholder="sk-... / sk-ant-... / AIza..." autocomplete="off">
     <div class="rowbtn">
       <button class="btn ok sm" id="save" style="flex:1">この端末に保存</button>
       <button class="btn sub sm" id="clear">キーを消す</button>
@@ -265,7 +266,7 @@ const LS_PROV = 'aromaria_nl_prov';
 const LS_MODEL = 'aromaria_nl_model';
 const LS_HISTORY = 'aromaria_nl_hist';
 
-const DEFAULT_MODELS = { openai: 'gpt-4o', anthropic: 'claude-sonnet-4-20250514' };
+const DEFAULT_MODELS = { openai: 'gpt-4o', anthropic: 'claude-sonnet-4-20250514', gemini: 'gemini-2.5-flash' };
 
 const FORBIDDEN = [
   '完治','治る','治った','治癒する','治療する',
@@ -660,6 +661,22 @@ async function callAPI(messages, maxTokens, temperature){
     if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`API ${r.status}`);}
     const d = await r.json();
     return d.choices[0].message.content;
+  } else if(prov === 'gemini'){
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    const sysText = messages[0].content;
+    const userMsgs = messages.slice(1).map(m=>({role: m.role==='assistant'?'model':'user', parts:[{text:m.content}]}));
+    const r = await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        systemInstruction:{parts:[{text:sysText}]},
+        contents: userMsgs,
+        generationConfig:{temperature, maxOutputTokens:maxTokens}
+      })
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`API ${r.status}`);}
+    const d = await r.json();
+    return d.candidates[0].content.parts[0].text;
   } else {
     const r = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
