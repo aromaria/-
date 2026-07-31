@@ -689,8 +689,13 @@ async function callAPI(messages, maxTokens, temperature){
         throw new Error('APIキーが無効です。Google AI Studio (aistudio.google.com/apikey) で新しいキーを作成してください。');
       if(r.status===404)
         throw new Error(`モデル「${model}」が見つかりません。gemini-2.5-flash または gemini-2.0-flash をお試しください。`);
-      if(r.status===429)
-        throw new Error('レート制限に達しました。少し待ってから再試行してください。');
+      if(r.status===429){
+        const err = new Error('レート制限: ' + (msg||'しばらく待ってから再試行してください'));
+        err.retryAfter = 30;
+        throw err;
+      }
+      if(r.status===403)
+        throw new Error('APIキーにこのモデルの権限がありません。Google AI Studio でキーの設定を確認してください。詳細: ' + msg);
       throw new Error(msg||`Gemini API エラー ${r.status}`);
     }
     const d = await r.json();
@@ -716,7 +721,7 @@ async function callWithRetry(messages, maxTokens, temperature, retries=3){
     try{return await callAPI(messages, maxTokens, temperature);}
     catch(e){
       if(i===retries-1) throw e;
-      const wait = 2*(2**i);
+      const wait = e.retryAfter || 2*(2**i);
       log(`⏳ リトライ ${i+1}/${retries}（${wait}秒後）: ${e.message}`,'y');
       await new Promise(r=>setTimeout(r, wait*1000));
     }
