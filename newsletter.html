@@ -670,7 +670,6 @@ async function callAPI(messages, maxTokens, temperature){
     const d = await r.json();
     return d.choices[0].message.content;
   } else if(prov === 'gemini'){
-    if(!key.startsWith('AIza')) throw new Error('Gemini APIキーは「AIza…」で始まります。Google AI Studio (aistudio.google.com/apikey) で取得してください。');
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
     const sysText = messages[0].content;
     const userMsgs = messages.slice(1).map(m=>({role: m.role==='assistant'?'model':'user', parts:[{text:m.content}]}));
