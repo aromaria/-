@@ -55,7 +55,7 @@ function check(name, pass, detail = '') {
   // ── 9. APIキー保存→読み込み ──
   await page.fill('#key', 'sk-test-dummy-key-12345');
   await page.click('#save');
-  const stored = await page.evaluate(() => localStorage.getItem('aromaria_nl_key'));
+  const stored = await page.evaluate(() => localStorage.getItem('aromaria_nl_key_openai'));
   check('APIキーlocalStorage保存', stored === 'sk-test-dummy-key-12345');
 
   // ── 10. バッジ更新 ──
@@ -64,7 +64,7 @@ function check(name, pass, detail = '') {
 
   // ── 11. キー消す ──
   await page.click('#clear');
-  const cleared = await page.evaluate(() => localStorage.getItem('aromaria_nl_key'));
+  const cleared = await page.evaluate(() => localStorage.getItem('aromaria_nl_key_openai'));
   check('キー削除', cleared === null);
   const badgeAfter = await page.textContent('#keystate');
   check('バッジ更新（未設定）', badgeAfter.includes('未設定'), badgeAfter);

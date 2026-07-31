@@ -140,7 +140,7 @@
       </div>
       <div>
         <label for="model">モデル</label>
-        <input id="model" autocomplete="off">
+        <select id="model"></select>
       </div>
     </div>
     <label for="key">APIキー</label>
@@ -261,12 +261,24 @@
 //  設定・定数
 // ═══════════════════════════════════════════════════════════
 
-const LS_KEY = 'aromaria_nl_key';
 const LS_PROV = 'aromaria_nl_prov';
-const LS_MODEL = 'aromaria_nl_model';
 const LS_HISTORY = 'aromaria_nl_hist';
 
-const DEFAULT_MODELS = { openai: 'gpt-4o', anthropic: 'claude-sonnet-4-20250514', gemini: 'gemini-2.0-flash' };
+const PROVIDER_MODELS = {
+  openai: [
+    {v:'gpt-4o', l:'GPT-4o（推奨）'},
+    {v:'gpt-4o-mini', l:'GPT-4o mini（軽量・低コスト）'},
+  ],
+  anthropic: [
+    {v:'claude-sonnet-4-20250514', l:'Claude Sonnet 4（推奨）'},
+    {v:'claude-haiku-4-5-20251001', l:'Claude Haiku 4.5（軽量）'},
+  ],
+  gemini: [
+    {v:'gemini-2.0-flash', l:'Gemini 2.0 Flash（推奨）'},
+    {v:'gemini-1.5-flash', l:'Gemini 1.5 Flash（安定版）'},
+    {v:'gemini-1.5-pro', l:'Gemini 1.5 Pro（高性能）'},
+  ],
+};
 
 const FORBIDDEN = [
   '完治','治る','治った','治癒する','治療する',
@@ -587,42 +599,77 @@ let selectedSubject = 0;
 })();
 
 // ═══════════════════════════════════════════════════════════
-//  キー管理
+//  キー管理（プロバイダー別に保存）
 // ═══════════════════════════════════════════════════════════
 
+function lsKeyName(p){ return 'aromaria_nl_key_'+p; }
+function lsModelName(p){ return 'aromaria_nl_model_'+p; }
+
+function populateModels(p){
+  modelEl.innerHTML='';
+  (PROVIDER_MODELS[p]||[]).forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m.v; o.textContent=m.l;
+    modelEl.appendChild(o);
+  });
+}
+
+function updateHints(p){
+  const hints={openai:'sk-… で始まるOpenAIのAPIキー',anthropic:'sk-ant-… で始まるAnthropicのAPIキー',gemini:'AIza… で始まるGoogle AI StudioのAPIキー'};
+  keyEl.placeholder=hints[p]||'APIキー';
+  const guides={gemini:'Google AI Studio (aistudio.google.com) でAPIキーを取得',anthropic:'Anthropic Console (console.anthropic.com) でAPIキーを取得',openai:'OpenAI Platform (platform.openai.com) でAPIキーを取得'};
+  $('providerHint').textContent=guides[p]||guides.openai;
+}
+
 function loadKey(){
-  const k = localStorage.getItem(LS_KEY)||'';
-  const p = localStorage.getItem(LS_PROV)||'openai';
-  const m = localStorage.getItem(LS_MODEL)||'';
-  keyEl.value = k;
-  providerEl.value = p;
-  modelEl.value = m || DEFAULT_MODELS[p];
-  providerEl.onchange();
-  if(k) keyEl.value = k;
+  const oldKey=localStorage.getItem('aromaria_nl_key');
+  if(oldKey){
+    const oldP=localStorage.getItem(LS_PROV)||'openai';
+    if(!localStorage.getItem(lsKeyName(oldP))) localStorage.setItem(lsKeyName(oldP),oldKey);
+    localStorage.removeItem('aromaria_nl_key');
+    localStorage.removeItem('aromaria_nl_model');
+  }
+  const p=localStorage.getItem(LS_PROV)||'openai';
+  providerEl.value=p;
+  populateModels(p);
+  const sm=localStorage.getItem(lsModelName(p));
+  if(sm && modelEl.querySelector('option[value="'+sm+'"]')) modelEl.value=sm;
+  keyEl.value=localStorage.getItem(lsKeyName(p))||'';
+  updateHints(p);
   updateBadge();
 }
+
 function updateBadge(){
-  const k = keyEl.value.trim();
-  $('keystate').textContent = k ? '✅ キー設定済' : 'キー未設定';
-  $('keystate').style.background = k ? 'var(--ok)' : 'var(--warn)';
+  const k=keyEl.value.trim();
+  $('keystate').textContent=k?'✅ キー設定済':'キー未設定';
+  $('keystate').style.background=k?'var(--ok)':'var(--warn)';
 }
-providerEl.onchange = ()=>{
-  const p = providerEl.value;
-  modelEl.value = DEFAULT_MODELS[p];
-  const hints = {openai:'sk-… で始まるOpenAIのAPIキー', anthropic:'sk-ant-… で始まるAnthropicのAPIキー', gemini:'AIza… で始まるGoogle AI StudioのAPIキー'};
-  keyEl.placeholder = hints[p] || 'APIキー';
-  $('providerHint').textContent = p==='gemini' ? 'Google AI Studio (aistudio.google.com) でAPIキーを取得' : p==='anthropic' ? 'Anthropic Console でAPIキーを取得' : 'OpenAI Platform でAPIキーを取得';
+
+providerEl.onchange=()=>{
+  const p=providerEl.value;
+  populateModels(p);
+  const sm=localStorage.getItem(lsModelName(p));
+  if(sm && modelEl.querySelector('option[value="'+sm+'"]')) modelEl.value=sm;
+  keyEl.value=localStorage.getItem(lsKeyName(p))||'';
+  updateHints(p);
+  updateBadge();
 };
-$('save').onclick = ()=>{
-  localStorage.setItem(LS_KEY, keyEl.value.trim());
-  localStorage.setItem(LS_PROV, providerEl.value);
-  localStorage.setItem(LS_MODEL, modelEl.value);
+
+$('save').onclick=()=>{
+  const p=providerEl.value;
+  localStorage.setItem(lsKeyName(p),keyEl.value.trim());
+  localStorage.setItem(LS_PROV,p);
+  localStorage.setItem(lsModelName(p),modelEl.value);
   updateBadge(); toast('保存しました');
 };
-$('clear').onclick = ()=>{
-  localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_PROV);localStorage.removeItem(LS_MODEL);
+
+$('clear').onclick=()=>{
+  const p=providerEl.value;
+  localStorage.removeItem(lsKeyName(p));
+  localStorage.removeItem(lsModelName(p));
   keyEl.value=''; updateBadge(); toast('キーを削除しました');
 };
+
 loadKey();
 
 // ═══════════════════════════════════════════════════════════
@@ -670,43 +717,43 @@ async function callAPI(messages, maxTokens, temperature){
     const d = await r.json();
     return d.choices[0].message.content;
   } else if(prov === 'gemini'){
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
     const sysText = messages[0].content;
     const userMsgs = messages.slice(1).map(m=>({role: m.role==='assistant'?'model':'user', parts:[{text:m.content}]}));
-    const r = await fetch(url,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        systemInstruction:{parts:[{text:sysText}]},
-        contents: userMsgs,
-        generationConfig:{temperature, maxOutputTokens:maxTokens}
-      })
-    });
-    if(!r.ok){
-      const e=await r.json().catch(()=>({}));
-      const msg = e.error?.message||'';
-      if(r.status===400 && msg.includes('API key not valid'))
-        throw new Error('APIキーが無効です。Google AI Studio (aistudio.google.com/apikey) で新しいキーを作成してください。');
-      if(r.status===404)
-        throw new Error(`モデル「${model}」が見つかりません。gemini-2.5-flash または gemini-2.0-flash をお試しください。`);
-      if(r.status===429){
-        if(msg.includes('limit: 0') || msg.includes('quota')){
-          const err = new Error('⚠️ Gemini無料枠の上限に達しました（1日ごとにリセット）。\n→「AI提供元」をOpenAIかClaudeに切り替えるか、明日お試しください。');
-          err.noRetry = true;
-          throw err;
+    const gemModels = PROVIDER_MODELS.gemini.map(m=>m.v);
+    const startIdx = Math.max(0, gemModels.indexOf(model));
+    for(let mi = startIdx; mi < gemModels.length; mi++){
+      const tryModel = gemModels[mi];
+      if(mi > startIdx) log(`🔄 ${tryModel} で再試行…`,'y');
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${tryModel}:generateContent?key=${key}`;
+      const r = await fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          systemInstruction:{parts:[{text:sysText}]},
+          contents: userMsgs,
+          generationConfig:{temperature, maxOutputTokens:maxTokens}
+        })
+      });
+      if(!r.ok){
+        const e=await r.json().catch(()=>({}));
+        const emsg = e.error?.message||'';
+        if(r.status===400 && emsg.includes('API key not valid'))
+          throw new Error('APIキーが無効です。Google AI Studio (aistudio.google.com/apikey) で新しいキーを作成してください。');
+        if((r.status===429 || r.status===404) && mi < gemModels.length-1) continue;
+        if(r.status===429){
+          const err = new Error('⚠️ Gemini全モデルのクォータに達しました。\n→「AI提供元」をOpenAIかClaudeに切り替えるか、明日お試しください。');
+          err.noRetry = true; throw err;
         }
-        const err = new Error('レート制限: ' + (msg||'しばらく待ってから再試行してください'));
-        err.retryAfter = 30;
-        throw err;
+        if(r.status===404) throw new Error('利用可能なGeminiモデルが見つかりませんでした。');
+        if(r.status===403) throw new Error('APIキーの権限不足。詳細: '+emsg);
+        throw new Error(emsg||`Gemini API エラー ${r.status}`);
       }
-      if(r.status===403)
-        throw new Error('APIキーにこのモデルの権限がありません。Google AI Studio でキーの設定を確認してください。詳細: ' + msg);
-      throw new Error(msg||`Gemini API エラー ${r.status}`);
+      const d = await r.json();
+      if(!d.candidates||!d.candidates[0]?.content?.parts?.[0]?.text)
+        throw new Error('Geminiから有効な応答がありませんでした。安全フィルターにかかった可能性があります。');
+      if(mi > startIdx){ modelEl.value = tryModel; log(`✅ ${tryModel} で成功`,'g'); }
+      return d.candidates[0].content.parts[0].text;
     }
-    const d = await r.json();
-    if(!d.candidates||!d.candidates[0]?.content?.parts?.[0]?.text)
-      throw new Error('Geminiから有効な応答がありませんでした。安全フィルターにかかった可能性があります。テーマを少し変えてお試しください。');
-    return d.candidates[0].content.parts[0].text;
   } else {
     const r = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
