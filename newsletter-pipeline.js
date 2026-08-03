@@ -20,9 +20,23 @@
 //   --dry-run               生成のみ（リザストへ投稿しない）
 //   --from-json "path"      JSONファイルから記事を読み込み（AI生成をスキップ）
 //   --save-json "path"      生成結果をJSONに保存
+//
+// 既存記事の操作:
+//   --list                  メルマガ一覧＋記事一覧を表示
+//   --proofread --article-id ID   リザストAIで記事を校正
+//   --suggest-subject --article-id ID  AIで件名を提案
+//   --rewrite --article-id ID --from-json "path"  本文をAIで書き直して上書き保存
 
 const fs = require('fs');
-const { createMailMagazine, createMailMagazineArticle } = require('./reservestock-mail-magazine.js');
+const {
+  createMailMagazine,
+  createMailMagazineArticle,
+  saveMailMagazineArticle,
+  proofreadMailMagazineArticle,
+  suggestMailMagazineSubject,
+  searchMailMagazineArticles,
+  listMailMagazines,
+} = require('./reservestock-mail-magazine.js');
 
 const API_INTERVAL_MS = 2000;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -317,6 +331,11 @@ function parseArgs() {
     dryRun: false,
     fromJson: null,
     saveJson: null,
+    list: false,
+    proofread: false,
+    suggestSubject: false,
+    rewrite: false,
+    articleId: null,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -333,6 +352,11 @@ function parseArgs() {
       case '--dry-run': opts.dryRun = true; break;
       case '--from-json': opts.fromJson = args[++i]; break;
       case '--save-json': opts.saveJson = args[++i]; break;
+      case '--list': opts.list = true; break;
+      case '--proofread': opts.proofread = true; break;
+      case '--suggest-subject': opts.suggestSubject = true; break;
+      case '--rewrite': opts.rewrite = true; break;
+      case '--article-id': opts.articleId = args[++i]; break;
       default:
         if (!opts.theme && !args[i].startsWith('--')) {
           opts.theme = args[i];
@@ -355,9 +379,144 @@ function parseArgs() {
 //  メインパイプライン
 // ═══════════════════════════════════════════════════════════
 
+async function requireRsKey() {
+  const rsKey = process.env.RESERVESTOCK_API_KEY;
+  if (!rsKey) { console.error('❌ RESERVESTOCK_API_KEY が未設定です'); process.exit(1); }
+  if (!rsKey.startsWith('rs_live_')) { console.error('❌ APIキーが rs_live_ で始まっていません'); process.exit(1); }
+  return rsKey;
+}
+
+async function runList(opts) {
+  const rsKey = await requireRsKey();
+  console.log('📋 メルマガ一覧を取得中...\n');
+  const magazines = await listMailMagazines(rsKey);
+  if (magazines.length === 0) { console.log('メルマガが見つかりません。'); return; }
+
+  for (const mag of magazines) {
+    console.log(`━━ ${mag.name}（ID: ${mag.id}、読者: ${mag.subscribersCount}人）━━`);
+    await sleep(API_INTERVAL_MS);
+    const result = await searchMailMagazineArticles(mag.id, rsKey);
+    if (result.articles.length === 0) {
+      console.log('  記事なし\n');
+    } else {
+      for (const a of result.articles) {
+        console.log(`  📄 ID: ${a.id} ｜ ${a.title}`);
+      }
+      console.log('');
+    }
+  }
+  console.log('ヒント: 上記のIDを --article-id で指定して --proofread / --suggest-subject / --rewrite できます。');
+}
+
+async function runProofread(opts) {
+  const rsKey = await requireRsKey();
+  if (!opts.articleId) { console.error('❌ --article-id が必要です'); process.exit(1); }
+  console.log(`🔍 記事 ${opts.articleId} をAI校正中...（数十秒かかります）\n`);
+  const result = await proofreadMailMagazineArticle(opts.articleId, rsKey);
+  console.log(`✅ 校正完了（範囲: ${result.scope}）`);
+  console.log('  リザスト管理画面で校正結果を確認してください。');
+}
+
+async function runSuggestSubject(opts) {
+  const rsKey = await requireRsKey();
+  if (!opts.articleId) { console.error('❌ --article-id が必要です'); process.exit(1); }
+  console.log(`💌 記事 ${opts.articleId} の件名を提案中...\n`);
+  const result = await suggestMailMagazineSubject(opts.articleId, rsKey);
+  console.log(`  現在の件名: ${result.currentSubject || '（なし）'}`);
+  console.log(`  提案件名:   ${result.suggestedSubject}`);
+  console.log('\n  採用する場合はリザスト管理画面で変更してください。');
+}
+
+async function runRewrite(opts) {
+  const rsKey = await requireRsKey();
+  if (!opts.articleId) { console.error('❌ --article-id が必要です'); process.exit(1); }
+  if (!opts.fromJson) { console.error('❌ --from-json で元の本文を指定してください'); process.exit(1); }
+
+  const raw = JSON.parse(fs.readFileSync(opts.fromJson, 'utf-8'));
+  const originalSubject = raw.subject;
+  const originalContext = raw.context;
+
+  console.log(`✏️  記事 ${opts.articleId} をAIでリライト中...\n`);
+  console.log(`  元の件名: ${originalSubject}`);
+  console.log(`  元の本文: ${originalContext.length}文字\n`);
+
+  const seasonKey = opts.season === 'auto' ? detectSeason() : opts.season;
+  const sysProm = buildSystemPrompt(seasonKey, opts.cta, opts.length);
+
+  console.log(`  AIプロバイダー: ${opts.provider} / ${opts.model}`);
+  console.log('  リライト中...');
+
+  const newContext = await callAI(opts.provider, opts.model, [
+    { role: 'system', content: sysProm + '\n\n━━━ 追加指示 ━━━\n以下の既存メルマガをブラッシュアップしてください。元の伝えたいメッセージや構成の良い部分は活かしつつ、文体・表現・読みやすさを向上させてください。' },
+    { role: 'user', content: `以下の下書きメルマガをブラッシュアップしてください。\n\n【元の件名】${originalSubject}\n\n【元の本文】\n${originalContext}` },
+  ], 3000, 0.6);
+
+  console.log(`  リライト完了（${newContext.length}文字）\n`);
+
+  let warnings = checkCompliance(newContext);
+  if (warnings.length > 0) {
+    console.log(`  ⚠️ 薬機法チェック: ${warnings.length}件検出 → 自動修正中...`);
+    const fixed = await callAI(opts.provider, opts.model, [
+      { role: 'system', content: 'あなたは薬機法（医薬品医療機器等法）と景品表示法の専門家です。指摘された表現のみを、意味を保ちつつ薬機法準拠の表現に書き換えてください。それ以外の文章は一切変えないでください。' },
+      { role: 'user', content: `以下のメルマガに薬機法リスクがあります。\n\n【検出】${warnings.map(w => '「' + w + '」').join('、')}\n\n【本文】\n${newContext}` },
+    ], 3000, 0.3);
+    warnings = checkCompliance(fixed);
+    if (warnings.length === 0) console.log('  薬機法修正完了');
+  }
+
+  const subRaw = await callAI(opts.provider, opts.model, [
+    { role: 'system', content: SUBJECT_SYSTEM },
+    { role: 'user', content: `以下のメルマガ本文に最適な件名を5つ:\n\n${newContext}` },
+  ], 200, 0.85);
+
+  let subjects = [];
+  try {
+    const s = subRaw.indexOf('['), e = subRaw.lastIndexOf(']') + 1;
+    subjects = JSON.parse(subRaw.slice(s, e));
+  } catch (_) { subjects = [originalSubject]; }
+  const newSubject = subjects[0] || originalSubject;
+
+  if (opts.saveJson) {
+    fs.writeFileSync(opts.saveJson, JSON.stringify({ subject: newSubject, context: newContext }, null, 2), 'utf-8');
+    console.log(`  💾 JSONに保存: ${opts.saveJson}`);
+  }
+
+  if (opts.dryRun) {
+    console.log('\n📋 dry-run: リザストへの保存はスキップ');
+    console.log(`  新しい件名: ${newSubject}`);
+    console.log(`  他の候補: ${subjects.slice(1).join(' / ')}`);
+    console.log(`  本文（${newContext.length}文字）:\n${newContext.slice(0, 300)}...`);
+    return;
+  }
+
+  console.log('  リザストに上書き保存中...');
+  await sleep(API_INTERVAL_MS);
+  const saved = await saveMailMagazineArticle({
+    mailMagazineArticleId: opts.articleId,
+    subject: newSubject,
+    context: newContext,
+    publicStatus: 'private',
+  }, rsKey);
+
+  console.log('\n╔══════════════════════════════════════════╗');
+  console.log('║            リライト完了                     ║');
+  console.log('╚══════════════════════════════════════════╝');
+  console.log(`  記事ID: ${saved.mailMagazineArticleId}`);
+  console.log(`  新しい件名: ${newSubject}`);
+  if (subjects.length > 1) console.log(`  他の候補: ${subjects.slice(1).join(' / ')}`);
+  console.log(`  本文: ${newContext.length}文字`);
+  console.log(`  ステータス: ${saved.status}`);
+  console.log('\n  → リザスト管理画面で内容を確認してください。');
+}
+
 async function main() {
   const opts = parseArgs();
   const log = (msg) => console.log(`  ${msg}`);
+
+  if (opts.list) return runList(opts);
+  if (opts.proofread) return runProofread(opts);
+  if (opts.suggestSubject) return runSuggestSubject(opts);
+  if (opts.rewrite) return runRewrite(opts);
 
   console.log('╔══════════════════════════════════════════╗');
   console.log('║  アロマリア メルマガ → リザスト パイプライン  ║');
