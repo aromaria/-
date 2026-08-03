@@ -24,6 +24,9 @@
 const fs = require('fs');
 const { createMailMagazine, createMailMagazineArticle } = require('./reservestock-mail-magazine.js');
 
+const API_INTERVAL_MS = 2000;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 // ═══════════════════════════════════════════════════════════
 //  設定値
 // ═══════════════════════════════════════════════════════════
@@ -458,6 +461,7 @@ async function main() {
     log(`配信グループID: ${magazineId}`);
   }
 
+  await sleep(API_INTERVAL_MS);
   log('記事を投稿中...');
   const article = await createMailMagazineArticle({
     mailMagazineId: magazineId,

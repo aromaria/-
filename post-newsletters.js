@@ -14,6 +14,8 @@ if (!API_KEY.startsWith('rs_live_')) {
 }
 
 const MAGAZINE_TITLE = 'アロマリア 検証メルマガ';
+const API_INTERVAL_MS = 2000;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const articles = [
   { path: './content/newsletter-content-sucrose-diabetes.json', label: 'ショ糖と糖尿病' },
@@ -53,6 +55,7 @@ async function main() {
 
   const results = [];
   for (const { path, label } of articles) {
+    await sleep(API_INTERVAL_MS);
     const result = await postArticle(path, magazine.stepMailId, label);
     results.push({ label, ...result });
   }
