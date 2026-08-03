@@ -19,7 +19,9 @@ node_modules/
 package.json
 package-lock.json
 
-out/
+out/*.txt
+out/*.html
+# out/articles/ と out/rewritten/ はgit管理（Claude Codeとの受け渡し用）
 
 # Obsidianのローカル設定（同期不要）
 .obsidian/
