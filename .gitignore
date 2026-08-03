@@ -9,6 +9,7 @@ credentials*.json
 service-account*.json
 *.pem
 *.key
+scripts/rewrite.env
 
 # OS / editor
 .DS_Store
