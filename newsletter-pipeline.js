@@ -286,19 +286,26 @@ async function callAI(provider, model, messages, maxTokens, temperature) {
   if (provider === 'gemini') {
     const key = process.env.GEMINI_API_KEY;
     if (!key) throw new Error('GEMINI_API_KEY が未設定です');
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: messages[0].content }] },
-        contents: messages.slice(1).map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
-        generationConfig: { maxOutputTokens: maxTokens, temperature },
-      }),
+    const body = JSON.stringify({
+      system_instruction: { parts: [{ text: messages[0].content }] },
+      contents: messages.slice(1).map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
+      generationConfig: { maxOutputTokens: maxTokens, temperature },
     });
-    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error?.message || `Gemini API ${r.status}`); }
-    const d = await r.json();
-    if (!d.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Geminiから有効な応答がありませんでした');
-    return d.candidates[0].content.parts[0].text;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+      });
+      if (r.status === 429 && attempt < 2) {
+        const wait = (attempt + 1) * 30;
+        console.log(`  ⏳ Geminiレート制限 → ${wait}秒待機してリトライ (${attempt + 1}/2)...`);
+        await new Promise(ok => setTimeout(ok, wait * 1000));
+        continue;
+      }
+      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error?.message || `Gemini API ${r.status}`); }
+      const d = await r.json();
+      if (!d.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Geminiから有効な応答がありませんでした');
+      return d.candidates[0].content.parts[0].text;
+    }
   }
 
   throw new Error(`未対応のプロバイダー: ${provider}`);
@@ -543,10 +550,17 @@ async function rewriteOneArticle(articleId, opts, rsKey) {
 
   const warnings = checkCompliance(newContext);
   if (warnings.length > 0) {
-    console.log(`  薬機法チェック: ${warnings.length}件検出 → 自動修正中...`);
+    console.log(`  薬機法チェック: ${warnings.length}件検出 → 注釈追加中...`);
     newContext = await callAI(opts.provider, opts.model, [
-      { role: 'system', content: 'あなたは薬機法（医薬品医療機器等法）と景品表示法の専門家です。指摘された表現のみを、意味を保ちつつ薬機法準拠の表現に書き換えてください。それ以外の文章は一切変えないでください。' },
-      { role: 'user', content: `以下のメルマガに薬機法リスクがあります。\n\n【検出】${warnings.map(w => '「' + w + '」').join('、')}\n\n【本文】\n${newContext}` },
+      { role: 'system', content: `あなたは薬機法（医薬品医療機器等法）と景品表示法の専門家です。
+
+【絶対ルール】
+・実例・臨床例・体験談の内容は絶対に削除・書き換えしないでください。事実として書かれているものはそのまま残します。
+・必要な箇所に「※個人の感想であり、効果を保証するものではありません」「※体験談は個人の感想です」等の注釈（※）を添えるだけにしてください。
+・注釈は該当する体験談・臨床例の直後に自然に挿入してください。
+・既に注釈がある場合は追加不要です。
+・それ以外の文章は一切変えないでください。` },
+      { role: 'user', content: `以下のメルマガに薬機法上の注意表現があります。内容は削除せず、必要な箇所に※注釈を添えてください。\n\n【検出】${warnings.map(w => '「' + w + '」').join('、')}\n\n【本文】\n${newContext}` },
     ], 3000, 0.3);
   }
 
@@ -683,15 +697,21 @@ async function main() {
     console.log('\n🔍 STEP 2: 薬機法チェック');
     let warnings = checkCompliance(context);
     if (warnings.length > 0) {
-      log(`${warnings.length}件検出: ${warnings.join('、')}`);
-      log('自動修正中...');
+      log(`${warnings.length}件検出 → 注釈追加中...`);
       context = await callAI(opts.provider, opts.model, [
-        { role: 'system', content: 'あなたは薬機法（医薬品医療機器等法）と景品表示法の専門家です。指摘された表現のみを、意味を保ちつつ薬機法準拠の表現に書き換えてください。それ以外の文章は一切変えないでください。' },
-        { role: 'user', content: `以下のメルマガに薬機法リスクがあります。\n\n【検出】${warnings.map(w => '「' + w + '」').join('、')}\n\n【本文】\n${context}` },
+        { role: 'system', content: `あなたは薬機法（医薬品医療機器等法）と景品表示法の専門家です。
+
+【絶対ルール】
+・実例・臨床例・体験談の内容は絶対に削除・書き換えしないでください。事実として書かれているものはそのまま残します。
+・必要な箇所に「※個人の感想であり、効果を保証するものではありません」「※体験談は個人の感想です」等の注釈（※）を添えるだけにしてください。
+・注釈は該当する体験談・臨床例の直後に自然に挿入してください。
+・既に注釈がある場合は追加不要です。
+・それ以外の文章は一切変えないでください。` },
+        { role: 'user', content: `以下のメルマガに薬機法上の注意表現があります。内容は削除せず、必要な箇所に※注釈を添えてください。\n\n【検出】${warnings.map(w => '「' + w + '」').join('、')}\n\n【本文】\n${context}` },
       ], 3000, 0.3);
       warnings = checkCompliance(context);
-      if (warnings.length > 0) log(`⚠️ 残存: ${warnings.join('、')}（手動確認が必要）`);
-      else log('薬機法修正完了');
+      if (warnings.length > 0) log(`⚠️ 残存: ${warnings.join('、')}（手動確認推奨）`);
+      else log('注釈追加完了');
     } else {
       log('薬機法チェック通過');
     }
