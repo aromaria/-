@@ -473,41 +473,60 @@ async function runSuggestSubject(opts) {
   console.log('\n  採用する場合はリザスト管理画面で変更してください。');
 }
 
-async function runRewrite(opts) {
-  const rsKey = await requireRsKey();
-  if (!opts.articleId) { console.error('❌ --article-id が必要です'); process.exit(1); }
-  if (!opts.fromJson) { console.error('❌ --from-json で元の本文を指定してください'); process.exit(1); }
+const REWRITE_SYSTEM_ADDITION = `
 
-  const raw = JSON.parse(fs.readFileSync(opts.fromJson, 'utf-8'));
-  const originalSubject = raw.subject;
-  const originalContext = raw.context;
+━━━ ブラッシュアップ指示（最重要）━━━
+以下の既存メルマガを、愛読者の心に深く響く内容にリライトしてください。
 
-  console.log(`✏️  記事 ${opts.articleId} をAIでリライト中...\n`);
-  console.log(`  元の件名: ${originalSubject}`);
-  console.log(`  元の本文: ${originalContext.length}文字\n`);
+【リライトの方針】
+・元の伝えたいメッセージ・テーマは絶対に変えない
+・読者が「私のことだ」と感じる共感ポイントを強化
+・具体的なエピソードや体験談をより鮮明に描写
+・「読んでよかった」「誰かに教えたい」と思える気づきを深掘り
+・冒頭3行で読者の心を掴む（開封後すぐ離脱させない）
+・結びは温かく、読者の明日が少し明るくなるメッセージで
+・岩本純子さんの声が聞こえるような、語りかける文体を徹底
+・読み終わった時に「次のメルマガも楽しみ」と思ってもらえる読後感`;
+
+async function rewriteOneArticle(articleId, opts, rsKey) {
+  let originalSubject, originalContext;
+
+  if (opts.fromJson) {
+    const raw = JSON.parse(fs.readFileSync(opts.fromJson, 'utf-8'));
+    originalSubject = raw.subject;
+    originalContext = raw.context;
+  } else {
+    console.log('  リザストから本文を取得中...');
+    const proofResult = await proofreadMailMagazineArticle(articleId, rsKey);
+    const article = proofResult.mailMagazineArticle;
+    originalSubject = article.subject || article.title || '';
+    originalContext = article.context || article.body || '';
+    if (!originalContext) throw new Error('記事の本文を取得できませんでした');
+  }
+
+  console.log(`  元の件名: ${originalSubject || '(無題)'}`);
+  console.log(`  元の本文: ${originalContext.length}文字`);
 
   const seasonKey = opts.season === 'auto' ? detectSeason() : opts.season;
   const sysProm = buildSystemPrompt(seasonKey, opts.cta, opts.length);
 
-  console.log(`  AIプロバイダー: ${opts.provider} / ${opts.model}`);
-  console.log('  リライト中...');
+  console.log(`  AIリライト中...（${opts.provider} / ${opts.model}）`);
+  await sleep(API_INTERVAL_MS);
 
-  const newContext = await callAI(opts.provider, opts.model, [
-    { role: 'system', content: sysProm + '\n\n━━━ 追加指示 ━━━\n以下の既存メルマガをブラッシュアップしてください。元の伝えたいメッセージや構成の良い部分は活かしつつ、文体・表現・読みやすさを向上させてください。' },
+  let newContext = await callAI(opts.provider, opts.model, [
+    { role: 'system', content: sysProm + REWRITE_SYSTEM_ADDITION },
     { role: 'user', content: `以下の下書きメルマガをブラッシュアップしてください。\n\n【元の件名】${originalSubject}\n\n【元の本文】\n${originalContext}` },
   ], 3000, 0.6);
 
-  console.log(`  リライト完了（${newContext.length}文字）\n`);
+  console.log(`  リライト完了（${newContext.length}文字）`);
 
-  let warnings = checkCompliance(newContext);
+  const warnings = checkCompliance(newContext);
   if (warnings.length > 0) {
-    console.log(`  ⚠️ 薬機法チェック: ${warnings.length}件検出 → 自動修正中...`);
-    const fixed = await callAI(opts.provider, opts.model, [
+    console.log(`  薬機法チェック: ${warnings.length}件検出 → 自動修正中...`);
+    newContext = await callAI(opts.provider, opts.model, [
       { role: 'system', content: 'あなたは薬機法（医薬品医療機器等法）と景品表示法の専門家です。指摘された表現のみを、意味を保ちつつ薬機法準拠の表現に書き換えてください。それ以外の文章は一切変えないでください。' },
       { role: 'user', content: `以下のメルマガに薬機法リスクがあります。\n\n【検出】${warnings.map(w => '「' + w + '」').join('、')}\n\n【本文】\n${newContext}` },
     ], 3000, 0.3);
-    warnings = checkCompliance(fixed);
-    if (warnings.length === 0) console.log('  薬機法修正完了');
   }
 
   const subRaw = await callAI(opts.provider, opts.model, [
@@ -522,25 +541,69 @@ async function runRewrite(opts) {
   } catch (_) { subjects = [originalSubject]; }
   const newSubject = subjects[0] || originalSubject;
 
+  return { newSubject, newContext, subjects, originalSubject };
+}
+
+async function runRewrite(opts) {
+  const rsKey = await requireRsKey();
+
+  if (opts.search) {
+    console.log(`✏️  「${opts.search}」に該当する記事を一括リライトします...\n`);
+    const articles = await searchMailMagazineArticlesAcross(opts.search, rsKey, opts.magazineId);
+    if (articles.length === 0) { console.log('該当記事なし'); return; }
+    console.log(`  ${articles.length}件の記事をリライトします\n`);
+    let done = 0, failed = 0;
+    for (const a of articles) {
+      done++;
+      console.log(`\n[${done}/${articles.length}] ID: ${a.id} ｜ ${a.title || '(無題)'}`);
+      try {
+        const result = await rewriteOneArticle(a.id, opts, rsKey);
+        if (!opts.dryRun) {
+          await sleep(API_INTERVAL_MS);
+          await saveMailMagazineArticle({
+            mailMagazineArticleId: a.id,
+            subject: result.newSubject,
+            context: result.newContext,
+            publicStatus: 'private',
+          }, rsKey);
+          console.log(`  ✅ 保存完了 → 「${result.newSubject}」`);
+        } else {
+          console.log(`  📋 dry-run → 「${result.newSubject}」`);
+        }
+      } catch (err) {
+        failed++;
+        console.log(`  ⚠️ スキップ: ${err.message}`);
+      }
+    }
+    console.log(`\n━━ 一括リライト完了 ━━`);
+    console.log(`  成功: ${done - failed}件 / 失敗: ${failed}件 / 合計: ${articles.length}件`);
+    console.log('  リザスト管理画面で内容を確認してください。');
+    return;
+  }
+
+  if (!opts.articleId) { console.error('❌ --article-id または --search が必要です'); process.exit(1); }
+
+  console.log(`✏️  記事 ${opts.articleId} をAIでリライト中...\n`);
+  const result = await rewriteOneArticle(opts.articleId, opts, rsKey);
+
   if (opts.saveJson) {
-    fs.writeFileSync(opts.saveJson, JSON.stringify({ subject: newSubject, context: newContext }, null, 2), 'utf-8');
+    fs.writeFileSync(opts.saveJson, JSON.stringify({ subject: result.newSubject, context: result.newContext }, null, 2), 'utf-8');
     console.log(`  💾 JSONに保存: ${opts.saveJson}`);
   }
 
   if (opts.dryRun) {
     console.log('\n📋 dry-run: リザストへの保存はスキップ');
-    console.log(`  新しい件名: ${newSubject}`);
-    console.log(`  他の候補: ${subjects.slice(1).join(' / ')}`);
-    console.log(`  本文（${newContext.length}文字）:\n${newContext.slice(0, 300)}...`);
+    console.log(`  新しい件名: ${result.newSubject}`);
+    if (result.subjects.length > 1) console.log(`  他の候補: ${result.subjects.slice(1).join(' / ')}`);
+    console.log(`  本文（${result.newContext.length}文字）:\n${result.newContext.slice(0, 300)}...`);
     return;
   }
 
-  console.log('  リザストに上書き保存中...');
   await sleep(API_INTERVAL_MS);
   const saved = await saveMailMagazineArticle({
     mailMagazineArticleId: opts.articleId,
-    subject: newSubject,
-    context: newContext,
+    subject: result.newSubject,
+    context: result.newContext,
     publicStatus: 'private',
   }, rsKey);
 
@@ -548,9 +611,9 @@ async function runRewrite(opts) {
   console.log('║            リライト完了                     ║');
   console.log('╚══════════════════════════════════════════╝');
   console.log(`  記事ID: ${saved.mailMagazineArticleId}`);
-  console.log(`  新しい件名: ${newSubject}`);
-  if (subjects.length > 1) console.log(`  他の候補: ${subjects.slice(1).join(' / ')}`);
-  console.log(`  本文: ${newContext.length}文字`);
+  console.log(`  新しい件名: ${result.newSubject}`);
+  if (result.subjects.length > 1) console.log(`  他の候補: ${result.subjects.slice(1).join(' / ')}`);
+  console.log(`  本文: ${result.newContext.length}文字`);
   console.log(`  ステータス: ${saved.status}`);
   console.log('\n  → リザスト管理画面で内容を確認してください。');
 }
