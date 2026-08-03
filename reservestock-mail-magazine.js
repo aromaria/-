@@ -7,6 +7,14 @@
 
 const RESERVESTOCK_BASE = 'https://www.reservestock.jp/api';
 
+async function parseJsonResponse(response) {
+  const ct = response.headers.get('content-type') || '';
+  if (!ct.includes('json')) {
+    throw new Error(`リザストAPIがJSON以外を返しました（${response.status}）。しばらく待ってから再実行してください`);
+  }
+  return response.json();
+}
+
 /**
  * メルマガ配信グループを新規作成する
  *
@@ -53,7 +61,7 @@ async function createMailMagazine(params, apiKey) {
     body: JSON.stringify(body),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -189,7 +197,7 @@ async function createMailMagazineArticle(params, apiKey) {
     body: JSON.stringify(body),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -252,7 +260,7 @@ async function saveMailMagazineArticle(params, apiKey) {
     body: JSON.stringify(body),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -321,7 +329,7 @@ async function publishMailMagazineArticle(params, apiKey) {
     body: JSON.stringify(body),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -364,7 +372,7 @@ async function deleteMailMagazineArticle(mailMagazineArticleId, apiKey) {
     body: JSON.stringify({ mail_magazine_article_id: mailMagazineArticleId }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -415,7 +423,7 @@ async function proofreadMailMagazineArticle(mailMagazineArticleId, apiKey) {
     body: JSON.stringify({ mail_magazine_article_id: mailMagazineArticleId }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -469,7 +477,7 @@ async function generateTextPartForMailMagazineArticle(mailMagazineArticleId, api
     }
   );
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -524,7 +532,7 @@ async function suggestMailMagazineSubject(mailMagazineArticleId, apiKey, current
     }
   );
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -573,7 +581,7 @@ async function searchMailMagazineArticles(mailMagazineId, apiKey, keyword) {
     },
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -612,7 +620,7 @@ async function listMailMagazines(apiKey) {
     },
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -654,7 +662,7 @@ async function getMailMagazineLp(mailMagazineId, apiKey) {
     },
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -709,7 +717,7 @@ async function listSentMailMagazineArticles(params, apiKey) {
     }
   );
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -777,7 +785,7 @@ async function searchMailMagazineArticlesAcross(keyword, apiKey, mailMagazineId)
     }
   );
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -814,7 +822,7 @@ async function listStepMails(apiKey) {
     },
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -879,7 +887,7 @@ async function createStepMail(params, apiKey) {
     body: JSON.stringify(body),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -921,7 +929,7 @@ async function getStepMailLp(stepMailId, apiKey) {
     },
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -976,7 +984,7 @@ async function updateStepMailLp(stepMailId, description, apiKey) {
     body: JSON.stringify({ step_mail_id: stepMailId, description }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
@@ -1030,7 +1038,7 @@ async function searchStepMailTomes(keyword, apiKey, stepMailId) {
     }
   );
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
 
   if (data.result !== 'success') {
     const err = new Error(
