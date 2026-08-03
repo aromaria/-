@@ -388,19 +388,15 @@ async function requireRsKey() {
 async function runList(opts) {
   const rsKey = await requireRsKey();
 
-  let magazineId = opts.magazineId;
-  const magazineName = opts.magazine || 'アロマリア美健康の秘訣';
-
+  const magazineId = opts.magazineId;
   if (!magazineId) {
-    console.log(`📋 配信グループ「${magazineName}」の記事一覧を取得中...\n`);
-    const mag = await createMailMagazine({ title: magazineName }, rsKey);
-    magazineId = mag.stepMailId;
-    console.log(`  配信グループID: ${magazineId}（${magazineName}）\n`);
-  } else {
-    console.log(`📋 配信グループ ${magazineId} の記事一覧を取得中...\n`);
+    console.error('❌ --magazine-id が必要です。');
+    console.error('  リザスト管理画面で配信グループのIDを確認してください。');
+    console.error('  例: node newsletter-pipeline.js --list --magazine-id 364248');
+    process.exit(1);
   }
 
-  await sleep(API_INTERVAL_MS);
+  console.log(`📋 配信グループ ${magazineId} の記事一覧を取得中...\n`);
   const result = await searchMailMagazineArticles(magazineId, rsKey);
 
   if (result.articles.length === 0) {
@@ -413,7 +409,6 @@ async function runList(opts) {
 
   console.log(`\n  合計: ${result.articles.length}件`);
   console.log('\nヒント: 上記のIDを --article-id で指定して --proofread / --suggest-subject / --rewrite できます。');
-  console.log('別の配信グループを見る: --list --magazine "グループ名" または --list --magazine-id ID');
 }
 
 async function runProofread(opts) {
