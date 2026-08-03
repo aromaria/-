@@ -35,6 +35,7 @@ const {
   proofreadMailMagazineArticle,
   suggestMailMagazineSubject,
   searchMailMagazineArticles,
+  searchMailMagazineArticlesAcross,
 } = require('./reservestock-mail-magazine.js');
 
 const API_INTERVAL_MS = 2000;
@@ -331,6 +332,7 @@ function parseArgs() {
     fromJson: null,
     saveJson: null,
     list: false,
+    search: null,
     proofread: false,
     suggestSubject: false,
     rewrite: false,
@@ -352,6 +354,7 @@ function parseArgs() {
       case '--from-json': opts.fromJson = args[++i]; break;
       case '--save-json': opts.saveJson = args[++i]; break;
       case '--list': opts.list = true; break;
+      case '--search': opts.search = args[++i]; break;
       case '--proofread': opts.proofread = true; break;
       case '--suggest-subject': opts.suggestSubject = true; break;
       case '--rewrite': opts.rewrite = true; break;
@@ -408,6 +411,21 @@ async function runList(opts) {
   }
 
   console.log(`\n  合計: ${result.articles.length}件`);
+  console.log('\nヒント: 上記のIDを --article-id で指定して --proofread / --suggest-subject / --rewrite できます。');
+}
+
+async function runSearch(opts) {
+  const rsKey = await requireRsKey();
+  console.log(`🔍 全メルマガから「${opts.search}」を検索中...\n`);
+  const articles = await searchMailMagazineArticlesAcross(opts.search, rsKey, opts.magazineId);
+  if (articles.length === 0) {
+    console.log('  該当記事なし');
+  } else {
+    for (const a of articles) {
+      console.log(`  📄 ID: ${a.id} ｜ ${a.title}`);
+    }
+  }
+  console.log(`\n  合計: ${articles.length}件`);
   console.log('\nヒント: 上記のIDを --article-id で指定して --proofread / --suggest-subject / --rewrite できます。');
 }
 
@@ -517,6 +535,7 @@ async function main() {
   const log = (msg) => console.log(`  ${msg}`);
 
   if (opts.list) return runList(opts);
+  if (opts.search) return runSearch(opts);
   if (opts.proofread) return runProofread(opts);
   if (opts.suggestSubject) return runSuggestSubject(opts);
   if (opts.rewrite) return runRewrite(opts);
