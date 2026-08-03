@@ -70,9 +70,65 @@
 | `keyword_required` | 400 | 検索キーワード未指定 |
 | `openai_request_failed` | 502 | OpenAI通信失敗 |
 
-## 実行方法
+## 一気通貫パイプライン（newsletter-pipeline.js）
+
+「メルマガ生成してリザストに保存して」の一言で動く統合システム。
+
+### できること
+1. AIでメルマガ本文を生成（岩本純子先生の文体・構成ルール準拠）
+2. 薬機法チェック → 違反表現の自動修正
+3. 件名を5候補生成（最良を自動選択）
+4. リザストAPIに非公開記事として投稿
+
+### 基本コマンド
 ```bash
-# ローカルPCで実行（クラウド環境からはreservestock.jpへアクセス不可）
+# テーマ指定で生成→投稿（OpenAI）
+RESERVESTOCK_API_KEY=rs_live_xxxx OPENAI_API_KEY=sk-xxxx \
+  node newsletter-pipeline.js --theme "メタトロン解析"
+
+# Anthropic / Gemini で生成
+RESERVESTOCK_API_KEY=rs_live_xxxx ANTHROPIC_API_KEY=sk-ant-xxxx \
+  node newsletter-pipeline.js --provider anthropic --theme "自己治癒力"
+
+RESERVESTOCK_API_KEY=rs_live_xxxx GEMINI_API_KEY=xxxx \
+  node newsletter-pipeline.js --provider gemini --theme "アロマ感情解放"
+```
+
+### オプション一覧
+| オプション | デフォルト | 説明 |
+|---|---|---|
+| `--theme "テーマ"` | メタトロン解析 | プリセット名 or 自由テキスト |
+| `--target "ターゲット"` | 原因不明の不調を抱える方 | ターゲット読者 |
+| `--cta metatron` | metatron | CTA種別（school/session/orientation/all） |
+| `--season auto` | auto | 季節（spring/summer/autumn/winter） |
+| `--length standard` | standard | 文字数（short/standard/long） |
+| `--provider openai` | openai | AI提供元（anthropic/gemini） |
+| `--model "名前"` | 各社推奨 | モデル指定 |
+| `--magazine "名前"` | アロマリア美健康の秘訣 | 配信グループ名 |
+| `--magazine-id ID` | - | 既存配信グループID |
+| `--dry-run` | - | 生成のみ（投稿しない） |
+| `--from-json "path"` | - | JSONから読み込み（AI生成スキップ） |
+| `--save-json "path"` | - | 生成結果をJSON保存 |
+
+### テーマプリセット（ショートカット名）
+メタトロン解析 / 自己治癒力 / 自然療法スクール / 波動美健康 / 心身魂 / アロマ感情解放
+
+### 使い方パターン
+```bash
+# 生成だけ確認（投稿しない）
+OPENAI_API_KEY=sk-xxxx node newsletter-pipeline.js --theme "心身魂" --dry-run
+
+# 生成してJSONに保存 → 後でリザストに投稿
+OPENAI_API_KEY=sk-xxxx node newsletter-pipeline.js --theme "波動美健康" --save-json content/new-article.json --dry-run
+RESERVESTOCK_API_KEY=rs_live_xxxx node newsletter-pipeline.js --from-json content/new-article.json
+
+# 検証記事（既存JSON）を投稿
+RESERVESTOCK_API_KEY=rs_live_xxxx node newsletter-pipeline.js --from-json content/newsletter-content-sucrose-diabetes.json
+```
+
+## 個別投稿スクリプト（post-newsletters.js）
+検証済み記事2本をまとめて投稿する専用スクリプト。
+```bash
 RESERVESTOCK_API_KEY=rs_live_xxxx node post-newsletters.js
 ```
 
@@ -81,8 +137,3 @@ RESERVESTOCK_API_KEY=rs_live_xxxx node post-newsletters.js
 |---|---|---|
 | ショ糖と糖尿病 | `content/newsletter-content-sucrose-diabetes.json` | 「ショ糖を抜くと糖尿病になる」という主張の検証 |
 | フライドポテト事故 | `content/newsletter-content-friedpotato.json` | 実在の事故を基にした陰謀論的主張の検証 |
-
-## 今後の展開
-- `newsletter.html` で生成 → API で直接投稿の一気通貫フロー
-- 定期的な検証記事の自動投稿パイプライン
-- 配信スケジュール管理の自動化
