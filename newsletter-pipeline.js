@@ -431,7 +431,32 @@ async function runSearch(opts) {
 
 async function runProofread(opts) {
   const rsKey = await requireRsKey();
-  if (!opts.articleId) { console.error('❌ --article-id が必要です'); process.exit(1); }
+
+  if (opts.search) {
+    console.log(`🔍 「${opts.search}」に該当する記事を一括校正します...\n`);
+    const articles = await searchMailMagazineArticlesAcross(opts.search, rsKey, opts.magazineId);
+    if (articles.length === 0) { console.log('該当記事なし'); return; }
+    console.log(`  ${articles.length}件の記事を校正します（1件あたり数十秒）\n`);
+    let done = 0, failed = 0;
+    for (const a of articles) {
+      done++;
+      console.log(`[${done}/${articles.length}] ID: ${a.id} ｜ ${a.title || '(無題)'}`);
+      try {
+        await sleep(API_INTERVAL_MS);
+        const result = await proofreadMailMagazineArticle(a.id, rsKey);
+        console.log(`  ✅ 校正完了（${result.scope}）`);
+      } catch (err) {
+        failed++;
+        console.log(`  ⚠️ スキップ: ${err.message}`);
+      }
+    }
+    console.log(`\n━━ 一括校正完了 ━━`);
+    console.log(`  成功: ${done - failed}件 / 失敗: ${failed}件 / 合計: ${articles.length}件`);
+    console.log('  リザスト管理画面で校正結果を確認してください。');
+    return;
+  }
+
+  if (!opts.articleId) { console.error('❌ --article-id または --search が必要です'); process.exit(1); }
   console.log(`🔍 記事 ${opts.articleId} をAI校正中...（数十秒かかります）\n`);
   const result = await proofreadMailMagazineArticle(opts.articleId, rsKey);
   console.log(`✅ 校正完了（範囲: ${result.scope}）`);
