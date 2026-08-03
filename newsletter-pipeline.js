@@ -291,13 +291,14 @@ async function callAI(provider, model, messages, maxTokens, temperature) {
       contents: messages.slice(1).map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
       generationConfig: { maxOutputTokens: maxTokens, temperature },
     });
-    for (let attempt = 0; attempt < 3; attempt++) {
+    const retryWaits = [30, 60, 90, 120, 180];
+    for (let attempt = 0; attempt <= retryWaits.length; attempt++) {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
       });
-      if (r.status === 429 && attempt < 2) {
-        const wait = (attempt + 1) * 30;
-        console.log(`  ⏳ Geminiレート制限 → ${wait}秒待機してリトライ (${attempt + 1}/2)...`);
+      if (r.status === 429 && attempt < retryWaits.length) {
+        const wait = retryWaits[attempt];
+        console.log(`  ⏳ Geminiレート制限 → ${wait}秒待機してリトライ (${attempt + 1}/${retryWaits.length})...`);
         await new Promise(ok => setTimeout(ok, wait * 1000));
         continue;
       }
@@ -309,6 +310,25 @@ async function callAI(provider, model, messages, maxTokens, temperature) {
   }
 
   throw new Error(`未対応のプロバイダー: ${provider}`);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  記事分割（大きな記事をセクションに分ける）
+// ═══════════════════════════════════════════════════════════
+
+function splitIntoSections(text, maxChars = 6000) {
+  const blocks = text.split(/\n{2,}/);
+  const sections = [];
+  let current = '';
+  for (const block of blocks) {
+    if (current.length + block.length > maxChars && current.length > 0) {
+      sections.push(current.trim());
+      current = '';
+    }
+    current += (current ? '\n\n' : '') + block;
+  }
+  if (current.trim()) sections.push(current.trim());
+  return sections.length > 0 ? sections : [text];
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -541,10 +561,29 @@ async function rewriteOneArticle(articleId, opts, rsKey) {
   console.log(`  AIリライト中...（${opts.provider} / ${opts.model}）`);
   await sleep(API_INTERVAL_MS);
 
-  let newContext = await callAI(opts.provider, opts.model, [
-    { role: 'system', content: sysProm + REWRITE_SYSTEM_ADDITION },
-    { role: 'user', content: `以下の下書きメルマガをブラッシュアップしてください。\n\n【元の件名】${originalSubject}\n\n【元の本文】\n${originalContext}` },
-  ], 3000, 0.6);
+  const CHUNK_THRESHOLD = 8000;
+  let newContext;
+
+  if (originalContext.length > CHUNK_THRESHOLD) {
+    const sections = splitIntoSections(originalContext);
+    console.log(`  📄 記事を${sections.length}セクションに分割してリライト`);
+    const rewritten = [];
+    for (let i = 0; i < sections.length; i++) {
+      console.log(`  ✏️  セクション ${i + 1}/${sections.length}（${sections[i].length}文字）...`);
+      await sleep(API_INTERVAL_MS);
+      const part = await callAI(opts.provider, opts.model, [
+        { role: 'system', content: sysProm + REWRITE_SYSTEM_ADDITION + '\n\n※これはメルマガの一部セクションです。セクション単位でブラッシュアップしてください。冒頭の挨拶や末尾の署名を勝手に追加しないでください。' },
+        { role: 'user', content: `以下のメルマガの一部をブラッシュアップしてください。\n\n【元の件名】${originalSubject}\n\n【セクション ${i + 1}/${sections.length}】\n${sections[i]}` },
+      ], 3000, 0.6);
+      rewritten.push(part);
+    }
+    newContext = rewritten.join('\n\n');
+  } else {
+    newContext = await callAI(opts.provider, opts.model, [
+      { role: 'system', content: sysProm + REWRITE_SYSTEM_ADDITION },
+      { role: 'user', content: `以下の下書きメルマガをブラッシュアップしてください。\n\n【元の件名】${originalSubject}\n\n【元の本文】\n${originalContext}` },
+    ], 3000, 0.6);
+  }
 
   console.log(`  リライト完了（${newContext.length}文字）`);
 
