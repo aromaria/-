@@ -37,3 +37,17 @@ APIトークンは画面・GitHubに出さない。/exec URLは公開ソース�
 ## 7. 連携運用（トークン節約）
 Obsidian＝知識の保管庫、Claude＝作成・整理・修正、NotebookLM＝資料への質問・要約。
 Claudeは CLAUDE.md と obsidian-vault の小さいメモから始めることで、大きなファイルを読み直さずに済む。
+
+## 8. リザストAPI連携（メルマガ投稿自動化）
+newsletter.htmlで生成した原稿を、Node.jsスクリプトからリザストAPIへ直接投稿する仕組み。
+認証はAPIキー（rs_live_...）をBearerトークンとして送信。
+
+主要API: 配信グループ作成（create_mail_magazine）、記事作成（create_mail_magazine_article）、
+記事保存（save_mail_magazine_article）、記事配信（publish_mail_magazine_article）、
+記事削除（delete_mail_magazine_article）、文章校正AI（proofread_mail_magazine_article）、
+AIタイトル提案（suggest_mail_magazine_subject）、記事横断検索（search_mail_magazine_articles）、
+メルマガ一覧（mail_magazines）、読者登録（subscribe_mail_magazine）。
+
+安全ルール: 記事は必ずprivate（非公開）で作成。配信はユーザーが管理画面で確認後。
+配信には本文に読者登録解除リンクが必要（なければAPIがエラーで停止）。
+APIエラー時は勝手にリトライせず報告。
