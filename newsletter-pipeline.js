@@ -35,7 +35,6 @@ const {
   proofreadMailMagazineArticle,
   suggestMailMagazineSubject,
   searchMailMagazineArticles,
-  listMailMagazines,
 } = require('./reservestock-mail-magazine.js');
 
 const API_INTERVAL_MS = 2000;
@@ -388,24 +387,33 @@ async function requireRsKey() {
 
 async function runList(opts) {
   const rsKey = await requireRsKey();
-  console.log('📋 メルマガ一覧を取得中...\n');
-  const magazines = await listMailMagazines(rsKey);
-  if (magazines.length === 0) { console.log('メルマガが見つかりません。'); return; }
 
-  for (const mag of magazines) {
-    console.log(`━━ ${mag.name}（ID: ${mag.id}、読者: ${mag.subscribersCount}人）━━`);
-    await sleep(API_INTERVAL_MS);
-    const result = await searchMailMagazineArticles(mag.id, rsKey);
-    if (result.articles.length === 0) {
-      console.log('  記事なし\n');
-    } else {
-      for (const a of result.articles) {
-        console.log(`  📄 ID: ${a.id} ｜ ${a.title}`);
-      }
-      console.log('');
+  let magazineId = opts.magazineId;
+  const magazineName = opts.magazine || 'アロマリア美健康の秘訣';
+
+  if (!magazineId) {
+    console.log(`📋 配信グループ「${magazineName}」の記事一覧を取得中...\n`);
+    const mag = await createMailMagazine({ title: magazineName }, rsKey);
+    magazineId = mag.stepMailId;
+    console.log(`  配信グループID: ${magazineId}（${magazineName}）\n`);
+  } else {
+    console.log(`📋 配信グループ ${magazineId} の記事一覧を取得中...\n`);
+  }
+
+  await sleep(API_INTERVAL_MS);
+  const result = await searchMailMagazineArticles(magazineId, rsKey);
+
+  if (result.articles.length === 0) {
+    console.log('  記事なし');
+  } else {
+    for (const a of result.articles) {
+      console.log(`  📄 ID: ${a.id} ｜ ${a.title}`);
     }
   }
-  console.log('ヒント: 上記のIDを --article-id で指定して --proofread / --suggest-subject / --rewrite できます。');
+
+  console.log(`\n  合計: ${result.articles.length}件`);
+  console.log('\nヒント: 上記のIDを --article-id で指定して --proofread / --suggest-subject / --rewrite できます。');
+  console.log('別の配信グループを見る: --list --magazine "グループ名" または --list --magazine-id ID');
 }
 
 async function runProofread(opts) {
