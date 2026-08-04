@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>岩本純子の物語 | アロマリア自然療法</title>
+<meta name="description" content="自然療法家・岩本純子の物語。全摘宣告から完治、そして使命へ。アロマリア自然療法ケアサロンの想いをお伝えします。">
+<style>
+/* ===== Token System (consistent with client-voices.html) ===== */
+:root {
+  --ground: #F5F7F2;
+  --surface: #FFFFFF;
+  --surface-alt: #EEF1EA;
+  --leaf: #527A5B;
+  --leaf-soft: #E8F0E6;
+  --leaf-deep: #3D5E44;
+  --bark: #6B5142;
+  --bark-soft: #F0E8E2;
+  --earth: #BFA88E;
+  --ink: #2B3328;
+  --ink-secondary: #4A5548;
+  --muted: #77847A;
+  --line: #D4DCD0;
+  --line-faint: #E6EBE3;
+  --highlight: #FDFCF0;
+  --shadow: rgba(43, 51, 40, 0.06);
+  --shadow-md: rgba(43, 51, 40, 0.10);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #1A1E19;
+    --surface: #252A24;
+    --surface-alt: #2C322B;
+    --leaf: #7BA883;
+    --leaf-soft: #2A3A2C;
+    --leaf-deep: #9DC4A4;
+    --bark: #C4A68E;
+    --bark-soft: #332C27;
+    --earth: #A08A70;
+    --ink: #E2E6E0;
+    --ink-secondary: #B8BFB5;
+    --muted: #8A9488;
+    --line: #3A423A;
+    --line-faint: #2F362E;
+    --highlight: #2A2E24;
+    --shadow: rgba(0, 0, 0, 0.20);
+    --shadow-md: rgba(0, 0, 0, 0.30);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #1A1E19;
+  --surface: #252A24;
+  --surface-alt: #2C322B;
+  --leaf: #7BA883;
+  --leaf-soft: #2A3A2C;
+  --leaf-deep: #9DC4A4;
+  --bark: #C4A68E;
+  --bark-soft: #332C27;
+  --earth: #A08A70;
+  --ink: #E2E6E0;
+  --ink-secondary: #B8BFB5;
+  --muted: #8A9488;
+  --line: #3A423A;
+  --line-faint: #2F362E;
+  --highlight: #2A2E24;
+  --shadow: rgba(0, 0, 0, 0.20);
+  --shadow-md: rgba(0, 0, 0, 0.30);
+}
+:root[data-theme="light"] {
+  --ground: #F5F7F2;
+  --surface: #FFFFFF;
+  --surface-alt: #EEF1EA;
+  --leaf: #527A5B;
+  --leaf-soft: #E8F0E6;
+  --leaf-deep: #3D5E44;
+  --bark: #6B5142;
+  --bark-soft: #F0E8E2;
+  --earth: #BFA88E;
+  --ink: #2B3328;
+  --ink-secondary: #4A5548;
+  --muted: #77847A;
+  --line: #D4DCD0;
+  --line-faint: #E6EBE3;
+  --highlight: #FDFCF0;
+  --shadow: rgba(43, 51, 40, 0.06);
+  --shadow-md: rgba(43, 51, 40, 0.10);
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
+               "Yu Gothic", Meiryo, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--ground);
+  line-height: 1.85;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.serif {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS PMincho",
+               Georgia, "Times New Roman", serif;
+}
+
+/* ===== Navigation ===== */
+.site-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-faint);
+  padding: 14px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.site-nav-inner {
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-brand {
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.2s;
+}
+.nav-brand:hover { color: var(--leaf); }
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.nav-link {
+  font-size: 13px;
+  color: var(--leaf);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.nav-link:hover { opacity: 0.7; }
+.nav-link.current {
+  color: var(--ink);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* ===== Hero ===== */
+.hero {
+  padding: 80px 24px 56px;
+  text-align: center;
+}
+.hero::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 1px;
+  background: var(--leaf);
+  margin: 44px auto 0;
+  opacity: 0.5;
+}
+.hero-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.hero-title {
+  font-size: clamp(24px, 5vw, 38px);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink);
+  margin-bottom: 24px;
+  text-wrap: balance;
+}
+.hero-hook {
+  font-size: clamp(14px, 2.5vw, 16px);
+  color: var(--bark);
+  letter-spacing: 0.06em;
+  line-height: 1.8;
+}
+
+/* ===== MSP ===== */
+.msp {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+.msp-inner {
+  position: relative;
+  padding: 32px 0;
+  border-top: 1px solid var(--line-faint);
+  border-bottom: 1px solid var(--line-faint);
+}
+.msp-text {
+  font-size: clamp(14.5px, 2.2vw, 16px);
+  line-height: 2.3;
+  color: var(--ink-secondary);
+  text-align: justify;
+}
+.msp-text strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.msp-attr {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* ===== Timeline shared ===== */
+.tl-wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.tl-header {
+  text-align: center;
+  padding-bottom: 48px;
+}
+.tl-section-title {
+  font-size: clamp(20px, 3.5vw, 28px);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.tl-section-sub {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.tl {
+  position: relative;
+  padding-left: 44px;
+}
+.tl::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 1px;
+}
+/* First half: warm tones fading toward neutral */
+.tl--before::before {
+  background: linear-gradient(to bottom, var(--bark), var(--earth));
+}
+/* Second half: green emerging and deepening */
+.tl--after::before {
+  background: linear-gradient(to bottom, var(--leaf), var(--leaf-deep));
+}
+
+.tl-node {
+  position: relative;
+  padding-bottom: 36px;
+}
+.tl-node:last-child { padding-bottom: 0; }
+
+.tl-dot {
+  position: absolute;
+  left: -44px;
+  top: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.tl-dot::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+/* Pain/crisis nodes (warm) */
+.tl-node.pain .tl-dot { border-color: var(--bark); }
+.tl-node.pain .tl-dot::after { background: var(--bark); }
+.tl-node.crisis .tl-dot { border-color: var(--bark); }
+.tl-node.crisis .tl-dot::after { background: var(--bark); }
+
+/* Recovery nodes (green) */
+.tl-node.recovery .tl-dot {
+  border-color: var(--leaf-deep);
+  background: var(--leaf-soft);
+}
+.tl-node.recovery .tl-dot::after { background: var(--leaf-deep); }
+.tl-node.turning .tl-dot { border-color: var(--leaf); }
+.tl-node.turning .tl-dot::after { background: var(--leaf); }
+
+/* Final node: slightly larger */
+.tl-node.now .tl-dot {
+  border-color: var(--leaf-deep);
+  background: var(--leaf-soft);
+  width: 28px;
+  height: 28px;
+  left: -46px;
+  top: 2px;
+}
+.tl-node.now .tl-dot::after {
+  background: var(--leaf-deep);
+  width: 10px;
+  height: 10px;
+}
+
+.tl-card {
+  background: var(--surface);
+  border: 1px solid var(--line-faint);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.tl-node.recovery .tl-card,
+.tl-node.now .tl-card {
+  border-color: var(--leaf);
+  box-shadow: 0 2px 12px var(--shadow-md);
+}
+
+.tl-phase {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.tl-node.pain .tl-phase,
+.tl-node.crisis .tl-phase { color: var(--bark); }
+.tl-node.recovery .tl-phase,
+.tl-node.now .tl-phase { color: var(--leaf-deep); }
+.tl-node.turning .tl-phase { color: var(--leaf); }
+
+.tl-age {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.tl-node.pain .tl-age,
+.tl-node.crisis .tl-age {
+  color: var(--bark);
+  background: var(--bark-soft);
+}
+.tl-node.recovery .tl-age,
+.tl-node.turning .tl-age,
+.tl-node.now .tl-age {
+  color: var(--leaf-deep);
+  background: var(--leaf-soft);
+}
+
+.tl-heading {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.tl-body {
+  font-size: 15px;
+  color: var(--ink-secondary);
+  line-height: 1.9;
+}
+.tl-body p { margin-bottom: 8px; }
+.tl-body p:last-child { margin-bottom: 0; }
+.tl-body ul {
+  list-style: none;
+  margin-top: 8px;
+}
+.tl-body ul li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 4px;
+}
+.tl-body ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.tl--before .tl-body ul li::before { background: var(--earth); }
+.tl--after .tl-body ul li::before { background: var(--leaf); }
+.tl-node.recovery .tl-body ul li::before { background: var(--leaf-deep); }
+
+.tl-highlight {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--highlight);
+  border-left: 3px solid var(--leaf);
+  border-radius: 0 8px 8px 0;
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.9;
+}
+.tl-detail {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--surface-alt);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* ===== The Turning Point (breaks out of the timeline) ===== */
+.pivot {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 56px 24px 64px;
+  text-align: center;
+}
+.pivot-context {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+}
+.pivot-quote {
+  font-size: clamp(18px, 3.5vw, 24px);
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--ink);
+  padding: 32px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.pivot-response {
+  padding-top: 28px;
+  font-size: clamp(14px, 2.5vw, 16px);
+  color: var(--ink-secondary);
+  line-height: 2;
+}
+.pivot-response strong {
+  display: block;
+  margin-top: 8px;
+  font-size: clamp(16px, 3vw, 20px);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ===== Practice ===== */
+.practice {
+  padding: 72px 24px;
+  background: var(--surface-alt);
+  border-top: 1px solid var(--line-faint);
+  border-bottom: 1px solid var(--line-faint);
+}
+.practice-inner {
+  max-width: 820px;
+  margin: 0 auto;
+}
+.practice-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.practice-title {
+  font-size: clamp(20px, 3.5vw, 28px);
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.practice-sub {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.practice-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.practice-col {
+  background: var(--surface);
+  border: 1px solid var(--line-faint);
+  border-radius: 12px;
+  padding: 28px 24px;
+}
+.practice-col h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-faint);
+}
+.practice-col ul {
+  list-style: none;
+}
+.practice-col ul li {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 6px;
+  font-size: 14.5px;
+  color: var(--ink-secondary);
+  line-height: 1.8;
+}
+.practice-col ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--leaf);
+}
+.practice-note {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 24px;
+  line-height: 1.7;
+}
+
+/* ===== Education ===== */
+.education {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 72px 24px;
+}
+.education-header {
+  margin-bottom: 32px;
+}
+.education-label {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--leaf);
+  margin-bottom: 12px;
+}
+.education-title {
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+.education-lead {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.education-body {
+  background: var(--surface);
+  border: 1px solid var(--line-faint);
+  border-radius: 12px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.education-quote {
+  font-size: clamp(15px, 2.5vw, 17px);
+  line-height: 2.1;
+  color: var(--ink);
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line-faint);
+}
+.education-quote em {
+  font-style: normal;
+  color: var(--leaf-deep);
+  font-weight: 600;
+}
+.education-list {
+  list-style: none;
+}
+.education-list li {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 5px;
+  font-size: 14.5px;
+  color: var(--ink-secondary);
+  line-height: 1.8;
+}
+.education-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--leaf);
+}
+
+/* ===== Client Story ===== */
+.story {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 24px 72px;
+}
+.story-card {
+  background: var(--highlight);
+  border-left: 3px solid var(--leaf);
+  border-radius: 0 12px 12px 0;
+  padding: 28px 24px;
+}
+.story-label {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--leaf);
+  margin-bottom: 8px;
+}
+.story-heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.story-text {
+  font-size: 15px;
+  color: var(--ink-secondary);
+  line-height: 1.9;
+  margin-bottom: 16px;
+}
+.story-link {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--leaf);
+  text-decoration: none;
+  padding: 8px 20px;
+  border: 1px solid var(--leaf);
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.story-link:hover {
+  background: var(--leaf);
+  color: #fff;
+}
+.story-note {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* ===== CTA ===== */
+.cta {
+  padding: 72px 24px;
+  text-align: center;
+  background: var(--surface-alt);
+  border-top: 1px solid var(--line-faint);
+  border-bottom: 1px solid var(--line-faint);
+}
+.cta-inner {
+  max-width: 540px;
+  margin: 0 auto;
+}
+.cta-title {
+  font-size: clamp(19px, 3.5vw, 24px);
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+.cta-text {
+  font-size: 15px;
+  color: var(--ink-secondary);
+  line-height: 2.1;
+  margin-bottom: 32px;
+}
+.cta-button {
+  display: inline-block;
+  background: var(--leaf);
+  color: #fff;
+  text-decoration: none;
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.15s;
+}
+.cta-button:hover {
+  background: var(--leaf-deep);
+  transform: translateY(-1px);
+}
+.cta-button:active { transform: translateY(0); }
+.cta-note {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ===== Footer ===== */
+.site-footer {
+  padding: 40px 24px;
+  text-align: center;
+}
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.footer-links a {
+  font-size: 13px;
+  color: var(--leaf);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.footer-links a:hover { opacity: 0.7; }
+.footer-legal {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+.footer-copy {
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .hero { padding: 56px 20px 40px; }
+  .msp { padding: 28px 20px 48px; }
+  .tl-wrap { padding: 0 20px; }
+  .tl-header { padding-bottom: 36px; }
+  .tl { padding-left: 36px; }
+  .tl::before { left: 11px; }
+  .tl-dot { left: -36px; width: 20px; height: 20px; }
+  .tl-dot::after { width: 6px; height: 6px; }
+  .tl-node.now .tl-dot { width: 24px; height: 24px; left: -38px; }
+  .tl-node.now .tl-dot::after { width: 8px; height: 8px; }
+  .tl-card { padding: 18px 16px; }
+  .tl-heading { font-size: 16px; }
+  .pivot { padding: 40px 20px 48px; }
+  .practice { padding: 48px 20px; }
+  .practice-columns { grid-template-columns: 1fr; }
+  .education { padding: 48px 20px; }
+  .story { padding: 0 20px 48px; }
+  .cta { padding: 48px 20px; }
+  .nav-links { gap: 12px; }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .cta-button, .story-link { transition: none; }
+}
+
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 2px;
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="site-nav" aria-label="サイトナビゲーション">
+  <div class="site-nav-inner">
+    <a href="index.html" class="nav-brand serif">アロマリア自然療法</a>
+    <div class="nav-links">
+      <a href="client-voices.html" class="nav-link">クライアント様の声</a>
+      <span class="nav-link current">岩本純子について</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <p class="hero-eyebrow">The Story of Junko Iwamoto</p>
+  <h1 class="hero-title serif">岩本純子の物語<br>身体の声を聴く自然療法家</h1>
+  <p class="hero-hook">全摘宣告から完治、そして使命へ</p>
+</header>
+
+<!-- MSP -->
+<section class="msp" aria-label="岩本純子の想い">
+  <div class="msp-inner">
+    <p class="msp-text serif">
+      安近短の薬物治療は、症状を消すだけで"治療"とは呼べない。<strong>身体の不調は、身体が発している声</strong>。その声を無視して薬で黙らせるのではなく、根本から理解することが、本当の回復の始まり。私は自然療法という手段を通じて、クライアント様方一人ひとりの身体の声を読み解き、気づきを届け、<strong>生き直し</strong>への道を共に歩んでいく。
+    </p>
+    <p class="msp-attr">--- 岩本 純子</p>
+  </div>
+</section>
+
+<!-- Timeline: Before the turning point -->
+<section class="tl-wrap" aria-label="岩本純子の歩み">
+  <div class="tl-header">
+    <h2 class="tl-section-title serif">岩本純子の歩み</h2>
+    <p class="tl-section-sub">健康優良児だった少女が、自然療法家になるまで</p>
+  </div>
+
+  <div class="tl tl--before" role="list" aria-label="転機までの歩み">
+
+    <!-- Age 13 -->
+    <div class="tl-node pain" role="listitem">
+      <div class="tl-dot" aria-hidden="true"></div>
+      <div class="tl-card">
+        <span class="tl-age">13歳</span>
+        <p class="tl-phase">衝撃の始まり</p>
+        <h3 class="tl-heading">健康優良児を襲った激痛</h3>
+        <div class="tl-body">
+          <p>それまで健康優良児だった少女が、13歳ごろ生理が始まってから身体の不調が悪化していきました。</p>
+          <ul>
+            <li>毎月、ボクシングのボディブロー級の痛み</li>
+            <li>痛み止めをラムネのように飲む日々</li>
+            <li>1ヶ月のうち身体の調子が良い日はたった3~5日</li>
+          </ul>
+          <div class="tl-detail">思春期のほとんどを痛みとの闘いに費やす。薬は痛みを抑えるだけで、根本的な解決にはなりませんでした。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Age 20 -->
+    <div class="tl-node crisis" role="listitem">
+      <div class="tl-dot" aria-hidden="true"></div>
+      <div class="tl-card">
+        <span class="tl-age">20歳</span>
+        <p class="tl-phase">全摘宣告</p>
+        <h3 class="tl-heading">「全摘しても治らない。子どもも持てない」</h3>
+        <div class="tl-body">
+          <p>子宮内膜症ステージ4以上。医師からは「良性のガン」と告げられ、全摘を勧められました。しかし「全摘しても癒着で治らない。子どもも持てない」という現実。</p>
+          <div class="tl-highlight">
+            <p class="serif">そのとき、未来の自分の声が聞こえました。「治っているから大丈夫だよ！」</p>
+          </div>
+          <p>その声を信じ、手術を拒否。経過観察を選びました。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recovery & birth -->
+    <div class="tl-node recovery" role="listitem">
+      <div class="tl-dot" aria-hidden="true"></div>
+      <div class="tl-card">
+        <p class="tl-phase">完治と出産</p>
+        <h3 class="tl-heading serif">「治っているから大丈夫だよ」が現実に</h3>
+        <div class="tl-body">
+          <p>子宮内膜症は完治し、2人のお子さんを授かりました。出産を経験して初めて知った事実 --- 毎月の生理痛は、陣痛以上の痛みだったということ。</p>
+          <div class="tl-detail">※個人の体験であり、子宮内膜症の経過には個人差があります。治療方針については必ず医師にご相談ください。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Children's crisis -->
+    <div class="tl-node crisis" role="listitem">
+      <div class="tl-dot" aria-hidden="true"></div>
+      <div class="tl-card">
+        <p class="tl-phase">母として</p>
+        <h3 class="tl-heading">子どもの健康危機</h3>
+        <div class="tl-body">
+          <p>授かった大切な命。しかし、新たな試練が始まりました。</p>
+          <ul>
+            <li>第1子 --- 乳糖不耐症（1日24回のおむつ交換）</li>
+            <li>重症の小児喘息で毎月の入退院を繰り返す</li>
+            <li>毎朝ネブライザーとお薬からスタートする日々</li>
+            <li>母である自分も呼吸器感染で点滴を受けながらの育児</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- THE TURNING POINT -- breaks out of the timeline -->
+<section class="pivot" aria-label="人生を変えた一言">
+  <p class="pivot-context">信頼していた医師から告げられた言葉。</p>
+  <blockquote class="pivot-quote serif">
+    「このまま治療しても、<br>大人になっても喘息が<br>一生治らないんだよ」
+  </blockquote>
+  <div class="pivot-response">
+    この瞬間、すべてが変わりました。<br>
+    「治らない」と言われたなら ---
+    <strong>「じゃあ、私が治す方法を見つける」</strong>
+  </div>
+</section>
+
+<!-- Timeline: After the turning point -->
+<section class="tl-wrap" aria-label="自然療法への道">
+
+  <div class="tl tl--after" role="list" aria-label="自然療法との出会いから現在まで">
+
+    <!-- Natural therapy -->
+    <div class="tl-node turning" role="listitem">
+      <div class="tl-dot" aria-hidden="true"></div>
+      <div class="tl-card">
+        <p class="tl-phase">自然療法との出会い</p>
+        <h3 class="tl-heading">身体の声に耳を傾ける道</h3>
+        <div class="tl-body">
+          <p>母としての必死の想いが、自然療法の世界への扉を開きました。</p>
+          <ul>
+            <li>ハーブ・精油でのケアに切り替え</li>
+            <li>腸内環境の改善で免疫のバランスを調整</li>
+            <li>化学物質フリーの住環境を構築</li>
+            <li>全室換気装置付きの家を建てる</li>
+          </ul>
+          <div class="tl-detail">子どものために始めた探求が、やがて多くの人の身体の声を読み解く使命へとつながっていきます。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Children cured -->
+    <div class="tl-node recovery" role="listitem">
+      <div class="tl-dot" aria-hidden="true"></div>
+      <div class="tl-card">
+        <p class="tl-phase">子どもたちの完治</p>
+        <h3 class="tl-heading serif">「一生治らない」と言われた喘息が完治</h3>
+        <div class="tl-body">
+          <ul>
+            <li>毎月の入院がなくなる</li>
+            <li>小学校低学年までに重症小児喘息が完治</li>
+            <li>現在 --- 2人とも服薬なし、健康に生活</li>
+          </ul>
+          <div class="tl-detail">※個人の体験であり、効果を保証するものではありません。喘息の治療方針については医師にご相談ください。回復にはご本人の身体の力・環境改善・継続的なケアなど複数の要因が関わっています。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Now -->
+    <div class="tl-node now" role="listitem">
+      <div class="tl-dot" aria-hidden="true"></div>
+      <div class="tl-card">
+        <p class="tl-phase">現在</p>
+        <h3 class="tl-heading serif">自然療法家として</h3>
+        <div class="tl-body">
+          <p>自身の子宮内膜症を乗り越え、子どもたちの喘息を完治に導いた経験。そのすべてが、今の活動の原点です。</p>
+          <ul>
+            <li>アロマリア自然療法ケアサロン開業</li>
+            <li>自身の子宮内膜症も完治、幸せな閉経期を迎えて</li>
+            <li>「身体の声を聴く」ことを伝え続ける日々</li>
+          </ul>
+          <div class="tl-detail">すべての痛み、すべての不安、すべての闘いが、今この瞬間、クライアント様の身体の声を読み解く力になっています。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- spacing before practice -->
+<div style="height: 72px" aria-hidden="true"></div>
+
+<!-- Practice -->
+<section class="practice" aria-label="アロマリアのケアとサービス">
+  <div class="practice-inner">
+    <div class="practice-header">
+      <h2 class="practice-title serif">アロマリアのケア</h2>
+      <p class="practice-sub">身体の声を読み解き、根本から向き合う</p>
+    </div>
+
+    <div class="practice-columns">
+      <div class="practice-col">
+        <h3>対応するお悩み</h3>
+        <ul>
+          <li>がん・難病のケア</li>
+          <li>アトピー性皮膚炎、尋常性乾癬</li>
+          <li>体質改善、妊活サポート</li>
+          <li>断薬指導と社会復帰のお手伝い</li>
+          <li>地域の医師からのリファーラル（紹介）</li>
+        </ul>
+      </div>
+
+      <div class="practice-col">
+        <h3>提供サービス</h3>
+        <ul>
+          <li>メタトロン（量子力学測定器でのケア）</li>
+          <li>ミトコンドリアケア（マイナスイオン電子負荷）</li>
+          <li>PDR記載サプリメンテーション</li>
+          <li>精油・ハーブによるケア</li>
+          <li>メディカルケアトリートメント（緩めながら整えるケア）</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="practice-note">
+      ※自然療法は医療行為の代替ではありません。医師の判断のもとで適切にご活用ください。<br>
+      ※効果には個人差があります。
+    </p>
+  </div>
+</section>
+
+<!-- Education -->
+<section class="education" aria-label="人財育成">
+  <div class="education-header">
+    <p class="education-label">AEAJ認定校</p>
+    <h2 class="education-title serif">人財育成</h2>
+    <p class="education-lead">「一家に一人、自然療法のケアがわかるセラピストさん」を</p>
+  </div>
+
+  <div class="education-body">
+    <p class="education-quote serif">
+      <em>「お母さんがご自身の子どもや、ご家族の健康管理ができれば」</em><br>
+      その想いから、自然療法の知恵を次の世代へ伝える教育活動を続けています。
+    </p>
+    <ul class="education-list">
+      <li>高校生から60代まで幅広い年代に開講</li>
+      <li>受講者は看護師の方が多い</li>
+      <li>教科書だけでは学べない、実体験に基づいた「生きた健康学」</li>
+      <li>自身の子宮内膜症と子どもの喘息を乗り越えた経験がすべての授業の土台</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Client Story -->
+<section class="story" aria-label="クライアント様の回復事例">
+  <div class="story-card">
+    <p class="story-label">回復の記録</p>
+    <h3 class="story-heading serif">脊髄損傷からの回復</h3>
+    <p class="story-text">
+      四肢麻痺・寝たきり宣告を受けたクライアント様が、ご家族の支えと自然療法によるケアを通じて、4ヶ月で退院。現在は会社まで20分の歩行通勤ができるまでに回復されました。
+    </p>
+    <a href="client-voices.html" class="story-link">回復の記録を読む</a>
+    <p class="story-note">※個人の体験であり、効果を保証するものではありません。回復にはご本人様の意志・ご家族の支え・継続的なケアなど複数の要因が関わっています。</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" aria-label="ご相談のご案内">
+  <div class="cta-inner">
+    <h2 class="cta-title serif">
+      唯一無二の大切なあなたへ<br>
+      お手伝いできることを、<br>
+      ご一緒に探してゆきましょう
+    </h2>
+    <p class="cta-text">
+      おひとりで抱え込まず、まずはお気軽にご相談ください。<br>
+      あなたの身体が伝えようとしていることを、一緒に読み解いてまいります。
+    </p>
+    <a href="#consultation" class="cta-button">健康相談のご予約</a>
+    <p class="cta-note">お気軽にご相談ください</p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <nav class="footer-links" aria-label="フッターナビゲーション">
+    <a href="index.html">トップページ</a>
+    <a href="client-voices.html">クライアント様の声</a>
+  </nav>
+  <p class="footer-legal">
+    ※掲載内容は個人の体験に基づいており、効果を保証するものではありません。<br>
+    自然療法は医療行為の代替ではなく、医師の判断のもとで適切にご活用ください。
+  </p>
+  <p class="footer-copy">アロマリア自然療法</p>
+</footer>
+
+</body>
+</html>
