@@ -85,7 +85,7 @@ console.log(JSON.stringify({
     ERRORS=$((ERRORS + 1))
   fi
 
-  sleep 2
+  sleep 4
 done
 
 echo ""
