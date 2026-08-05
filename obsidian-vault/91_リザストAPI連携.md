@@ -137,3 +137,84 @@ RESERVESTOCK_API_KEY=rs_live_xxxx node post-newsletters.js
 |---|---|---|
 | ショ糖と糖尿病 | `content/newsletter-content-sucrose-diabetes.json` | 「ショ糖を抜くと糖尿病になる」という主張の検証 |
 | フライドポテト事故 | `content/newsletter-content-friedpotato.json` | 実在の事故を基にした陰謀論的主張の検証 |
+
+## メルマガ読者登録API（serialcdセッション方式）
+
+> 出典: [APIを使ったメルマガ読者登録の方法](https://reservestock.hatenablog.jp/entry/2021/12/16/153420)（リザスト公式ブログ 2021/12/16）
+
+外部サイトやフォームからメルマガ読者を直接登録できるAPI。Bearer認証とは別の、serialcd＋セッションIDによる認証方式。
+
+### 準備
+1. リザスト管理画面 → 対象メルマガの設定 → 「APIアイコン」をクリック
+2. エンドポイントURLと serialcd が表示される
+3. `mail_magazine_id`（mid）もここで確認
+
+### Step 1: セッションIDの取得
+```
+GET https://www.reservestock.jp/api/create_api_session/{serialcd}
+```
+- `serialcd`: メルマガ管理画面のAPIアイコンから取得する固有コード
+- レスポンス: `session_id` を含むJSON（`api_session_` で始まる文字列）
+
+### Step 2: 読者登録の実行
+```
+GET https://www.reservestock.jp/api/new_subscribe_api/{serialcd}?session_id={session_id}&mid={mail_magazine_id}&email_address={email}
+```
+
+| パラメータ | 必須 | 説明 |
+|---|---|---|
+| `session_id` | ○ | Step 1で取得したセッションID |
+| `mid` | ○ | メルマガのmail_magazine_id |
+| `email_address` | ○ | 登録するメールアドレス |
+| `lname` | - | 姓（任意） |
+| `fname` | - | 名（任意） |
+
+- メソッド: **GET**（POSTではない）
+- 成功判定: レスポンスコード `200 OK`
+
+### 実装例（jQuery）
+```javascript
+// Step 1: セッションID取得
+$.ajax({
+  url: "https://www.reservestock.jp/api/create_api_session/" + serialcd,
+  type: "GET",
+  success: function(data) {
+    var sessionId = data.session_id;
+    // Step 2: 読者登録
+    var registerUrl = "https://www.reservestock.jp/api/new_subscribe_api/" + serialcd
+      + "?session_id=" + sessionId
+      + "&mid=" + mailMagazineId
+      + "&email_address=" + encodeURIComponent(email);
+    $.ajax({ url: registerUrl, type: "GET" });
+  }
+});
+```
+
+### 活用シーン
+- 自社サイトにメルマガ登録フォームを埋め込む
+- ランディングページから直接リザストのメルマガに読者登録
+- 複数サイトからの読者流入を一元管理
+- serialcdはフロントエンド埋め込み前提の設計（Bearer APIキーとは別物）
+
+### 注意事項
+- serialcd は Bearer APIキー（rs_live_...）とは別の認証方式
+- セッションIDには有効期限がある可能性あり（都度取得が安全）
+- この方式は「読者登録」専用。記事の作成・保存には使えない
+- 記事操作には従来の Bearer 認証 + `/api/create_mail_magazine_article` 等を使用
+
+## バッチ処理スクリプト（Mac側で実行）
+
+### 記事取得
+```bash
+./scripts/batch-fetch.sh    # リザストから記事を一括取得 → out/articles/
+```
+
+### 記事保存（リライト済みを非公開で保存）
+```bash
+./scripts/batch-save.sh     # out/rewritten/ → リザストに一括保存（private）
+```
+
+### 新規記事の注意
+- `id: 0` のファイル（msp_clinical_case, story_origin_part1/2/3 等）は batch-save で保存不可
+- 新規記事はリザスト管理画面で作成するか、`/api/create_mail_magazine_article` で `mail_magazine_id` を指定して作成
+- `mail_magazine_id` はメルマガ管理画面またはAPIで確認
