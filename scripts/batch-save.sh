@@ -42,10 +42,20 @@ COUNT=0
 SUCCESS=0
 ERRORS=0
 
+SKIPPED=0
+
 for FILE in $FILES; do
   COUNT=$((COUNT + 1))
   BASENAME=$(basename "$FILE" .json)
   ARTICLE_ID="$BASENAME"
+
+  # 非数値ファイル名（新規記事）はスキップ → batch-create.sh を使う
+  if ! echo "$BASENAME" | grep -qE '^[0-9]+$'; then
+    SUBJECT=$(node -e "const d=JSON.parse(require('fs').readFileSync('$FILE','utf-8'));console.log((d.subject||'').substring(0,40))" 2>/dev/null)
+    echo "  ⏭️  [$COUNT/$TOTAL] $BASENAME: $SUBJECT... (新規記事 → batch-create.sh で作成)"
+    SKIPPED=$((SKIPPED + 1))
+    continue
+  fi
 
   SUBJECT=$(node -e "const d=JSON.parse(require('fs').readFileSync('$FILE','utf-8'));console.log((d.subject||'').substring(0,40))" 2>/dev/null)
   echo -n "  📤 [$COUNT/$TOTAL] $ARTICLE_ID: $SUBJECT..."
@@ -80,5 +90,9 @@ done
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ 保存完了: ${SUCCESS}件成功 / ${ERRORS}件失敗"
+echo "✅ 保存完了: ${SUCCESS}件成功 / ${ERRORS}件失敗 / ${SKIPPED}件スキップ"
+if [ "$SKIPPED" -gt 0 ]; then
+  echo "⏭️  スキップした${SKIPPED}件は新規記事です。作成するには:"
+  echo "   ./scripts/batch-create.sh メルマガID"
+fi
 echo "📝 すべてprivate（非公開）です。配信前にリザスト管理画面で内容を確認してください。"
