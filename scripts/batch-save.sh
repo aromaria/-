@@ -85,13 +85,13 @@ console.log(JSON.stringify({
     ERRORS=$((ERRORS + 1))
   fi
 
-  # レート制限対策: 12件ごとに30秒休憩
+  # レート制限対策: 8件ごとに60秒休憩
   ACTUAL=$((SUCCESS + ERRORS))
-  if [ "$ACTUAL" -gt 0 ] && [ $((ACTUAL % 12)) -eq 0 ]; then
-    echo "  ⏸️  レート制限回避のため30秒待機中..."
-    sleep 30
+  if [ "$ACTUAL" -gt 0 ] && [ $((ACTUAL % 8)) -eq 0 ]; then
+    echo "  ⏸️  レート制限回避のため60秒待機中..."
+    sleep 60
   else
-    sleep 4
+    sleep 5
   fi
 done
 
