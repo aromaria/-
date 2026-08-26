@@ -289,6 +289,15 @@
         <select id="fStatus"><option value="">すべてのステータス</option></select>
         <input type="text" id="fSearch" placeholder="氏名・メール・電話で検索">
         <button class="btn ghost sm" id="btnExport">JSON書き出し</button>
+        <select id="csvSession" style="padding:7px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff">
+          <option value="">全参加回</option>
+          <option value="1">第1回</option>
+          <option value="2">第2回</option>
+          <option value="3">第3回</option>
+          <option value="4">第4回</option>
+          <option value="5">第5回</option>
+        </select>
+        <button class="btn blue sm" id="btnExportCSV">リザスト形式CSV出力</button>
       </div>
       <div class="tablewrap">
         <table id="listTable">
@@ -772,6 +781,117 @@
     a.download="rezast_intake_"+new Date().toISOString().slice(0,10)+".json";
     a.click();
     toast("JSONを書き出しました");
+  });
+
+  // ---------- Rezast format CSV export ----------
+  var REZAST_PLAN_LABELS = {
+    venue: "現地会場参加費(＋※アーカイブ視聴）",
+    zoom: "zoom 参加費(オンライン＋※アーカイブ視聴）",
+    archive: "YouTubeアーカイブ視聴(※開催2日後~YouTube14日間視聴可）"
+  };
+  var REZAST_PAYMENT_LABELS = {
+    "PayPal": "PayPal決済",
+    "銀行振込": "銀行振込",
+    "その他": "手渡し"
+  };
+  var MOBILE_DOMAINS = ["docomo.ne.jp","ezweb.ne.jp","au.com","softbank.ne.jp","i.softbank.jp","ymobile.ne.jp","uqmobile.jp"];
+
+  function csvEsc(v){
+    v=String(v==null?"":v);
+    if(v.indexOf(",")>=0||v.indexOf('"')>=0||v.indexOf("\n")>=0)
+      return '"'+v.replace(/"/g,'""')+'"';
+    return v;
+  }
+
+  function fmtDateTime(iso){
+    if(!iso) return "";
+    var d=new Date(iso);
+    if(isNaN(d)) return "";
+    return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate()+" "+
+      ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
+  }
+
+  function fmtPayDate(r){
+    if(r.status!=="入金確認済み") return "";
+    if(r.transferDate){
+      var d=new Date(r.transferDate);
+      if(!isNaN(d)) return (d.getMonth()+1)+"/"+d.getDate();
+    }
+    return "";
+  }
+
+  function isMobileEmail(email){
+    if(!email) return false;
+    var lower=email.toLowerCase();
+    return MOBILE_DOMAINS.some(function(d){ return lower.indexOf("@"+d)>=0; });
+  }
+
+  function phoneWithEquals(p){
+    if(!p) return "";
+    return '="'+p.replace(/[-\s]/g,"")+'"';
+  }
+
+  $("#btnExportCSV").addEventListener("click",function(){
+    var sesVal=$("#csvSession").value;
+    var records=Store.all();
+    if(sesVal){
+      records=records.filter(function(r){ return (r.sessions||[]).indexOf(sesVal)>=0; });
+    }
+    if(records.length===0){
+      toast("対象の申込データがありません"); return;
+    }
+
+    var headers=[
+      "参加申し込み","申し込み日時","人数","支払い済","支払い日",
+      "名前(苗字)","名前(名前)","ふりがな(みょうじ)","ふりがな(なまえ)",
+      "支払方法","プラン","請求金額","決済済金額","紹介者","イベント参加回数",
+      "PCメールアドレス","携帯メールアドレス","メールアドレス(PC/携帯自動振り分け)",
+      "電話番号","携帯電話番号"
+    ];
+
+    var rows=records.map(function(r){
+      var paid=(r.status==="入金確認済み");
+      var price=r.method?METHODS[r.method].price:0;
+      var email=r.email||"";
+      var mobile=isMobileEmail(email);
+      return [
+        "参加",
+        fmtDateTime(r.receivedAt),
+        "1",
+        paid?"済":"未",
+        fmtPayDate(r),
+        r.sei||"",
+        r.mei||"",
+        r.furiSei||"",
+        r.furiMei||"",
+        REZAST_PAYMENT_LABELS[r.payment]||r.payment||"",
+        REZAST_PLAN_LABELS[r.method]||"",
+        price?String(price):"",
+        paid?String(price):"",
+        "",
+        "",
+        mobile?"":email,
+        mobile?email:"",
+        email,
+        "",
+        phoneWithEquals(r.phone)
+      ];
+    });
+
+    var csv="﻿";
+    csv+=headers.map(csvEsc).join(",")+"\n";
+    rows.forEach(function(row){ csv+=row.map(csvEsc).join(",")+"\n"; });
+
+    var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    var label=sesVal?("第"+sesVal+"回"):"全回";
+    a.download="参加者一覧_"+label+"_"+new Date().toISOString().slice(0,10)+".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    toast("リザスト形式CSVを出力しました（"+records.length+"件）");
   });
 
   // init
