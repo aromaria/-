@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>トリートメント回数券</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+  }
+
+  .card-header-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .card-header-subtitle {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+
+  .customer-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+    padding: 20px 20px 10px;
+    text-align: center;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .info-item {
+    text-align: center;
+  }
+
+  .info-label {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .info-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+  }
+
+  .info-value.count {
+    font-size: 32px;
+    color: #667eea;
+  }
+
+  .sessions-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #222;
+    padding: 20px 20px 0;
+    margin-bottom: 12px;
+  }
+
+  .sessions-container {
+    padding: 0 20px 20px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .session {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #ddd;
+    transition: all 0.3s ease;
+  }
+
+  .session.completed {
+    background: #f0f7f4;
+    border-left-color: #4caf50;
+  }
+
+  .session.upcoming {
+    background: #fff7f0;
+    border-left-color: #ff9800;
+  }
+
+  .session-checkbox {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .session.completed .session-checkbox {
+    background: #4caf50;
+    color: white;
+  }
+
+  .session.upcoming .session-checkbox {
+    background: #ff9800;
+    color: white;
+  }
+
+  .session.scheduled .session-checkbox {
+    background: #ddd;
+    color: #999;
+  }
+
+  .session-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .session-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: #222;
+  }
+
+  .session-date {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+  }
+
+  .session-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .session.completed .session-status {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .session.upcoming .session-status {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  .session.scheduled .session-status {
+    background: #f5f5f5;
+    color: #999;
+  }
+
+  .memo-section {
+    padding: 20px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+  }
+
+  .memo-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .memo-text {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+  }
+
+  .footer {
+    padding: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    border-top: 1px solid #eee;
+  }
+
+  .note {
+    background: #fffacd;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 20px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 10px; }
+    .card-header { padding: 20px 15px; }
+    .customer-name { font-size: 24px; }
+    .info-value.count { font-size: 28px; }
+  }
+
+  /* スクロールバーのスタイル */
+  .sessions-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .sessions-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .sessions-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+  }
+
+  .sessions-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-title">
+        🎀 トリートメント回数券
+      </div>
+      <div class="card-header-subtitle">
+        10回コース
+      </div>
+    </div>
+
+    <div class="customer-name" id="customerName">
+      久保田寛様
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">開始日</div>
+        <div class="info-value" id="startDate">2026年1月1日</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">残回数</div>
+        <div class="info-value count" id="remainCount">8</div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">来店済み</div>
+        <div class="info-value" id="completedCount">2回</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">次回予約</div>
+        <div class="info-value" id="nextDate">2026年12月15日</div>
+      </div>
+    </div>
+
+    <div class="sessions-title">来店予定</div>
+    <div class="sessions-container" id="sessionsContainer">
+      <!-- セッション情報が動的に挿入される -->
+    </div>
+
+    <div class="memo-section">
+      <div class="memo-label">スタッフからのメモ</div>
+      <div class="memo-text" id="memoText">
+        予約確定
+      </div>
+    </div>
+
+    <div class="footer">
+      最終更新：2026年8月31日
+    </div>
+  </div>
+
+  <div class="note">
+    📱 このページはスマートフォンでもご覧いただけます。<br>
+    ご質問やご変更がある場合は、お気軽にお問い合わせください。
+  </div>
+</div>
+
+<script>
+// 【カスタマイズ】以下のデータを Google Sheet から取得した情報に置き換えてください
+
+const customerData = {
+  name: "久保田寛様",
+  startDate: "2026年1月1日",
+  nextDate: "2026年12月15日",
+  memo: "予約確定",
+  sessions: [
+    { number: 1, date: "2026年9月15日", status: "completed" },    // completed / upcoming / scheduled
+    { number: 2, date: "2026年10月15日", status: "completed" },
+    { number: 3, date: "2026年11月15日", status: "upcoming" },
+    { number: 4, date: "2026年12月15日", status: "scheduled" },
+    { number: 5, date: "2027年1月15日", status: "scheduled" },
+    { number: 6, date: "2027年2月15日", status: "scheduled" },
+    { number: 7, date: "2027年3月15日", status: "scheduled" },
+    { number: 8, date: "2027年4月15日", status: "scheduled" },
+    { number: 9, date: "2027年5月15日", status: "scheduled" },
+    { number: 10, date: "2027年6月15日", status: "scheduled" }
+  ]
+};
+
+function initializeCard() {
+  // 顧客名
+  document.getElementById("customerName").textContent = customerData.name;
+
+  // 日付情報
+  document.getElementById("startDate").textContent = customerData.startDate;
+  document.getElementById("nextDate").textContent = customerData.nextDate;
+
+  // メモ
+  document.getElementById("memoText").textContent = customerData.memo;
+
+  // セッション情報
+  renderSessions();
+
+  // 統計情報を計算
+  updateStats();
+}
+
+function renderSessions() {
+  const container = document.getElementById("sessionsContainer");
+  container.innerHTML = "";
+
+  customerData.sessions.forEach((session) => {
+    const sessionEl = document.createElement("div");
+    sessionEl.className = `session ${session.status}`;
+
+    let statusText = "";
+    let statusIcon = "";
+
+    if (session.status === "completed") {
+      statusText = "完了";
+      statusIcon = "✓";
+    } else if (session.status === "upcoming") {
+      statusText = "次回";
+      statusIcon = "→";
+    } else {
+      statusText = "予定";
+      statusIcon = "○";
+    }
+
+    sessionEl.innerHTML = `
+      <div class="session-checkbox">${statusIcon}</div>
+      <div class="session-info">
+        <div class="session-number">${session.number}回目</div>
+        <div class="session-date">${session.date}</div>
+      </div>
+      <div class="session-status">${statusText}</div>
+    `;
+
+    container.appendChild(sessionEl);
+  });
+}
+
+function updateStats() {
+  const completed = customerData.sessions.filter(s => s.status === "completed").length;
+  const remain = 10 - completed;
+
+  document.getElementById("completedCount").textContent = completed + "回";
+  document.getElementById("remainCount").textContent = remain;
+}
+
+// ページ読み込み時に初期化
+document.addEventListener("DOMContentLoaded", initializeCard);
+</script>
+
+</body>
+</html>
