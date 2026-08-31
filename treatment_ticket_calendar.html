@@ -3,315 +3,360 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>トリートメント回数券カレンダー生成</title>
+<title>トリートメント回数券カレンダー生成ツール</title>
 <style>
-  :root{
-    --red:#f4364c; --red-d:#d61f36;
-    --ink:#222; --muted:#6b7280; --line:#e5e7eb;
-    --bg:#f5f6f8; --card:#fff; --field:#eef0f3;
-    --ok:#1a8a4a; --warn:#b8860b; --danger:#c0392b;
-    --accent:#2563eb;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
-       color:var(--ink);background:var(--bg);line-height:1.6;font-size:16px}
-  header{background:#fff;border-bottom:1px solid var(--line);padding:20px 16px}
-  header h1{margin:0;font-size:20px}
-  header .subtitle{color:var(--muted);font-size:13px;margin-top:4px}
-  main{max-width:800px;margin:0 auto;padding:16px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
-  .card h2{margin:0 0 12px;font-size:16px;color:var(--ink)}
-  .card .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
-  .group{margin-bottom:18px}
-  .glabel{font-weight:700;font-size:15px;margin-bottom:8px}
-  .req{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:12px;padding:2px 9px;margin-left:6px}
-  input[type=text],input[type=date]{
-    width:100%;padding:12px;border:1px solid transparent;background:var(--field);border-radius:10px;font-size:16px;color:var(--ink)}
-  input:focus{outline:none;border-color:var(--accent);background:#fff}
-  .date-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
-  .date-group{display:flex;flex-direction:column}
-  .date-group label{font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:600}
-  .date-group input[type=date]{width:100%}
-  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-  .btn{border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer}
-  .btn.primary{background:var(--red);color:#fff}
-  .btn.primary:hover{background:var(--red-d)}
-  .btn.primary:disabled{background:#ccc;cursor:not-allowed}
-  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
-  .btn.sm{padding:8px 14px;font-size:13px}
-  .preview{background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:12px}
-  .preview-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
-  .preview-item:last-child{border-bottom:none}
-  .preview-label{color:var(--muted)}
-  .preview-value{font-weight:600;color:var(--ink)}
-  .summary-row{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#eef2ff;border-radius:8px;margin-top:8px}
-  .summary-label{font-size:13px;color:var(--muted)}
-  .summary-value{font-size:18px;font-weight:700;color:var(--accent)}
-  .warnbar{background:#fff7e6;border:1px solid #f0d38a;color:#7a5b00;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:14px;display:none}
-  .warnbar.show{display:block}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
-  .toast.show{opacity:.95}
-  .pricing-info{background:#f0f7f2;border:1px solid #cfe8d6;color:#1f5a34;border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:14px}
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    margin-bottom: 20px;
+  }
+
+  .card h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: #222;
+  }
+
+  .card p {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"],
+  input[type="date"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+  }
+
+  input[type="text"]:focus,
+  input[type="date"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .dates-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .dates-container input {
+    margin: 0;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  button {
+    flex: 1;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-secondary {
+    background: #f5f5f5;
+    color: #666;
+  }
+
+  .btn-secondary:hover {
+    background: #eee;
+  }
+
+  .info-section {
+    background: #f9f9f9;
+    border-left: 4px solid #667eea;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .price-info {
+    background: #fff7f0;
+    border-left: 4px solid #ff9800;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: #e65100;
+  }
+
+  .price-info strong {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .success {
+    background: #e8f5e9;
+    border-left: 4px solid #4caf50;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    color: #2e7d32;
+    display: none;
+  }
+
+  .success.show {
+    display: block;
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 20px; }
+    .card h1 { font-size: 22px; }
+    .dates-container { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>トリートメント回数券カレンダー生成</h1>
-  <div class="subtitle">10回コース用・Macカレンダー対応</div>
-</header>
 
-<main>
-  <div class="pricing-info">
-    💳 <strong>10回コース</strong>：1回 17,800円税込 ／ 合計 195,800円
-  </div>
-
+<div class="container">
   <div class="card">
-    <h2>顧客情報</h2>
-    <div class="group">
-      <div class="glabel">顧客名 <span class="req">必須</span></div>
-      <input type="text" id="customerName" placeholder="例）久保田寛" autocomplete="off">
-    </div>
+    <h1>🎀 トリートメント回数券</h1>
+    <h1 style="font-size: 20px; margin-bottom: 16px;">Macカレンダー生成ツール</h1>
+    <p>10回コースの予定日を入力するだけで、iCal形式のカレンダーファイルを生成します。</p>
+
+    <form id="calendarForm">
+      <div class="form-group">
+        <label for="customerName">お客様お名前 *</label>
+        <input type="text" id="customerName" placeholder="例：久保田寛様" required>
+      </div>
+
+      <label style="display: block; margin-bottom: 16px;">来店予定日（10回分） *</label>
+      <div class="dates-container" id="datesContainer">
+        <!-- 日付入力フィールドが動的に挿入される -->
+      </div>
+
+      <div class="price-info">
+        <strong>💰 料金情報</strong>
+        1回 17,800円（税込19,580円）×10回＝<strong>195,800円</strong>
+        <div style="font-size: 12px; margin-top: 8px; opacity: 0.8;">
+        正規価格 20,800円（税込22,880円）→ 17,800円（税込19,580円）に割引
+        </div>
+      </div>
+
+      <div class="info-section">
+        <strong>📝 ご利用方法</strong><br>
+        1. お客様のお名前を入力してください<br>
+        2. 10回分の来店予定日を入力してください<br>
+        3. 「カレンダーを生成」ボタンをクリック<br>
+        4. iCalファイルがダウンロードされ、Macカレンダーに自動登録されます
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn-primary">📅 カレンダーを生成</button>
+        <button type="reset" class="btn-secondary">リセット</button>
+      </div>
+
+      <div class="success" id="successMessage">
+        ✅ カレンダーファイルを生成しました！<br>
+        ダウンロードされたファイルをMacで開くと、カレンダーに自動登録されます。
+      </div>
+    </form>
   </div>
 
-  <div class="card">
-    <h2>来店予定日</h2>
-    <p class="hint">10回分の来店予定日を入力します。予約が決まっていない回は空欄でOK。</p>
-
-    <div id="dateWarning" class="warnbar"></div>
-
-    <div class="date-grid" id="dateGrid"></div>
+  <div style="text-align: center; color: white; font-size: 12px; margin-top: 40px;">
+    <p>© 2026 aromaria - トリートメント予約管理システム</p>
   </div>
-
-  <div class="card" id="previewCard" style="display:none">
-    <h2>プレビュー</h2>
-    <div class="preview" id="previewContent"></div>
-    <div class="summary-row">
-      <div class="summary-label">10回の合計金額</div>
-      <div class="summary-value">¥195,800</div>
-    </div>
-    <div class="actions">
-      <button class="btn primary" id="btnDownload">カレンダーをダウンロード（.ics）</button>
-      <button class="btn ghost" id="btnReset">リセット</button>
-    </div>
-  </div>
-
-  <div class="actions" id="formActions" style="display:flex">
-    <button class="btn primary" id="btnGenerate">カレンダーを生成</button>
-  </div>
-</main>
-
-<div class="toast" id="toast"></div>
+</div>
 
 <script>
-(function(){
-  "use strict";
-
-  var DATES_KEY = "treatment_ticket_dates";
-  var CUSTOMER_KEY = "treatment_ticket_customer";
-
-  var $ = function(s) { return document.querySelector(s); };
-  var $$ = function(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
-
-  function toast(msg){
-    var t = $("#toast");
-    t.textContent = msg;
-    t.classList.add("show");
-    setTimeout(function(){ t.classList.remove("show"); }, 1600);
+// 初期化：10個の日付入力フィールドを生成
+function initializeDateInputs() {
+  const container = document.getElementById('datesContainer');
+  for (let i = 1; i <= 10; i++) {
+    const div = document.createElement('div');
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.id = `date${i}`;
+    input.placeholder = `${i}回目`;
+    input.dataset.session = i;
+    input.required = true;
+    div.appendChild(input);
+    container.appendChild(div);
   }
+}
 
-  function pad(n){ return n < 10 ? "0" + n : n; }
+// iCal形式でカレンダーファイルを生成
+function generateICalContent(customerName, dates) {
+  const today = new Date();
+  const timestamp = today.toISOString().replace(/[-:.]/g, '').substring(0, 15) + 'Z';
+  const uid = `treatment-${Date.now()}@aromaria.com`;
 
-  function formatDateJP(dateStr){
-    if(!dateStr) return "（未定）";
-    var date = new Date(dateStr + "T00:00:00");
-    return date.getFullYear() + "年" + (date.getMonth()+1) + "月" + date.getDate() + "日（" + ["日","月","火","水","木","金","土"][date.getDay()] + "）";
-  }
+  let icalContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//aromaria//Treatment Ticket Calendar//JP
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:${customerName} - トリートメント回数券
+X-WR-TIMEZONE:Asia/Tokyo
+X-WR-CALDESC:トリートメント予約スケジュール
+BEGIN:VTIMEZONE
+TZID:Asia/Tokyo
+BEGIN:STANDARD
+TZOFFSETFROM:+0900
+TZOFFSETTO:+0900
+TZNAME:JST
+DTSTART:19700101T000000
+END:STANDARD
+END:VTIMEZONE
+`;
 
-  function getDates(){
-    var dates = {};
-    for(var i=1;i<=10;i++){
-      var val = $("#date"+i).value;
-      if(val) dates[i] = val;
-    }
-    return dates;
-  }
+  dates.forEach((dateStr, index) => {
+    const sessionNumber = index + 1;
+    const [year, month, day] = dateStr.split('-');
+    const dtstart = `${year}${month}${day}T100000`;
+    const dtend = `${year}${month}${day}T110000`;
 
-  function getDatesArray(){
-    var dates = getDates();
-    return dates;
-  }
+    let summary = `${customerName} - トリートメント${sessionNumber}回目／全10回`;
+    let description = `正規価格 20,800円（税込22,880円）→ 17,800円（税込19,580円）に割引`;
 
-  function initForm(){
-    // Generate date input grid
-    var html = "";
-    for(var i=1;i<=10;i++){
-      html += '<div class="date-group">'+
-        '<label>'+i+'回目</label>'+
-        '<input type="date" id="date'+i+'" autocomplete="off">'+
-        '</div>';
-    }
-    $("#dateGrid").innerHTML = html;
-
-    // Load saved data
-    var savedCustomer = localStorage.getItem(CUSTOMER_KEY);
-    if(savedCustomer) $("#customerName").value = savedCustomer;
-
-    var savedDates = localStorage.getItem(DATES_KEY);
-    if(savedDates){
-      try{
-        var dates = JSON.parse(savedDates);
-        for(var i in dates){
-          var input = $("#date"+i);
-          if(input) input.value = dates[i];
-        }
-      }catch(e){}
-    }
-  }
-
-  function validate(){
-    var errors = [];
-    var name = $("#customerName").value.trim();
-    if(!name) errors.push("顧客名を入力してください");
-
-    var dates = getDates();
-    if(Object.keys(dates).length === 0) errors.push("1回以上の来店予定日を入力してください");
-
-    if(errors.length){
-      var w = $("#dateWarning");
-      w.innerHTML = "⚠ " + errors.join(" ／ ");
-      w.classList.add("show");
-      return false;
+    if (sessionNumber === 10) {
+      description = `（最終回）10回の合計金額：195,800円（税込）\n${description}`;
     }
 
-    $("#dateWarning").classList.remove("show");
-    return true;
-  }
-
-  function generatePreview(){
-    var name = $("#customerName").value.trim();
-    var dates = getDates();
-
-    var html = "";
-    for(var i=1;i<=10;i++){
-      var dateStr = dates[i] || null;
-      html += '<div class="preview-item">'+
-        '<span class="preview-label">'+i+'回目</span>'+
-        '<span class="preview-value">'+formatDateJP(dateStr)+'</span>'+
-        '</div>';
-    }
-
-    $("#previewContent").innerHTML = html;
-  }
-
-  $("#btnGenerate").addEventListener("click", function(){
-    if(!validate()) return;
-
-    // Save to localStorage
-    localStorage.setItem(CUSTOMER_KEY, $("#customerName").value.trim());
-    localStorage.setItem(DATES_KEY, JSON.stringify(getDates()));
-
-    generatePreview();
-    $("#formActions").style.display = "none";
-    $("#previewCard").style.display = "block";
-    window.scrollTo(0, 0);
-    toast("プレビューを生成しました");
+    icalContent += `BEGIN:VEVENT
+UID:${uid}-${sessionNumber}@aromaria.com
+DTSTAMP:${timestamp}
+DTSTART;TZID=Asia/Tokyo:${dtstart}
+DTEND;TZID=Asia/Tokyo:${dtend}
+SUMMARY:${summary}
+DESCRIPTION:${description}
+LOCATION:aromaria
+STATUS:CONFIRMED
+SEQUENCE:0
+END:VEVENT
+`;
   });
 
-  $("#btnReset").addEventListener("click", function(){
-    $("#formActions").style.display = "flex";
-    $("#previewCard").style.display = "none";
-    window.scrollTo(0, 0);
-  });
+  icalContent += `END:VCALENDAR`;
+  return icalContent;
+}
 
-  $("#btnDownload").addEventListener("click", function(){
-    var name = $("#customerName").value.trim();
-    var dates = getDates();
+// ファイルをダウンロード
+function downloadFile(content, filename) {
+  const element = document.createElement('a');
+  element.setAttribute('href', 'data:text/calendar;charset=utf-8,' + encodeURIComponent(content));
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
 
-    // Generate iCalendar format
-    var ics = generateICS(name, dates);
+// フォーム送信処理
+document.getElementById('calendarForm').addEventListener('submit', function(e) {
+  e.preventDefault();
 
-    // Download
-    var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-    var link = document.createElement("a");
-    link.setAttribute("href", URL.createObjectURL(blob));
-    link.setAttribute("download", name + "_treatment_ticket.ics");
-    link.click();
+  const customerName = document.getElementById('customerName').value.trim();
+  const dates = [];
+  let allValid = true;
 
-    toast(name + "さんのカレンダーをダウンロードしました");
-  });
-
-  function generateICS(name, dates){
-    var icsLines = [];
-    icsLines.push("BEGIN:VCALENDAR");
-    icsLines.push("VERSION:2.0");
-    icsLines.push("PRODID:-//Treatment Ticket Calendar//EN");
-    icsLines.push("CALSCALE:GREGORIAN");
-    icsLines.push("METHOD:PUBLISH");
-    icsLines.push("X-WR-CALNAME:" + escapeICS(name + " トリートメント10回コース"));
-    icsLines.push("X-WR-TIMEZONE:Asia/Tokyo");
-
-    // Create events for each session
-    for(var i=1;i<=10;i++){
-      var dateStr = dates[i];
-      if(!dateStr) continue;
-
-      var date = new Date(dateStr + "T10:00:00");
-      var dtstart = formatICSDate(date);
-
-      var endTime = new Date(date.getTime() + 60*60*1000); // 1 hour duration
-      var dtend = formatICSDate(endTime);
-
-      var summary = name + " - トリートメント" + i + "回目／全10回";
-      var description = "トリートメント10回コース（1回 17,800円税込）\n";
-      if(i === 10){
-        description += "（最終回）10回の合計金額：195,800円\n";
-      }
-      description += "正規価格20,800円→17,800円に割引";
-
-      var uid = "treatment-" + name + "-" + i + "@aromaria.github.io";
-
-      icsLines.push("BEGIN:VEVENT");
-      icsLines.push("UID:" + uid);
-      icsLines.push("DTSTART:" + dtstart);
-      icsLines.push("DTEND:" + dtend);
-      icsLines.push("SUMMARY:" + escapeICS(summary));
-      icsLines.push("DESCRIPTION:" + escapeICS(description));
-      icsLines.push("LOCATION:");
-      icsLines.push("STATUS:CONFIRMED");
-      icsLines.push("SEQUENCE:0");
-      icsLines.push("DTSTAMP:" + getCurrentICSDate());
-      icsLines.push("END:VEVENT");
+  for (let i = 1; i <= 10; i++) {
+    const dateInput = document.getElementById(`date${i}`);
+    if (dateInput.value) {
+      dates.push(dateInput.value);
+    } else {
+      allValid = false;
+      break;
     }
-
-    icsLines.push("END:VCALENDAR");
-    return icsLines.join("\r\n");
   }
 
-  function escapeICS(str){
-    return String(str || "")
-      .replace(/\\/g, "\\\\")
-      .replace(/;/g, "\\;")
-      .replace(/,/g, "\\,")
-      .replace(/\r?\n/g, "\\n");
+  if (!allValid) {
+    alert('全ての日付を入力してください');
+    return;
   }
 
-  function formatICSDate(date){
-    var year = date.getFullYear();
-    var month = pad(date.getMonth() + 1);
-    var day = pad(date.getDate());
-    var hour = pad(date.getHours());
-    var min = pad(date.getMinutes());
-    var sec = pad(date.getSeconds());
-    return year + month + day + "T" + hour + min + sec;
+  if (!customerName) {
+    alert('お客様のお名前を入力してください');
+    return;
   }
 
-  function getCurrentICSDate(){
-    var now = new Date();
-    return formatICSDate(now);
-  }
+  // iCal内容を生成
+  const icalContent = generateICalContent(customerName, dates);
 
-  initForm();
-})();
+  // ファイル名：お客様名_YYYYMMDD.ics
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
+  const filename = `${customerName}_${dateStr}.ics`;
+
+  // ダウンロード
+  downloadFile(icalContent, filename);
+
+  // localStorage に保存（バックアップ）
+  const data = {
+    customerName: customerName,
+    dates: dates,
+    createdAt: new Date().toISOString()
+  };
+  localStorage.setItem('treatment_ticket_calendar', JSON.stringify(data));
+
+  // 成功メッセージ表示
+  const successMsg = document.getElementById('successMessage');
+  successMsg.classList.add('show');
+  setTimeout(() => {
+    successMsg.classList.remove('show');
+  }, 3000);
+});
+
+// ページ読み込み時に初期化
+document.addEventListener('DOMContentLoaded', initializeDateInputs);
 </script>
+
 </body>
 </html>
