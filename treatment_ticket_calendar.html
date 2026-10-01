@@ -177,9 +177,9 @@
         <input type="text" id="customerName" placeholder="例：久保田寛様" required>
       </div>
 
-      <label style="display: block; margin-bottom: 16px;">来店予定日（10回分） *</label>
+      <label style="display: block; margin-bottom: 16px;">来店予定日・時間（10回分） *</label>
       <div class="dates-container" id="datesContainer">
-        <!-- 日付入力フィールドが動的に挿入される -->
+        <!-- 日付・時間入力フィールドが動的に挿入される -->
       </div>
 
       <div class="price-info">
@@ -241,19 +241,32 @@
 </div>
 
 <script>
-// 初期化：10個の日付入力フィールドを生成
+// 初期化：10個の日付・時間入力フィールドを生成
 function initializeDateInputs() {
   const container = document.getElementById('datesContainer');
   for (let i = 1; i <= 10; i++) {
-    const div = document.createElement('div');
-    const input = document.createElement('input');
-    input.type = 'date';
-    input.id = `date${i}`;
-    input.placeholder = `${i}回目`;
-    input.dataset.session = i;
-    input.required = true;
-    div.appendChild(input);
-    container.appendChild(div);
+    const wrapper = document.createElement('div');
+    wrapper.style.marginBottom = '12px';
+    wrapper.style.display = 'grid';
+    wrapper.style.gridTemplateColumns = '2fr 1fr';
+    wrapper.style.gap = '8px';
+
+    const dateInput = document.createElement('input');
+    dateInput.type = 'date';
+    dateInput.id = `date${i}`;
+    dateInput.placeholder = `${i}回目の日付`;
+    dateInput.dataset.session = i;
+    dateInput.required = true;
+
+    const timeInput = document.createElement('input');
+    timeInput.type = 'time';
+    timeInput.id = `time${i}`;
+    timeInput.value = '10:00';
+    timeInput.style.fontSize = '14px';
+
+    wrapper.appendChild(dateInput);
+    wrapper.appendChild(timeInput);
+    container.appendChild(wrapper);
   }
 }
 
@@ -284,9 +297,13 @@ END:VTIMEZONE
 
   dates.forEach((dateStr, index) => {
     const sessionNumber = index + 1;
+    const timeInput = document.getElementById(`time${sessionNumber}`);
+    const [hour, minute] = timeInput.value.split(':');
+    const endHour = String(parseInt(hour) + 1).padStart(2, '0');
+
     const [year, month, day] = dateStr.split('-');
-    const dtstart = `${year}${month}${day}T100000`;
-    const dtend = `${year}${month}${day}T110000`;
+    const dtstart = `${year}${month}${day}T${hour}${minute}00`;
+    const dtend = `${year}${month}${day}T${endHour}${minute}00`;
 
     let summary = `${customerName} - トリートメント${sessionNumber}回目／全10回`;
     let description = `正規価格 20,800円（税込22,880円）→ 17,800円（税込19,580円）に割引`;
