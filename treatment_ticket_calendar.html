@@ -427,10 +427,10 @@ document.getElementById('calendarForm').addEventListener('submit', function(e) {
   }, 3000);
 });
 
-// 顧客名に自動的に「様」を追加（重複を防ぐ）
-document.getElementById('customerName').addEventListener('input', function() {
+// 顧客名に自動的に「様」を追加（フォーカス喪失時に1回だけ実行）
+document.getElementById('customerName').addEventListener('change', function() {
   let value = this.value.trim();
-  // 末尾の「様」をすべて削除（複数の様も対応）
+  // 末尾の「様」をすべて削除
   while (value.endsWith('様')) {
     value = value.slice(0, -1);
   }
