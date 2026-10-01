@@ -184,7 +184,13 @@
           <option value="玉川">玉川</option>
           <option value="藤本">藤本</option>
           <option value="田尻">田尻</option>
+          <option value="other">その他（カスタム入力）</option>
         </select>
+      </div>
+
+      <div class="form-group" id="customStaffNameGroup" style="display: none;">
+        <label for="customStaffName">担当者氏名（カスタム）</label>
+        <input type="text" id="customStaffName" placeholder="担当者の氏名を入力してください">
       </div>
 
       <label style="display: block; margin-bottom: 16px;">来店予定日・時間（10回分） *</label>
@@ -360,7 +366,17 @@ document.getElementById('calendarForm').addEventListener('submit', function(e) {
   e.preventDefault();
 
   const customerName = document.getElementById('customerName').value.trim();
-  const staffName = document.getElementById('staffName').value.trim();
+  let staffName = document.getElementById('staffName').value.trim();
+
+  // カスタム入力の場合はカスタム値を使用
+  if (staffName === 'other') {
+    staffName = document.getElementById('customStaffName').value.trim();
+    if (!staffName) {
+      alert('カスタム担当者名を入力してください');
+      return;
+    }
+  }
+
   const dates = [];
   let allValid = true;
 
@@ -418,6 +434,16 @@ document.getElementById('customerName').addEventListener('input', function() {
   value = value.replace(/様+$/, '');
   if (value) {
     this.value = value + '様';
+  }
+});
+
+// 担当者名ドロップダウンの変更で、カスタム入力フィールドを表示/非表示
+document.getElementById('staffName').addEventListener('change', function() {
+  const customGroup = document.getElementById('customStaffNameGroup');
+  if (this.value === 'other') {
+    customGroup.style.display = 'block';
+  } else {
+    customGroup.style.display = 'none';
   }
 });
 
