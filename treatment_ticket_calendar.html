@@ -177,6 +177,11 @@
         <input type="text" id="customerName" placeholder="例：久保田寛様" required>
       </div>
 
+      <div class="form-group">
+        <label for="staffName">担当者名</label>
+        <input type="text" id="staffName" placeholder="例：田中太郎（スタッフ名）">
+      </div>
+
       <label style="display: block; margin-bottom: 16px;">来店予定日・時間（10回分） *</label>
       <div class="dates-container" id="datesContainer">
         <!-- 日付・時間入力フィールドが動的に挿入される -->
@@ -271,7 +276,7 @@ function initializeDateInputs() {
 }
 
 // iCal形式でカレンダーファイルを生成
-function generateICalContent(customerName, dates) {
+function generateICalContent(customerName, staffName, dates) {
   const today = new Date();
   const timestamp = today.toISOString().replace(/[-:.]/g, '').substring(0, 15) + 'Z';
   const uid = `treatment-${Date.now()}@aromaria.com`;
@@ -283,7 +288,7 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:${customerName} - トリートメント回数券
 X-WR-TIMEZONE:Asia/Tokyo
-X-WR-CALDESC:トリートメント予約スケジュール
+X-WR-CALDESC:トリートメント予約スケジュール${staffName ? `\n担当者: ${staffName}` : ''}
 BEGIN:VTIMEZONE
 TZID:Asia/Tokyo
 BEGIN:STANDARD
@@ -308,6 +313,10 @@ END:VTIMEZONE
     let summary = `${customerName} - トリートメント${sessionNumber}回目／全10回`;
     let description = `正規価格 20,800円（税込22,880円）→ 17,800円（税込19,580円）に割引`;
 
+    if (staffName) {
+      description += `\n担当者: ${staffName}`;
+    }
+
     if (sessionNumber === 10) {
       description = `（最終回）10回の合計金額：195,800円（税込）\n${description}`;
     }
@@ -319,7 +328,7 @@ DTSTART;TZID=Asia/Tokyo:${dtstart}
 DTEND;TZID=Asia/Tokyo:${dtend}
 SUMMARY:${summary}
 DESCRIPTION:${description}
-LOCATION:aromaria
+LOCATION:aromaria${staffName ? `\nORGANIZER:CN=${staffName}` : ''}
 STATUS:CONFIRMED
 SEQUENCE:0
 END:VEVENT
@@ -346,6 +355,7 @@ document.getElementById('calendarForm').addEventListener('submit', function(e) {
   e.preventDefault();
 
   const customerName = document.getElementById('customerName').value.trim();
+  const staffName = document.getElementById('staffName').value.trim();
   const dates = [];
   let allValid = true;
 
@@ -370,7 +380,7 @@ document.getElementById('calendarForm').addEventListener('submit', function(e) {
   }
 
   // iCal内容を生成
-  const icalContent = generateICalContent(customerName, dates);
+  const icalContent = generateICalContent(customerName, staffName, dates);
 
   // ファイル名：お客様名_YYYYMMDD.ics
   const today = new Date();
