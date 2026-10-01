@@ -406,8 +406,24 @@ document.getElementById('calendarForm').addEventListener('submit', function(e) {
   }, 3000);
 });
 
+// 顧客名に自動的に「様」を追加
+document.getElementById('customerName').addEventListener('input', function() {
+  let value = this.value.trim();
+  if (value && !value.endsWith('様')) {
+    this.value = value + '様';
+  }
+});
+
 // ページ読み込み時に初期化
-document.addEventListener('DOMContentLoaded', initializeDateInputs);
+document.addEventListener('DOMContentLoaded', function() {
+  initializeDateInputs();
+
+  // 既に入力されている顧客名に「様」を追加
+  const customerNameInput = document.getElementById('customerName');
+  if (customerNameInput.value && !customerNameInput.value.endsWith('様')) {
+    customerNameInput.value = customerNameInput.value + '様';
+  }
+});
 </script>
 
 </body>
