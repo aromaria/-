@@ -430,8 +430,11 @@ document.getElementById('calendarForm').addEventListener('submit', function(e) {
 // 顧客名に自動的に「様」を追加（重複を防ぐ）
 document.getElementById('customerName').addEventListener('input', function() {
   let value = this.value.trim();
-  // 末尾の「様」を削除してから追加（重複防止）
-  value = value.replace(/様+$/, '');
+  // 末尾の「様」をすべて削除（複数の様も対応）
+  while (value.endsWith('様')) {
+    value = value.slice(0, -1);
+  }
+  // 空でなければ「様」を追加
   if (value) {
     this.value = value + '様';
   }
