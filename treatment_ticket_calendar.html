@@ -411,10 +411,12 @@ document.getElementById('calendarForm').addEventListener('submit', function(e) {
   }, 3000);
 });
 
-// 顧客名に自動的に「様」を追加
+// 顧客名に自動的に「様」を追加（重複を防ぐ）
 document.getElementById('customerName').addEventListener('input', function() {
   let value = this.value.trim();
-  if (value && !value.endsWith('様')) {
+  // 末尾の「様」を削除してから追加（重複防止）
+  value = value.replace(/様+$/, '');
+  if (value) {
     this.value = value + '様';
   }
 });
