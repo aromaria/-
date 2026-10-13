@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  googleId  String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  themes    Theme[]
+  projects  Project[]
+}
+
+model Theme {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title          String
+  description    String   @db.Text
+  sellPotential  Int      // 1-10 AI評価
+  estimatedPrice Int      // 想定販売価格
+  relatedKeywords String[] // JSON配列として保存
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String
+  description String? @db.Text
+  status    String   @default("draft") // draft, published, archived
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  research  ResearchData[]
+  articles  Article[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model ResearchData {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  source    String   // "google", "youtube", "x"
+  content   Json     // リサーチ結果（動的構造）
+  summary   String   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([source])
+}
+
+model Article {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title     String
+  outline   Json     // セクション構成
+  content   String   @db.Text // Markdown形式
+  status    String   @default("draft") // draft, published
+  wordCount Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([status])
+}
+
+// ジョブキューのメタデータ（進捗追跡用）
+model JobMetadata {
+  id        String   @id @default(cuid())
+  jobType   String   // "research", "article_generation"
+  status    String   @default("pending") // pending, processing, completed, failed
+  progress  Int      @default(0) // 0-100
+  result    Json?    // 処理結果
+  error     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobType])
+  @@index([status])
+}
