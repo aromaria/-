@@ -1,14 +1,35 @@
 import express from 'express';
+import themeService from './services/theme-service.js';
 
 export const createRoutes = (app: express.Application) => {
   // Theme routes
   const themeRoutes = express.Router();
-  themeRoutes.post('/', (req, res) => {
-    res.status(201).json({
-      id: 'theme_' + Date.now(),
-      title: req.body.title,
-      message: 'Theme generation endpoint - coming soon',
-    });
+  themeRoutes.post('/', async (req, res) => {
+    try {
+      const { background, interests, targetAudience } = req.body;
+
+      if (!background || !interests || !Array.isArray(interests)) {
+        return res.status(400).json({
+          error: 'Missing required fields: background, interests',
+        });
+      }
+
+      // Generate theme using Claude API
+      const theme = await themeService.generateTheme({
+        userId: 'user_' + Date.now(), // TODO: Get from auth token
+        background,
+        interests,
+        targetAudience: targetAudience || '初心者向け',
+      });
+
+      res.status(201).json(theme);
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({
+        error: 'Failed to generate theme',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   });
   themeRoutes.get('/', (req, res) => {
     res.json({
