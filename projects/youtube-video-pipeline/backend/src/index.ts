@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import scheduler from './queue/scheduler.js';
+import jobWorker from './queue/job-worker.js';
 
 dotenv.config();
 
@@ -137,10 +139,40 @@ app.use(
 );
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`🎬 YouTube Video Pipeline Backend`);
+app.listen(PORT, async () => {
+  console.log(`\n🎬 YouTube Video Pipeline Backend`);
   console.log(`🚀 Running on http://localhost:${PORT}`);
   console.log(`📝 Health check: http://localhost:${PORT}/health`);
   console.log(`📁 Video input dir: ${process.env.VIDEO_INPUT_DIR || '/tmp/videos'}`);
   console.log(`📁 Video output dir: ${process.env.VIDEO_OUTPUT_DIR || '/tmp/output'}`);
+
+  // スケジューラーを初期化
+  console.log('\n⏱️ Initializing Scheduler...');
+  try {
+    await scheduler.initialize();
+    console.log('✅ Scheduler ready');
+  } catch (error) {
+    console.error('⚠️ Scheduler initialization failed:', error);
+  }
+
+  // Job Queue ワーカーを初期化
+  console.log('\n⚙️ Initializing Job Workers...');
+  try {
+    await jobWorker.initialize();
+    console.log('✅ Job Workers ready');
+  } catch (error) {
+    console.error('⚠️ Job Worker initialization failed:', error);
+  }
+
+  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🎉 YouTube Video Pipeline is READY!');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('\n🛑 SIGTERM received, shutting down gracefully...');
+    await scheduler.stopAll();
+    await jobWorker.stopAll();
+    process.exit(0);
+  });
 });
