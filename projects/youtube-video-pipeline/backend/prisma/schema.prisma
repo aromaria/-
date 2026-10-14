@@ -1,0 +1,132 @@
+// YouTube Video Pipeline Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 講演会イベント（連続講演会対応）
+model Event {
+  id            String   @id @default(cuid())
+  title         String   // イベント名
+  description   String?  @db.Text
+  speaker       String?  // スピーカー名
+  eventDate     DateTime // 講演会開催日時
+  scheduledPublishDate DateTime? // YouTube 配信予定日（自動計算：eventDate + 2日）
+
+  // ビデオ情報
+  videoFile     String?  // アップロード済みビデオファイルパス
+  videoFileSize Int?     // ファイルサイズ（bytes）
+  videoDuration Float?   // 動画時間（秒）
+
+  // テンプレート参照
+  templateId    String?
+  template      EventTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  // メディア出力
+  thumbnail     String?  // サムネイル画像パス
+  endrollVideo  String?  // エンドロール動画パス
+  finalVideo    String?  // 最終出力動画パス
+
+  // YouTube 情報
+  youtubeVideoId String?  @unique // 配信後に自動設定
+  youtubeUrl    String?
+  youtubeStatus String   @default("draft") // draft, scheduled, published
+  youtubeScheduledTime DateTime?
+
+  // 処理状況
+  status        String   @default("upload_pending") // upload_pending, editing, ready_to_publish, published, archived
+
+  // Job Queue
+  currentJobId  String?
+  jobHistory    ProcessJob[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  publishedAt   DateTime?
+
+  @@index([eventDate])
+  @@index([scheduledPublishDate])
+  @@index([status])
+}
+
+// イベントテンプレート（繰り返し利用可能）
+model EventTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?  @db.Text
+
+  // サムネイル設定
+  thumbnailTitle String?
+  thumbnailSubtitle String?
+  logoPath      String?
+
+  // エンドロール設定
+  endrollDuration Int    @default(30) // 秒
+  nextEventTitle String?
+  nextEventDate  String?
+  nextEventTime  String?
+
+  // YouTube メタデータ
+  youtubeTitle  String?  // デフォルトタイトル
+  youtubeDesc   String?  @db.Text // デフォルト説明
+  youtubeTags   String[] // タグ配列
+  youtubeCategory String? // Gaming, Education等
+
+  // チャンネル情報
+  channelName   String?
+  channelUrl    String?
+
+  // カット設定（デフォルト）
+  defaultCutDuration Int @default(60) // デフォルトカット時間（秒）
+
+  events        Event[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([name])
+}
+
+// 処理ジョブ履歴
+model ProcessJob {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  jobType       String   // video_cut, thumbnail_gen, endroll_gen, publish
+  status        String   @default("pending") // pending, processing, completed, failed
+  progress      Int      @default(0) // 0-100
+
+  startedAt     DateTime?
+  completedAt   DateTime?
+  errorMessage  String?
+
+  result        Json?    // 処理結果（パス等）
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([status])
+  @@index([jobType])
+}
+
+// ビデオカット情報
+model VideoCut {
+  id            String   @id @default(cuid())
+  eventId       String
+
+  // カット情報
+  startTime     Float    // 秒
+  endTime       Float
+  reason        String?  // 削除理由（optional）
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([eventId, startTime, endTime])
+}
