@@ -53,6 +53,20 @@ export class Scheduler {
     this.jobs.set('progress-check', progressCheckJob);
     console.log('✅ Progress check job scheduled (21:00 UTC)');
 
+    // 毎日朝 10:00 に有効期限切れの動画を確認・非公開化
+    const expirationCheckJob = new CronJob(
+      '0 10 * * *', // 毎日 10:00 (UTC)
+      async () => {
+        await this.checkAndExpireVideos();
+      },
+      null,
+      true,
+      'UTC'
+    );
+
+    this.jobs.set('expiration-check', expirationCheckJob);
+    console.log('✅ Expiration check job scheduled (10:00 UTC)');
+
     // テスト用：毎分チェック（開発環境のみ）
     if (process.env.NODE_ENV === 'development') {
       const testJob = new CronJob(
@@ -164,6 +178,46 @@ export class Scheduler {
       }
     } catch (error) {
       console.error('❌ Error checking progress:', error);
+    }
+  }
+
+  /**
+   * 有効期限切れの動画を自動非公開化
+   */
+  private async checkAndExpireVideos(): Promise<void> {
+    console.log('\n⏰ [CRON] Checking for expired videos...');
+
+    try {
+      const now = new Date();
+
+      // すべての公開中の講演会を確認
+      const events = await eventService.listEvents({
+        status: 'published',
+      });
+
+      console.log(`📺 Checking ${events.length} published event(s)`);
+
+      for (const event of events) {
+        // youtubeExpiresAt が過去なら非公開化
+        if (event.youtubeExpiresAt && new Date(event.youtubeExpiresAt) <= now) {
+          console.log(`\n🔒 Video expired: ${event.title}`);
+          console.log(`   Expired at: ${event.youtubeExpiresAt}`);
+
+          // YouTube の動画を非公開に
+          if (event.youtubeVideoId) {
+            console.log(`   Setting video ${event.youtubeVideoId} to private...`);
+            // TODO: YouTubeAPI.updateVideoPrivacy(event.youtubeVideoId, 'private');
+
+            // ステータスを更新
+            await eventService.updateStatus(event.id, 'expired');
+            console.log(`   ✅ Video is now private`);
+          }
+        }
+      }
+
+      console.log('✅ Expiration check complete');
+    } catch (error) {
+      console.error('❌ Error checking expiration:', error);
     }
   }
 

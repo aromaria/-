@@ -18,6 +18,7 @@ interface UploadVideoOptions {
   privacyStatus?: 'public' | 'private' | 'unlisted';
   publishAt?: Date;
   thumbnail?: string; // ローカルファイルパス
+  expirationDays?: number; // デフォルト: 14日間
 }
 
 interface VideoMetadata {
@@ -48,13 +49,17 @@ export class YouTubeAPI {
   }
 
   /**
-   * ビデオをアップロード（スケジュール配信対応）
+   * ビデオをアップロード（スケジュール配信対応 + 14日自動非公開）
    */
   async uploadVideo(
     videoFilePath: string,
     options: UploadVideoOptions
   ): Promise<VideoMetadata> {
+    const expirationDays = options.expirationDays || 14;
+    const expiresAt = this.calculateExpirationDate(expirationDays);
+
     console.log(`📺 Uploading to YouTube: ${options.title}`);
+    console.log(`⏰ Visibility period: 14 days (expires ${expiresAt.toISOString().split('T')[0]})`);
 
     if (!this.accessToken) {
       throw new Error('YouTube API access token not set. OAuth authentication required.');
@@ -72,13 +77,16 @@ export class YouTubeAPI {
       //   requestBody: {
       //     snippet: {
       //       title: options.title,
-      //       description: options.description,
+      //       description: this.addExpirationNotice(
+      //         options.description,
+      //         expiresAt
+      //       ),
       //       tags: options.tags,
       //       categoryId: options.categoryId || '27', // Education
       //       defaultLanguage: 'ja',
       //     },
       //     status: {
-      //       privacyStatus: options.privacyStatus || 'private',
+      //       privacyStatus: options.privacyStatus || 'public',
       //       publishAt: options.publishAt,
       //       selfDeclaredMadeForKids: false,
       //     },
@@ -100,19 +108,37 @@ export class YouTubeAPI {
 
       const mockVideoId = `video_${Date.now()}`;
       console.log(`✅ Video uploaded: ${mockVideoId}`);
+      console.log(`📅 Will be private after: ${expiresAt.toISOString().split('T')[0]}`);
 
       return {
         videoId: mockVideoId,
         title: options.title,
         description: options.description,
         url: `https://www.youtube.com/watch?v=${mockVideoId}`,
-        status: options.privacyStatus || 'private',
-        publishedAt: options.publishAt,
+        status: options.privacyStatus || 'public',
+        publishedAt: options.publishAt || new Date(),
       };
     } catch (error) {
       console.error('YouTube upload failed:', error);
       throw new Error('Failed to upload video to YouTube');
     }
+  }
+
+  /**
+   * 有効期限を計算（今から N 日後）
+   */
+  private calculateExpirationDate(days: number): Date {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + days);
+    return expiresAt;
+  }
+
+  /**
+   * 説明文に有効期限の案内を追加
+   */
+  private addExpirationNotice(description: string, expiresAt: Date): string {
+    const expirationNotice = `\n\n⏰ 【重要】このビデオは ${expiresAt.toLocaleDateString('ja-JP')} で非公開になります。\n見逃さないようご注意ください！`;
+    return description + expirationNotice;
   }
 
   /**

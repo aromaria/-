@@ -35,8 +35,10 @@ model Event {
   // YouTube 情報
   youtubeVideoId String?  @unique // 配信後に自動設定
   youtubeUrl    String?
-  youtubeStatus String   @default("draft") // draft, scheduled, published
+  youtubeStatus String   @default("draft") // draft, scheduled, published, expired
   youtubeScheduledTime DateTime?
+  youtubePublishedAt DateTime? // 実際の公開日時
+  youtubeExpiresAt DateTime?   // 視聴不可になる日時（公開日 + 14日）
 
   // 処理状況
   status        String   @default("upload_pending") // upload_pending, editing, ready_to_publish, published, archived
