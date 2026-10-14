@@ -153,6 +153,7 @@ export class VideoProcessor {
 
   /**
    * 動画をYouTube最適化フォーマットに変換
+   * iPhone 1080p/60fps → YouTube推奨フォーマット
    */
   async optimizeForYouTube(
     inputFile: string,
@@ -161,21 +162,36 @@ export class VideoProcessor {
       width?: number;
       height?: number;
       bitrate?: string;
+      preset?: 'fast' | 'medium' | 'slow';
     }
   ): Promise<void> {
     return new Promise((resolve, reject) => {
+      const width = options?.width || 1920;
+      const height = options?.height || 1080;
+      const bitrate = options?.bitrate || '8M'; // YouTube推奨：1080p/60fps = 8-12Mbps
+      const preset = options?.preset || 'medium';
+
       ffmpeg()
         .input(inputFile)
         .videoCodec('libx264')
         .audioCodec('aac')
-        .outputOptions('-crf 23') // 品質レベル（18-28、デフォルト23）
-        .outputOptions('-preset medium') // エンコード速度
-        .videoFilter(`scale=${options?.width || 1920}:${options?.height || 1080}`)
+        .outputOptions('-crf 18') // 高品質（18 = 視覚的ロスレス）
+        .outputOptions(`-preset ${preset}`) // fast/medium/slow
+        .outputOptions(`-b:v ${bitrate}`) // ビデオビットレート
+        .outputOptions('-b:a 128k') // オーディオビットレート
+        .outputOptions('-maxrate 12M') // 最大ビットレート制限
+        .outputOptions('-bufsize 24M') // バッファサイズ
+        .videoFilter(`scale=${width}:${height}:force_original_aspect_ratio=decrease`)
+        .videoFilter('pad=1920:1080:(ow-iw)/2:(oh-ih)/2:black')
+        .fps(30) // YouTube推奨フレームレート（60fpsは落とす）
         .output(outputFile)
         .on('end', resolve)
         .on('error', reject)
         .on('progress', (progress) => {
-          console.log(`[Video Encoding] ${Math.round(progress.percent || 0)}%`);
+          const percent = Math.round(progress.percent || 0);
+          console.log(
+            `[Video Encoding] ${percent}% | ${progress.currentFps || 0} fps | ${progress.currentKbps || 0} kbps`
+          );
         })
         .run();
     });
