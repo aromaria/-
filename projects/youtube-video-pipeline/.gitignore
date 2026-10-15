@@ -13,6 +13,10 @@ node_modules
 /.next
 /build
 /out
+frontend/.next
+frontend/next-env.d.ts
+backend/.next
+backend/next-env.d.ts
 
 # Logs
 npm-debug.log*
