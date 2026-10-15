@@ -67,13 +67,29 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
-            🎬 動画配信
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            iPhone から YouTube へ自動配信
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
+              🎬 動画配信
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              iPhone から YouTube へ自動配信
+            </p>
+          </div>
+          <nav className="hidden sm:flex gap-4">
+            <Link
+              href="/"
+              className="text-blue-600 hover:text-blue-700 font-semibold"
+            >
+              ホーム
+            </Link>
+            <Link
+              href="/editor"
+              className="text-gray-600 hover:text-gray-700 font-semibold"
+            >
+              エディタ
+            </Link>
+          </nav>
         </div>
       </header>
 

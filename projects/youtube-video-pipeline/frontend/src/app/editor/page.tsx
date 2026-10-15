@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Cut {
   id: string;
@@ -115,6 +116,26 @@ export default function EditorPage() {
               タイムラインでカット指定
             </p>
           </div>
+          <nav className="hidden sm:flex gap-4 items-center">
+            <Link
+              href="/"
+              className="text-gray-600 hover:text-gray-700 font-semibold"
+            >
+              ホーム
+            </Link>
+            <Link
+              href="/editor"
+              className="text-blue-600 hover:text-blue-700 font-semibold"
+            >
+              エディタ
+            </Link>
+          </nav>
+          <Link
+            href="/"
+            className="sm:hidden text-gray-600 hover:text-gray-700 text-sm font-semibold"
+          >
+            ← 戻る
+          </Link>
         </div>
       </header>
 
