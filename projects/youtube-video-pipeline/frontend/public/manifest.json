@@ -1,0 +1,63 @@
+{
+  "name": "YouTube 動画配信パイプライン",
+  "short_name": "動画配信",
+  "description": "4.5時間の iPhone 撮影動画を自動編集・YouTube配信",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%232563eb' width='192' height='192'/><text x='50%' y='50%' font-size='100' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>🎬</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%232563eb' width='512' height='512'/><text x='50%' y='50%' font-size='250' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>🎬</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f0f9ff' width='540' height='720'/><text x='50%' y='40%' font-size='60' font-weight='bold' fill='%232563eb' text-anchor='middle'>YouTube</text><text x='50%' y='55%' font-size='40' fill='%23666' text-anchor='middle'>動画配信</text></svg>",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ビデオアップロード",
+      "short_name": "アップロード",
+      "description": "新しい動画をアップロード",
+      "url": "/?mode=upload",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%232563eb' width='96' height='96' rx='20'/><text x='50%' y='50%' font-size='50' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>📹</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "タイムラインエディタ",
+      "short_name": "編集",
+      "description": "ビデオをカット・編集",
+      "url": "/editor",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%23059669' width='96' height='96' rx='20'/><text x='50%' y='50%' font-size='50' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>✂️</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "categories": ["video", "productivity"],
+  "prefer_related_applications": false
+}
