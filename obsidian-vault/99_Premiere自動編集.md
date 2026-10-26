@@ -21,7 +21,7 @@
   1. 素材を `cp -n` でコピー → `import_media`（**filesystem 権限が必要**。無ければユーザーが ⌘I）→ `create_sequence_from_clips` で `〇〇 のコピー`
   2. コピーシーケンスだけを編集（「確認してから」と言った時だけ計画で止まる）
   3. 編集前後の比較・元シーケンス/元ファイルが無傷かを ✅/❌ で報告 → ユーザーが再生確認 → ⌘S → 「OK」で次へ
-  4. `export_sequence`（**export 権限が必要**）で MP4（H.264+AAC）を `~/Movies/YouTube書き出し/〇〇_YouTube_YYYYMMDD.mp4` に書き出し（上書きしない）。アップロードはユーザーが YouTube Studio で
+  4. `export_sequence`（**export 権限が必要**）で MP4（H.264+AAC）を `/Volumes/ELECOM/Premiere作業/YouTube書き出し/〇〇_YouTube_YYYYMMDD.mp4` に書き出し（上書きしない）。アップロードはユーザーが YouTube Studio で
 - 作業場所は外付け **ELECOM**（5.5TB）の `/Volumes/ELECOM/Premiere作業/`（`コピー素材/`・`YouTube書き出し/`）。Mac本体は空き不足（約5.5GB）のため使わない。ELECOM未接続なら止まる
   - 他のドライブ: HD-EDS-D（予備）、disk3s1（Time Machine用・使わない）、NO NAME（15GB・小さい）
 - 権限の分類（1.15.1 のコードで確認）: `import_*` は filesystem、`export_*`/`encode_*` は export、シーケンス作成・複製は edit
