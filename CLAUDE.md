@@ -34,6 +34,7 @@ file:// はPOSTが弾かれるため **GETでも保存**する二重経路。JSO
 - 知識の保管 = `obsidian-vault/`（小さいmdに分割。人もClaudeもここを見る）
 - NotebookLMへの投入資料 = `notebooklm/` の1ファイルを手動アップロード（NotebookLMは公式CLI/APIなし）
 - 運用手順は `連携ガイド.md`
+- Premiere Pro × Claude Code（MCP）自動編集 = `obsidian-vault/99_Premiere自動編集.md`、編集ルール本体 = `premiere/CLAUDE_premiere_rules.md`
 
 ## 他業務への横展開（連携キット生成）
 - 新しい業務にも同じ「Claude＋Obsidian＋NotebookLM」の仕組みを作れる
