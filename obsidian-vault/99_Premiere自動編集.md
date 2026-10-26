@@ -17,9 +17,11 @@
 
 ## 編集ルール（要点）
 - **元の動画・元のシーケンスは使わない。コピーだけを編集する**
-- Claude が自動で: 素材を `cp -n` でコピー → `import_media` → `create_sequence_from_clips` で `〇〇 のコピー` → 編集 → 報告・⌘S を促す
-  （読み込み・シーケンス作成は edit 権限で可能。filesystem 権限は不要）
-- 「確認してから」と言った時だけ、計画を見せて「実行して」を待つ
+- 必ず **1 コピー → 2 自動編集 → 3 確認** の順（すべて Claude が自動で進める）
+  1. 素材を `cp -n` でコピー → `import_media` → `create_sequence_from_clips` で `〇〇 のコピー`（edit 権限で可能）
+  2. コピーシーケンスだけを編集（「確認してから」と言った時だけ計画で止まる）
+  3. 編集前後の比較・元シーケンス/元ファイルが無傷かを ✅/❌ で報告 → ユーザーが再生確認 → ⌘S
+- iMac 側の置き場所: `~/.claude/premiere-rules.md`（`~/.claude/CLAUDE.md` から `@~/.claude/premiere-rules.md` で読み込み）
 
 ## 依頼文テンプレート
 ```
