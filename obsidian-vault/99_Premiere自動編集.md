@@ -25,9 +25,14 @@
 - 権限の分類（1.15.1 のコードで確認）: `import_*` は filesystem、`export_*`/`encode_*` は export、シーケンス作成・複製は edit
 - iMac 側の置き場所: `~/.claude/premiere-rules.md`（`~/.claude/CLAUDE.md` から `@~/.claude/premiere-rules.md` で読み込み）
 
-## 依頼文テンプレート
+## セットアップ（最終版・1回だけ）
+- `premiere/setup.sh` を iMac で実行: 指示書を `~/.claude/premiere-rules.md` に置く／`/youtube` コマンド追加／
+  権限を `inspect,edit,export,filesystem` で再登録（unsafe-script は無効）／`settings.json` の allow に `mcp__premiere` を追加
+- バックアップ: `~/.claude/CLAUDE.md.bak`、`~/.claude/settings.json.before-premiere`
+
+## 使い方
 ```
-今開いている動画で、〔やりたい編集〕をして。
+/youtube 無音の部分をカット
 ```
 
 ## メモ
