@@ -42,6 +42,15 @@
 - Safari の HTTPS-Only でログインの戻り先（localhost）が開けない → ターミナルのURL＋コード貼り付けでログイン
 - 起動は `claude`。一番下に bypass / auto と出たら Shift+Tab で manual に戻す
 
+## 止まらないための作業前チェック（Intel iMac・4K長尺向け）
+1. 使わないアプリを終了（ブラウザのタブ・Zoom・Canva など）。アクティビティモニタで「メモリ」が黄色/赤なら要整理
+2. ELECOM は iMac 本体に直結。省エネルギー設定の「ハードディスクをスリープ」はオフ
+3. Premiere の メディアキャッシュ と スクラッチディスク（キャプチャ・プレビュー・自動保存）を `/Volumes/ELECOM/Premiere作業/` 配下へ。古いキャッシュは削除
+4. 4K素材はプロキシ（1080p）を作って編集。再生解像度は 1/2〜1/4
+5. 書き出しは Media Encoder のキューで、保存先は ELECOM。書き出し中は他の作業をしない
+6. 書き出し中は Time Machine の自動バックアップを一時オフ（終わったら戻す）
+7. Mac 本体の空きは常に 15GB 以上を保つ
+
 ## 元に戻す手順
 ```bash
 ~/.premiere-mcp/node_modules/.bin/premiere-pro-mcp --uninstall-cep   # Premiere終了後
